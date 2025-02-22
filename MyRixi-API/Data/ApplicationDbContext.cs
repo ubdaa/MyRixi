@@ -5,8 +5,13 @@ using MyRixiApi.Models;
 
 namespace MyRixiApi.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<User, IdentityRole<Guid>, Guid>
+public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
+
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<CommunityProfile> CommunityProfiles { get; set; }
     public DbSet<Community> Communities { get; set; }
