@@ -5,10 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyRixiApi.Data;
 using MyRixiApi.Models;
+using MyRixiApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
-Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -48,6 +47,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+// Ajouter les rôles au démarrage
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+    await RoleService.SeedRolesAsync(roleManager);
 }
 
 app.UseHttpsRedirection();
