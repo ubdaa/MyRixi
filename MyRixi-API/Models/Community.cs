@@ -6,7 +6,13 @@ public class Community
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Rules { get; set; } = string.Empty;
-    public string BannerImage { get; set; } = string.Empty;
+    
+    public Guid IconId { get; set; }
+    public Media Icon { get; set; } = null!;
+    
+    public Guid CoverId { get; set; }
+    public Media Cover { get; set; } = null!;
+    
     public ICollection<CommunityProfile> Members { get; set; } = new List<CommunityProfile>();
     public ICollection<Post> Posts { get; set; } = new List<Post>();
 }

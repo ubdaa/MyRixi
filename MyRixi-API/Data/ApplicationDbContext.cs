@@ -15,6 +15,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<CommunityProfile> CommunityProfiles { get; set; }
     public DbSet<Community> Communities { get; set; }
+    public DbSet<Media> Medias { get; set; }
     public DbSet<Post> Posts { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Attachment> Attachments { get; set; }

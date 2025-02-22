@@ -176,24 +176,17 @@ namespace MyRixiApi.Migrations
                     b.Property<Guid?>("CommentId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Metadata")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("MediaId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("PostId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CommentId");
+
+                    b.HasIndex("MediaId");
 
                     b.HasIndex("PostId");
 
@@ -244,13 +237,15 @@ namespace MyRixiApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BannerImage")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("CoverId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid>("IconId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -261,6 +256,10 @@ namespace MyRixiApi.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CoverId");
+
+                    b.HasIndex("IconId");
 
                     b.ToTable("Communities");
                 });
@@ -274,9 +273,15 @@ namespace MyRixiApi.Migrations
                     b.Property<Guid>("CommunityId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("CoverPictureId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Preferences")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid>("ProfilePictureId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Pseudonym")
                         .IsRequired()
@@ -292,6 +297,10 @@ namespace MyRixiApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CommunityId");
+
+                    b.HasIndex("CoverPictureId");
+
+                    b.HasIndex("ProfilePictureId");
 
                     b.HasIndex("UserId");
 
@@ -314,6 +323,29 @@ namespace MyRixiApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Conversations");
+                });
+
+            modelBuilder.Entity("MyRixiApi.Models.Media", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Medias");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.Message", b =>
@@ -499,18 +531,24 @@ namespace MyRixiApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("CoverPictureId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ProfileImage")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("ProfilePictureId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CoverPictureId");
+
+                    b.HasIndex("ProfilePictureId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -590,11 +628,19 @@ namespace MyRixiApi.Migrations
                         .WithMany()
                         .HasForeignKey("CommentId");
 
+                    b.HasOne("MyRixiApi.Models.Media", "Media")
+                        .WithMany()
+                        .HasForeignKey("MediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("MyRixiApi.Models.Post", "Post")
                         .WithMany("Attachments")
                         .HasForeignKey("PostId");
 
                     b.Navigation("Comment");
+
+                    b.Navigation("Media");
 
                     b.Navigation("Post");
                 });
@@ -626,11 +672,42 @@ namespace MyRixiApi.Migrations
                     b.Navigation("UserProfile");
                 });
 
+            modelBuilder.Entity("MyRixiApi.Models.Community", b =>
+                {
+                    b.HasOne("MyRixiApi.Models.Media", "Cover")
+                        .WithMany()
+                        .HasForeignKey("CoverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyRixiApi.Models.Media", "Icon")
+                        .WithMany()
+                        .HasForeignKey("IconId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cover");
+
+                    b.Navigation("Icon");
+                });
+
             modelBuilder.Entity("MyRixiApi.Models.CommunityProfile", b =>
                 {
                     b.HasOne("MyRixiApi.Models.Community", "Community")
                         .WithMany("Members")
                         .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyRixiApi.Models.Media", "CoverPicture")
+                        .WithMany()
+                        .HasForeignKey("CoverPictureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyRixiApi.Models.Media", "ProfilePicture")
+                        .WithMany()
+                        .HasForeignKey("ProfilePictureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -641,6 +718,10 @@ namespace MyRixiApi.Migrations
                         .IsRequired();
 
                     b.Navigation("Community");
+
+                    b.Navigation("CoverPicture");
+
+                    b.Navigation("ProfilePicture");
 
                     b.Navigation("User");
                 });
@@ -696,11 +777,27 @@ namespace MyRixiApi.Migrations
 
             modelBuilder.Entity("MyRixiApi.Models.UserProfile", b =>
                 {
+                    b.HasOne("MyRixiApi.Models.Media", "CoverPicture")
+                        .WithMany()
+                        .HasForeignKey("CoverPictureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyRixiApi.Models.Media", "ProfilePicture")
+                        .WithMany()
+                        .HasForeignKey("ProfilePictureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("MyRixiApi.Models.User", "User")
                         .WithOne("UserProfile")
                         .HasForeignKey("MyRixiApi.Models.UserProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CoverPicture");
+
+                    b.Navigation("ProfilePicture");
 
                     b.Navigation("User");
                 });

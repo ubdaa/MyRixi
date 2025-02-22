@@ -41,7 +41,8 @@ public class AuthController : ControllerBase
             {
                 DisplayName = model.Username,
                 Bio = string.Empty,
-                ProfileImage = string.Empty
+                ProfilePicture = new Media(),
+                CoverPicture = new Media()
             }
         };
 
