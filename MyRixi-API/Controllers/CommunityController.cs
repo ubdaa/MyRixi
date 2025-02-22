@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MyRixiApi.Dto.Community;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
 
@@ -38,12 +39,20 @@ public class CommunityController : Controller
         }
     }
     
-    [HttpPost("/create")]
-    public async Task<ActionResult<Community>> CreateCommunity(Community community)
+    [HttpPost("create")]
+    public async Task<ActionResult<Community>> CreateCommunity(CreateCommunityDto createCommunity)
     {
         try
         {
+            var community = new Community
+            {
+                Name = createCommunity.Name,
+                Description = createCommunity.Description,
+                IconId = createCommunity.IconId,
+                CoverId = createCommunity.CoverId
+            };
             var createdCommunity = await _communityRepository.CreateAsync(community);
+            
             return CreatedAtAction(
                 nameof(GetCommunity),
                 new { id = createdCommunity.Id },
