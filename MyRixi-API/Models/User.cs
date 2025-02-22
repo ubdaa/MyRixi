@@ -2,7 +2,7 @@
 
 namespace MyRixiApi.Models;
 
-public class User : IdentityUser
+public class User : IdentityUser<Guid>
 {
     public string Avatar { get; set; } = string.Empty;
     public string Bio { get; set; } = string.Empty;
