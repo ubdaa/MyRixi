@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyRixi-API", "MyRixi-API\MyRixi-API.csproj", "{A08A1D4D-658B-4436-B57C-248F966D505A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A08A1D4D-658B-4436-B57C-248F966D505A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A08A1D4D-658B-4436-B57C-248F966D505A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A08A1D4D-658B-4436-B57C-248F966D505A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A08A1D4D-658B-4436-B57C-248F966D505A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
