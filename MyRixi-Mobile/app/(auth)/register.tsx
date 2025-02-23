@@ -3,6 +3,7 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-nativ
 import { router } from 'expo-router';
 import { register } from '@/services/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AxiosError } from 'axios';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ export default function Register() {
       await AsyncStorage.setItem('token', response.token);
       router.replace('/');
     } catch (err) {
+      console.log(err);
       setError('Échec de l\'inscription');
     }
   };

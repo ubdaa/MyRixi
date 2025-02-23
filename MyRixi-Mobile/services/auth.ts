@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://10.0.2.2:5106/v1';
 
 export const login = async (email: string, password: string) => {
-  const response = await axios.post(`${API_URL}/v1/auth/login`, {
+  const response = await axios.post(`${API_URL}/auth/login`, {
     email,
     password,
   });
@@ -11,7 +11,7 @@ export const login = async (email: string, password: string) => {
 };
 
 export const register = async (email: string, password: string, username: string) => {
-  const response = await axios.post(`${API_URL}/v1/auth/register`, {
+  const response = await axios.post(`${API_URL}/auth/register`, {
     email,
     password,
     username,
