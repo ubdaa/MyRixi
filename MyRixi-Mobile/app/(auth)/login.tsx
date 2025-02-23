@@ -39,6 +39,10 @@ export default function Login() {
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Se connecter</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => router.replace('/register')}>
+        <Text style={{ textAlign: 'center', marginTop: 20 }}>Créer un compte</Text>
+      </TouchableOpacity>
     </View>
   );
 }
