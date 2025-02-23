@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyRixiApi.Data;
+using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
+using MyRixiApi.Repositories;
 using MyRixiApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +41,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// services
+builder.Services.AddScoped<ICommunityRepository, CommunityRepository>();
+builder.Services.AddScoped<IMediaService, MediaService>();
+builder.Services.AddScoped<IStorageService, MinioStorageService>();
 
 var app = builder.Build();
 

@@ -49,9 +49,7 @@ public class CommunityController : Controller
             var community = new Community
             {
                 Name = createCommunity.Name,
-                Description = createCommunity.Description,
-                IconId = createCommunity.IconId,
-                CoverId = createCommunity.CoverId
+                Description = createCommunity.Description
             };
             var createdCommunity = await _communityRepository.CreateAsync(community);
             
