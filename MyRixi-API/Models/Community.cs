@@ -5,7 +5,6 @@ public class Community
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public string Rules { get; set; } = string.Empty;
     
     public Guid IconId { get; set; }
     public Media Icon { get; set; } = null!;
@@ -13,6 +12,7 @@ public class Community
     public Guid CoverId { get; set; }
     public Media Cover { get; set; } = null!;
     
+    public ICollection<CommunityRule> Rules { get; set; } = new List<CommunityRule>();
     public ICollection<CommunityProfile> Members { get; set; } = new List<CommunityProfile>();
     public ICollection<Post> Posts { get; set; } = new List<Post>();
 }

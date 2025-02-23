@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MyRixiApi.Dto.Community;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
@@ -39,6 +40,7 @@ public class CommunityController : Controller
         }
     }
     
+    [Authorize]
     [HttpPost("create")]
     public async Task<ActionResult<Community>> CreateCommunity(CreateCommunityDto createCommunity)
     {

@@ -251,10 +251,6 @@ namespace MyRixiApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Rules")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CoverId");
@@ -305,6 +301,33 @@ namespace MyRixiApi.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("CommunityProfiles");
+                });
+
+            modelBuilder.Entity("MyRixiApi.Models.CommunityRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CommunityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityId");
+
+                    b.ToTable("CommunityRules");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.Conversation", b =>
@@ -726,6 +749,17 @@ namespace MyRixiApi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MyRixiApi.Models.CommunityRule", b =>
+                {
+                    b.HasOne("MyRixiApi.Models.Community", "Community")
+                        .WithMany("Rules")
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Community");
+                });
+
             modelBuilder.Entity("MyRixiApi.Models.Message", b =>
                 {
                     b.HasOne("MyRixiApi.Models.Conversation", "Conversation")
@@ -812,6 +846,8 @@ namespace MyRixiApi.Migrations
                     b.Navigation("Members");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("Rules");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.CommunityProfile", b =>

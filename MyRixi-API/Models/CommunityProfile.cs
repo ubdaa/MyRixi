@@ -7,6 +7,7 @@ public class CommunityProfile
     public string Role { get; set; } = "Membre"; // Membre, Modérateur, Admin
     public string Preferences { get; set; } = string.Empty;
     
+    // images for profile and cover
     public Guid ProfilePictureId { get; set; }
     public Media ProfilePicture { get; set; } = null!;
     
