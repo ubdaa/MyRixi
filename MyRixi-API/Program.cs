@@ -50,6 +50,7 @@ builder.Services.AddSwaggerGen();
 
 // services
 builder.Services.AddScoped<ICommunityRepository, CommunityRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IStorageService, MinioStorageService>();
 

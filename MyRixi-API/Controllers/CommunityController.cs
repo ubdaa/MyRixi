@@ -12,17 +12,21 @@ namespace MyRixiApi.Controllers;
 public class CommunityController : Controller
 {
     private readonly ICommunityRepository _communityRepository;
+    private readonly IUserRepository _userRepository;
+    
     private readonly IMediaService _mediaService;
     private readonly ILogger<CommunityController> _logger;
     private readonly UserManager<User> _userManager;
 
     public CommunityController(
         ICommunityRepository communityRepository,
+        IUserRepository userRepository,
         IMediaService mediaService,
         ILogger<CommunityController> logger,
         UserManager<User> userManager)
     {
         _communityRepository = communityRepository;
+        _userRepository = userRepository;
         _mediaService = mediaService;
         _logger = logger;
         _userManager = userManager;
@@ -59,7 +63,8 @@ public class CommunityController : Controller
     {
         try
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid) 
+                return BadRequest(ModelState);
             
             // on récupère l'utilisateur connecté, on lui crée un profile de communauté et on l'ajoute à la liste des membres
             var user = await _userManager.GetUserAsync(User);
@@ -67,6 +72,13 @@ public class CommunityController : Controller
             if (user == null)
             {
                 return Unauthorized();
+            }
+            
+            user = await _userRepository.GetByIdAsync(user.Id);
+            
+            if (user == null)
+            {
+                return NotFound();
             }
             
             var icon = await _mediaService.UploadMediaAsync(model.Icon);
@@ -88,7 +100,7 @@ public class CommunityController : Controller
                     Order = i
                 }).ToList() ?? new List<CommunityRule>()
             };
-
+            
             var profile = new CommunityProfile
             {
                 UserId = user.Id,
@@ -98,6 +110,8 @@ public class CommunityController : Controller
                 ProfilePictureId = user.UserProfile.ProfilePictureId,
                 CoverPictureId = user.UserProfile.CoverPictureId,
             };
+            
+            community.Members.Add(profile);
             
             await _communityRepository.CreateAsync(community);
             
