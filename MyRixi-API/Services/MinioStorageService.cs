@@ -58,7 +58,41 @@ public class MinioStorageService : IStorageService
         // Retourne l'URL du fichier
         return $"{_bucketName}/{fileName}";
     }
-    
+
+    public async Task<string> UploadFileAsync(Stream fileStream, string prefix, string fileName, string contentType)
+    {
+        var bucketFileName = $"{prefix}/{Guid.NewGuid()}{Path.GetExtension(fileName)}";
+        
+        // Prépare les métadonnées
+        var metaData = new Dictionary<string, string>
+        {
+            { "Content-Type", contentType }
+        };
+        
+        // Vérifie si le bucket existe, le crée si nécessaire
+        bool found = await _minioClient.BucketExistsAsync(new BucketExistsArgs().WithBucket(_bucketName));
+        if (!found)
+        {
+            await _minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(_bucketName));
+        }
+        
+        // Upload le fichier
+        using (var stream = fileStream)
+        {
+            var putObjectArgs = new PutObjectArgs()
+                .WithBucket(_bucketName)
+                .WithObject(bucketFileName)
+                .WithStreamData(stream)
+                .WithObjectSize(stream.Length)
+                .WithContentType(contentType);
+            
+            await _minioClient.PutObjectAsync(putObjectArgs);
+        }
+        
+        // Retourne l'URL du fichier
+        return $"{_bucketName}/{bucketFileName}";
+    }
+
     public async Task DeleteFileAsync(string fileUrl)
     {
         var fileName = fileUrl.Split('/').Last();
