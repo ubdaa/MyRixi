@@ -1,9 +1,18 @@
-import { View, Text, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
+import { View, Text, StyleSheet, Touchable, TouchableOpacity } from "react-native";
 
 export default function Home() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <Text>Home</Text>
+      
+      <TouchableOpacity onPress={() => router.push({ pathname: `/community/create`})}>
+        <View>
+          <Text>Create Community</Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
