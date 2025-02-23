@@ -21,13 +21,9 @@ api.interceptors.request.use(async (config) => {
 
 export const apiPostRequest = async <T>(url: string, formData: FormData, config: AxiosRequestConfig): Promise<T> => {
   try {
-    console.log('url', `${API_URL}${url}`);
-    console.log('formData', formData);
     const response = await api.post(`${API_URL}${url}`, formData, config);
-    console.log('response', response.data);
     return response.data;
   } catch (error) {
-    console.log('response', error);
     throw error;
   }
 }

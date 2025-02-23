@@ -90,7 +90,6 @@ export default function CreateCommunityScreen() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      console.log(response);
       router.back();
     } catch (error) {
       if (error instanceof AxiosError) {
