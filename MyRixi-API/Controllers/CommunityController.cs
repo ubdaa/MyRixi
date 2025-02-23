@@ -11,13 +11,16 @@ namespace MyRixiApi.Controllers;
 public class CommunityController : Controller
 {
     private readonly ICommunityRepository _communityRepository;
+    private readonly IMediaService _mediaService;
     private readonly ILogger<CommunityController> _logger;
 
     public CommunityController(
         ICommunityRepository communityRepository,
+        IMediaService mediaService,
         ILogger<CommunityController> logger)
     {
         _communityRepository = communityRepository;
+        _mediaService = mediaService;
         _logger = logger;
     }
     
@@ -46,17 +49,11 @@ public class CommunityController : Controller
     {
         try
         {
-            var community = new Community
-            {
-                Name = createCommunity.Name,
-                Description = createCommunity.Description
-            };
-            var createdCommunity = await _communityRepository.CreateAsync(community);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             
-            return CreatedAtAction(
-                nameof(GetCommunity),
-                new { id = createdCommunity.Id },
-                createdCommunity);
+            
+            
+            return Ok("Community created");
         }
         catch (Exception ex)
         {

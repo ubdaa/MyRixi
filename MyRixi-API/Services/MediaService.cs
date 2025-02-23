@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using ImageMagick;
 using MyRixiApi.Data;
+using MyRixiApi.Dto.Media;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
 
@@ -93,6 +94,23 @@ public class MediaService : IMediaService
         // Conversion du format en WebP
         image.Format = MagickFormat.WebP;
             
+        var outputStream = new MemoryStream();
+        image.Write(outputStream);
+        outputStream.Position = 0;
+        return Task.FromResult<Stream>(outputStream);
+    }
+
+    private Task<Stream> ApplyImageParametersAsync(IFormFile file, ImageParameterDto parameterDto)
+    {
+        using var inputStream = file.OpenReadStream();
+        using var image = new MagickImage();
+        image.Read(inputStream);
+        
+        // Redimensionnement
+
+        image.Resize(parameterDto.Width, parameterDto.Height);
+        image.Crop(parameterDto.SquareX, parameterDto.SquareY);
+        
         var outputStream = new MemoryStream();
         image.Write(outputStream);
         outputStream.Position = 0;
