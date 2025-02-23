@@ -27,6 +27,12 @@ public class AuthController : ControllerBase
         _configuration = configuration;
     }
     
+    [HttpGet("test")]
+    public IActionResult Test()
+    {
+        return Ok("Hello World");
+    }
+    
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto model)
     {
