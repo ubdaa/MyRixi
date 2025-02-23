@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using MyRixiApi.Dto.Community;
+﻿using MyRixiApi.Dto.Community;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MyRixiApi.Controllers;
 
@@ -13,19 +14,28 @@ public class CommunityController : Controller
     private readonly ICommunityRepository _communityRepository;
     private readonly IMediaService _mediaService;
     private readonly ILogger<CommunityController> _logger;
+    private readonly UserManager<User> _userManager;
 
     public CommunityController(
         ICommunityRepository communityRepository,
         IMediaService mediaService,
-        ILogger<CommunityController> logger)
+        ILogger<CommunityController> logger,
+        UserManager<User> userManager)
     {
         _communityRepository = communityRepository;
         _mediaService = mediaService;
         _logger = logger;
+        _userManager = userManager;
+    }
+    
+    [HttpGet("test")]
+    public IActionResult Test()
+    {
+        return Ok("Hello World");
     }
     
     [HttpGet("{id}")]
-    public async Task<ActionResult<Community>> GetCommunity(Guid id)
+    public async Task<IActionResult> GetCommunity(Guid id)
     {
         try
         {
@@ -45,15 +55,67 @@ public class CommunityController : Controller
     
     [Authorize]
     [HttpPost("create")]
-    public async Task<ActionResult<Community>> CreateCommunity(CreateCommunityDto createCommunity)
+    public async Task<IActionResult> CreateCommunity([FromForm] CreateCommunityDto model)
     {
         try
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             
+            // on récupère l'utilisateur connecté, on lui crée un profile de communauté et on l'ajoute à la liste des membres
+            var user = await _userManager.GetUserAsync(User);
             
+            if (user == null)
+            {
+                return Unauthorized();
+            }
             
-            return Ok("Community created");
+            var icon = await _mediaService.UploadMediaAsync(model.Icon);
+            var cover = await _mediaService.UploadMediaAsync(model.Cover);
+            
+            var community = new Community
+            {
+                Name = model.Name,
+                Description = model.Description,
+                IconId = icon.Id,
+                Icon = icon,
+                CoverId = cover.Id,
+                Cover = cover,
+                Rules = model.Rules?.Select((r, i) => new CommunityRule
+                {
+                    Id = Guid.NewGuid(),
+                    Title = r.Title,
+                    Description = r.Description,
+                    Order = i
+                }).ToList() ?? new List<CommunityRule>()
+            };
+
+            var profile = new CommunityProfile
+            {
+                UserId = user.Id,
+                CommunityId = community.Id,
+                Pseudonym = user.UserProfile.DisplayName,
+                Role = "Owner",
+                ProfilePictureId = user.UserProfile.ProfilePictureId,
+                CoverPictureId = user.UserProfile.CoverPictureId,
+            };
+            
+            await _communityRepository.CreateAsync(community);
+            
+            return Ok(new CommunityResponseDto
+            {
+                Id = community.Id,
+                Name = community.Name,
+                Description = community.Description,
+                IconUrl = community.Icon?.Url ?? "",
+                CoverUrl = community.Cover?.Url ?? "",
+                Rules = community.Rules.Select(r => new CommunityRuleDto
+                {
+                    Id = r.Id,
+                    Title = r.Title,
+                    Description = r.Description,
+                    Order = r.Order
+                }).ToList()
+            });
         }
         catch (Exception ex)
         {

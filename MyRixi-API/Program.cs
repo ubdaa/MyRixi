@@ -20,7 +20,11 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>()
     .AddDefaultTokenProviders();
 
 // Configuration JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -35,6 +39,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
     });
+
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -64,7 +70,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
-app.UseAuthorization(); // Middleware d'autorisation
+app.UseAuthentication(); // Ajoutez cette ligne pour gérer l'authentification
+app.UseAuthorization();  // Puis l'autorisation
 app.MapControllers(); // Mapper les contrôleurs
 
 app.Run();
