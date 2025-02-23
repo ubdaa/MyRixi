@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
 import { register } from '@/services/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AxiosError } from 'axios';
+import { useRouter } from 'expo-router';
 
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleRegister = async () => {
     try {

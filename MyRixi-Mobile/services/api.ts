@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://localhost:44389';
+const API_URL = 'http://10.0.2.2:5106/v1';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -14,41 +14,45 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem('token');
   if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `bearer ${token}`;
   }
   return config;
 });
 
-export const apiPostRequest = async <T>(config: AxiosRequestConfig): Promise<T> => {
+export const apiPostRequest = async <T>(url: string, formData: FormData, config: AxiosRequestConfig): Promise<T> => {
   try {
-    const response = await api.post(config.url!, config.data);
+    console.log('url', `${API_URL}${url}`);
+    console.log('formData', formData);
+    const response = await api.post(`${API_URL}${url}`, formData, config);
+    console.log('response', response.data);
+    return response.data;
+  } catch (error) {
+    console.log('response', error);
+    throw error;
+  }
+}
+
+export const apiGetRequest = async <T>(url: string, config: AxiosRequestConfig): Promise<T> => {
+  try {
+    const response = await api.get(`${API_URL}${url}`, config);
     return response.data;
   } catch (error) {
     throw error;
   }
 }
 
-export const apiGetRequest = async <T>(config: AxiosRequestConfig): Promise<T> => {
+export const apiPutRequest = async <T>(url: string, formData: FormData, config: AxiosRequestConfig): Promise<T> => {
   try {
-    const response = await api.get(config.url!);
+    const response = await api.put(`${API_URL}${url}`, formData, config);
     return response.data;
   } catch (error) {
     throw error;
   }
 }
 
-export const apiPutRequest = async <T>(config: AxiosRequestConfig): Promise<T> => {
+export const apiDeleteRequest = async <T>(url: string, config: AxiosRequestConfig): Promise<T> => {
   try {
-    const response = await api.put(config.url!, config.data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export const apiDeleteRequest = async <T>(config: AxiosRequestConfig): Promise<T> => {
-  try {
-    const response = await api.delete(config.url!);
+    const response = await api.delete(`${API_URL}${url}`, config);
     return response.data;
   } catch (error) {
     throw error;

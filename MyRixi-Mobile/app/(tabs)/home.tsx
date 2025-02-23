@@ -1,8 +1,10 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { View, Text, StyleSheet, Touchable, TouchableOpacity } from "react-native";
 
 export default function Home() {
   const router = useRouter();
+  const { logout } = useAuth();
 
   return (
     <View style={styles.container}>
@@ -11,6 +13,12 @@ export default function Home() {
       <TouchableOpacity onPress={() => router.push({ pathname: `/community/create`})}>
         <View>
           <Text>Create Community</Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => { logout(); router.replace({ pathname: '/login' }) }}>
+        <View>
+          <Text>Logout</Text>
         </View>
       </TouchableOpacity>
     </View>

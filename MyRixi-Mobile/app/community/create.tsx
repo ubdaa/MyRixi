@@ -4,6 +4,9 @@ import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { apiPostRequest } from '@/services/api';
+import { AxiosError } from 'axios';
+import * as FileSystem from 'expo-file-system';
 
 interface CommunityRule {
   title: string;
@@ -32,39 +35,9 @@ export default function CreateCommunityScreen() {
     setRules(rules.filter((_, i) => i !== index));
   };
 
-  const handleCreate = async () => {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('description', description);
-    formData.append('isPrivate', isPrivate.toString());
-    
-    if (avatarUrl) {
-      const avatarBlob = await (await fetch(avatarUrl)).blob();
-      formData.append('icon', avatarBlob, 'icon.jpg');
-    }
-    
-    if (bannerUrl) {
-      const bannerBlob = await (await fetch(bannerUrl)).blob();
-      formData.append('cover', bannerBlob, 'cover.jpg');
-    }
-
-    rules.forEach((rule, index) => {
-      formData.append(`rules[${index}].title`, rule.title);
-      formData.append(`rules[${index}].description`, rule.description);
-    });
-
-    // TODO: Implement API call
-    try {
-      // const response = await api.post('/communities', formData);
-      router.back();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const pickImage = async (type: 'avatar' | 'banner') => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       allowsEditing: true,
       aspect: type === 'avatar' ? [1, 1] : [16, 9],
       quality: 0.8,
@@ -76,6 +49,52 @@ export default function CreateCommunityScreen() {
         setAvatarUrl(result.assets[0].uri);
       } else {
         setBannerUrl(result.assets[0].uri);
+      }
+    }
+  };
+
+  const handleCreate = async () => {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('isPrivate', isPrivate.toString());
+    
+    if (avatarUrl) {
+      // Get file info
+      const fileInfo = await FileSystem.getInfoAsync(avatarUrl);
+      formData.append('icon', {
+        uri: avatarUrl,
+        name: 'icon.jpg',
+        type: 'image/jpeg',
+      } as any);
+    }
+    
+    if (bannerUrl) {
+      // Get file info
+      const fileInfo = await FileSystem.getInfoAsync(bannerUrl);
+      formData.append('cover', {
+        uri: bannerUrl,
+        name: 'cover.jpg',
+        type: 'image/jpeg',
+      } as any);
+    }
+  
+    rules.forEach((rule, index) => {
+      formData.append(`rules[${index}].title`, rule.title);
+      formData.append(`rules[${index}].description`, rule.description);
+    });
+  
+    try {
+      const response = await apiPostRequest('/community/create', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log(response);
+      router.back();
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error(error.response?.data);
       }
     }
   };
