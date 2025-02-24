@@ -89,6 +89,46 @@ public class CommunityController : Controller
         }
     }
     
+    [Authorize]
+    [HttpPost("{id}/leave")]
+    public async Task<IActionResult> LeaveCommunity(Guid id)
+    {
+        try
+        {
+            var community = await _communityRepository.GetByIdAsync(id);
+            if (community == null) return NotFound();
+            
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+            user = await _userRepository.GetByIdAsync(user.Id);
+            if (user == null) return NotFound();
+
+            await _communityRepository.RemoveMemberAsync(community.Id, user.Id);
+
+            return Ok();
+        } 
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex, "Error occurred while leaving community {Id}", id);
+            return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+    
+    [HttpGet("{id}/members/{userId}")]
+    public async Task<IActionResult> GetMembers(Guid id, Guid userId)
+    {
+        try
+        {
+            var members = await _communityRepository.GetMembersAsync(userId);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching members of community {Id}", id);
+            return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+    
     [HttpPost("search")]
     public async Task<IActionResult> SearchCommunity([FromBody] SearchCommunityDto model)
     {
