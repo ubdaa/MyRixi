@@ -13,4 +13,5 @@ public class Post
     public CommunityProfile CommunityProfile { get; set; } = null!;
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
+    public ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }
