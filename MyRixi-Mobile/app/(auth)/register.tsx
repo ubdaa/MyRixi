@@ -16,7 +16,7 @@ export default function Register() {
     try {
       const response = await register(email, password, username);
       await AsyncStorage.setItem('token', response.token);
-      router.replace('/');
+      router.replace('/home');
     } catch (err) {
       setError('Échec de l\'inscription');
     }

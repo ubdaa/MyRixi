@@ -14,7 +14,7 @@ export default function Login() {
     try {
       const response = await login(email, password);
       await AsyncStorage.setItem('token', response.token);
-      router.replace('/');
+      router.replace('/home');
     } catch (err) {
       setError('Échec de la connexion');
     }

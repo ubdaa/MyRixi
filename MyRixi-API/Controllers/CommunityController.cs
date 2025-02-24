@@ -1,4 +1,5 @@
-﻿using MyRixiApi.Dto.Community;
+﻿using AutoMapper;
+using MyRixiApi.Dto.Community;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +12,8 @@ namespace MyRixiApi.Controllers;
 [Route("v1/[controller]")]
 public class CommunityController : Controller
 {
+    private readonly IMapper _mapper;
+    
     private readonly ICommunityRepository _communityRepository;
     private readonly IUserRepository _userRepository;
     
@@ -19,12 +22,14 @@ public class CommunityController : Controller
     private readonly UserManager<User> _userManager;
 
     public CommunityController(
+        IMapper mapper,
         ICommunityRepository communityRepository,
         IUserRepository userRepository,
         IMediaService mediaService,
         ILogger<CommunityController> logger,
         UserManager<User> userManager)
     {
+        _mapper = mapper;
         _communityRepository = communityRepository;
         _userRepository = userRepository;
         _mediaService = mediaService;
@@ -48,11 +53,27 @@ public class CommunityController : Controller
             {
                 return NotFound();
             }
-            return Ok(community);
+            return Ok(_mapper.Map<CommunityResponseDto>(community));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while fetching community {Id}", id);
+            return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+    
+    [HttpPost("search")]
+    public async Task<IActionResult> SearchCommunity([FromBody] SearchCommunityDto model)
+    {
+        try
+        {
+            var communities = await _communityRepository.SearchAsync(model.SearchTerm);
+            var response = communities.Select(c => _mapper.Map<CommunityResponseDto>(c)).ToList();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while searching for communities");
             return StatusCode(500, "An error occurred while processing your request");
         }
     }
@@ -115,21 +136,7 @@ public class CommunityController : Controller
             
             await _communityRepository.CreateAsync(community);
             
-            return Ok(new CommunityResponseDto
-            {
-                Id = community.Id,
-                Name = community.Name,
-                Description = community.Description,
-                IconUrl = community.Icon?.Url ?? "",
-                CoverUrl = community.Cover?.Url ?? "",
-                Rules = community.Rules.Select(r => new CommunityRuleDto
-                {
-                    Id = r.Id,
-                    Title = r.Title,
-                    Description = r.Description,
-                    Order = r.Order
-                }).ToList()
-            });
+            return Ok(_mapper.Map<CommunityResponseDto>(community));
         }
         catch (Exception ex)
         {

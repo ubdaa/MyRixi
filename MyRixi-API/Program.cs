@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyRixiApi.Data;
 using MyRixiApi.Interfaces;
+using MyRixiApi.Mapping;
 using MyRixiApi.Models;
 using MyRixiApi.Repositories;
 using MyRixiApi.Services;
@@ -53,6 +54,9 @@ builder.Services.AddScoped<ICommunityRepository, CommunityRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IStorageService, MinioStorageService>();
+
+// ajout des mapper
+builder.Services.AddAutoMapper(typeof(CommunityMappingProfile));
 
 var app = builder.Build();
 

@@ -24,6 +24,7 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
         return await _context.Communities
             .Include(c => c.Icon)
             .Include(c => c.Cover)
+            .Include(c => c.Rules)
             .Include(c => c.Members)
                 .ThenInclude(m => m.User)
             .Include(c => c.Posts)
@@ -36,6 +37,7 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .Where(c => c.Name.Contains(searchTerm) || c.Description.Contains(searchTerm))
             .Include(c => c.Icon)
             .Include(c => c.Cover)
+            .Include(c => c.Rules)
             .ToListAsync();
     }
 
