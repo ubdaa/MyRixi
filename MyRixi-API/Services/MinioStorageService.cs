@@ -92,7 +92,7 @@ public class MinioStorageService : IStorageService
         // Retourne l'URL du fichier
         return $"{_bucketName}/{bucketFileName}";
     }
-
+    
     public async Task DeleteFileAsync(string fileUrl)
     {
         var fileName = fileUrl.Split('/').Last();
