@@ -49,15 +49,42 @@ public class CommunityController : Controller
         try
         {
             var community = await _communityRepository.GetByIdAsync(id);
-            if (community == null)
-            {
-                return NotFound();
-            }
+            if (community == null) return NotFound();
             return Ok(_mapper.Map<CommunityResponseDto>(community));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while fetching community {Id}", id);
+            return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+
+    [Authorize]
+    [HttpPost("{id}/join")]
+    public async Task<IActionResult> JoinCommunity(Guid id)
+    {
+        try
+        {
+            var community = await _communityRepository.GetByIdAsync(id);
+            if (community == null) return NotFound();
+            
+            // on récupère l'utilisateur connecté, on lui crée un profile de communauté et on l'ajoute à la liste des membres
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+            user = await _userRepository.GetByIdAsync(user.Id);
+            if (user == null) return NotFound();
+
+            var profile = _mapper.Map<CommunityProfile>(user);
+            profile.CommunityId = community.Id;
+            profile.Role = "Member";
+
+            await _communityRepository.AddMemberAsync(profile);
+
+            return Ok();
+        } 
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex, "Error occurred while joining community {Id}", id);
             return StatusCode(500, "An error occurred while processing your request");
         }
     }
@@ -122,15 +149,9 @@ public class CommunityController : Controller
                 }).ToList() ?? new List<CommunityRule>()
             };
             
-            var profile = new CommunityProfile
-            {
-                UserId = user.Id,
-                CommunityId = community.Id,
-                Pseudonym = user.UserProfile.DisplayName,
-                Role = "Owner",
-                ProfilePictureId = user.UserProfile.ProfilePictureId,
-                CoverPictureId = user.UserProfile.CoverPictureId,
-            };
+            var profile = _mapper.Map<CommunityProfile>(user);
+            profile.CommunityId = community.Id;
+            profile.Role = "Owner";
             
             community.Members.Add(profile);
             

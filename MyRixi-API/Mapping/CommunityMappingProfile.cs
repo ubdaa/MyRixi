@@ -8,6 +8,12 @@ public class CommunityMappingProfile : Profile
 {
     public CommunityMappingProfile()
     {
+        CreateMap<User, CommunityProfile>()
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Pseudonym, opt => opt.MapFrom(src => src.UserProfile.DisplayName))
+            .ForMember(dest => dest.ProfilePictureId, opt => opt.MapFrom(src => src.UserProfile.ProfilePictureId))
+            .ForMember(dest => dest.CoverPictureId, opt => opt.MapFrom(src => src.UserProfile.CoverPictureId));
+        
         CreateMap<CommunityRule, CommunityRuleDto>();
         
         CreateMap<Community, CommunityResponseDto>()
