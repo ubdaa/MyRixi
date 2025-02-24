@@ -86,12 +86,7 @@ public class MinioStorageService : IStorageService
                 .WithObjectSize(stream.Length)
                 .WithContentType(contentType);
 
-            var response = await _minioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-            
-            if (response != null)
-            {
-                Console.WriteLine("Successfully uploaded object.");
-            }
+            await _minioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
         }
         
         // Retourne l'URL du fichier
