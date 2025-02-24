@@ -1,11 +1,25 @@
 ﻿namespace MyRixiApi.Models;
 
+public enum JoinStatus
+{
+    Pending,
+    Accepted,
+    Rejected,
+    Left
+}
+
 public class CommunityProfile
 {
     public Guid Id { get; set; }
     public string Pseudonym { get; set; } = string.Empty;
     public string Role { get; set; } = "Membre"; // Membre, Modérateur, Admin
     public string Preferences { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    
+    public bool IsSuspended { get; set; } = false;
+    public bool IsBanned { get; set; } = false;
+    
+    public JoinStatus JoinStatus { get; set; } = JoinStatus.Pending;
     
     // images for profile and cover
     public Guid ProfilePictureId { get; set; }

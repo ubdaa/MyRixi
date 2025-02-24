@@ -6,6 +6,7 @@ public class Community
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsPrivate { get; set; } = false;
+    public bool IsInviteOnly { get; set; } = false;
     
     public Guid IconId { get; set; }
     public Media Icon { get; set; } = null!;
