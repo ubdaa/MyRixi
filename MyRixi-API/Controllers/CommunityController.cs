@@ -57,6 +57,21 @@ public class CommunityController : Controller
         }
     }
     
+    [HttpPost("test-upload")]
+    public async Task<IActionResult> TestUpload(IFormFile file)
+    {
+        try
+        {
+            var media = await _mediaService.UploadMediaAsync(file);
+            return Ok(media);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while uploading media");
+            return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+    
     [Authorize]
     [HttpPost("create")]
     public async Task<IActionResult> CreateCommunity([FromForm] CreateCommunityDto model)
