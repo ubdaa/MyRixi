@@ -77,6 +77,18 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
         }
     }
 
+    public async Task UpdateMemberStatusAsync(Guid communityId, Guid userId, JoinStatus status)
+    {
+        var profile = await _context.CommunityProfiles
+            .FirstOrDefaultAsync(cp => cp.CommunityId == communityId && cp.UserId == userId);
+
+        if (profile != null)
+        {
+            profile.JoinStatus = status;
+            await _context.SaveChangesAsync();
+        }
+    }
+
     public async Task RemoveMemberAsync(Guid communityId, Guid userId)
     {
         var profile = await _context.CommunityProfiles

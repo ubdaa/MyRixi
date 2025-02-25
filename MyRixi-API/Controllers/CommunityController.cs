@@ -77,6 +77,7 @@ public class CommunityController : Controller
             var profile = _mapper.Map<CommunityProfile>(user);
             profile.CommunityId = community.Id;
             profile.Role = "Member";
+            profile.JoinStatus = community.IsInviteOnly ? JoinStatus.Pending : JoinStatus.Accepted;
 
             await _communityRepository.AddMemberAsync(profile);
 
@@ -103,8 +104,11 @@ public class CommunityController : Controller
             user = await _userRepository.GetByIdAsync(user.Id);
             if (user == null) return NotFound();
 
-            await _communityRepository.RemoveMemberAsync(community.Id, user.Id);
-
+            var profile = await _communityRepository.GetMemberProfileAsync(community.Id, user.Id);
+            if (profile == null) return NotFound();
+            profile.JoinStatus = JoinStatus.Left;
+            
+            await _communityRepository.UpdateMemberStatusAsync(community.Id, user.Id, JoinStatus.Left);
             return Ok();
         } 
         catch (Exception ex) 
