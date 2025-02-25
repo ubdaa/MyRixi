@@ -146,7 +146,7 @@ public class CommunityController : Controller
     }
     
     [Authorize]
-    [HttpPost("create")]
+    [HttpPost("create")]    
     public async Task<IActionResult> CreateCommunity([FromForm] CreateCommunityDto model)
     {
         try
