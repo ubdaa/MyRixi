@@ -30,7 +30,7 @@ export default function CommunityScreen() {
   
   return (
     <ScrollView style={styles.container}>
-      <CommunityCover coverUrl={community.coverUrl} />
+      <CommunityCover coverUrl={community.coverUrl} height={200} />
       <View style={styles.header}>
         <CommunityAvatar iconUrl={community.iconUrl} style={styles.avatar} />
         <Text style={styles.name}>{community.name}</Text>
