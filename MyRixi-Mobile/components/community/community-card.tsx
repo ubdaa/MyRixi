@@ -1,5 +1,3 @@
-// /components/community/CommunityCard.tsx
-
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import { Link } from 'expo-router';
@@ -14,7 +12,7 @@ type CommunityCardProps = {
 
 export function CommunityCard ({ community }: CommunityCardProps) {
   return (
-    <Link href={`/`} asChild>
+    <Link push href={`/community/${community.id}`} asChild>
       <TouchableOpacity style={styles.card}>
         <CommunityCover coverUrl={community.coverUrl} />
         

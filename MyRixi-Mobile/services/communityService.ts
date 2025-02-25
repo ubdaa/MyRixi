@@ -1,4 +1,3 @@
-// /services/communityService.ts
 import { Community } from '@/types/community';
 import { apiGetRequest, apiPostRequest, apiDeleteRequest } from './api';
 
@@ -10,6 +9,15 @@ export const fetchUserCommunities = async (): Promise<Community[]> => {
     throw error;
   }
 };
+
+export const fetchCommunityById = async (communityId: string): Promise<Community> => {
+  try {
+    return await apiGetRequest<Community>(`/community/${communityId}`, {});
+  } catch (error) {
+    console.error('Failed to fetch community:', error);
+    throw error;
+  }
+}
 
 export const createCommunity = async (communityData: FormData): Promise<Community> => {
   try {
