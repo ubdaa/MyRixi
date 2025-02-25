@@ -10,7 +10,6 @@ export default function RootLayout() {
             headerShown: false,
             animation: 'flip',
           }}>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
           <Stack.Screen name="community/create" options={{ presentation: 'modal', headerTitle: 'Création communauté' }} />
           <Stack.Screen name="community/[id]" options={{ headerShown: false }} />

@@ -1,14 +1,9 @@
 import { Tabs } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { useCommunity } from "@/contexts/CommunityContext";
-import { Ionicons } from "@expo/vector-icons";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function CommunityLayout() {
-  const { id } = useLocalSearchParams();
-  const { communities } = useCommunity();
-
-  const community = communities.find((c) => c.id === id);
-
   return (
     <Tabs
       screenOptions={{
@@ -24,10 +19,10 @@ export default function CommunityLayout() {
       <Tabs.Screen
         name="members"
         options={{
-          title: "Feed",
+          title: "Members",
           headerShown: false,
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <AntDesign name="addusergroup" size={size} color={color} />
           ),
         }}
       />
@@ -37,7 +32,7 @@ export default function CommunityLayout() {
           title: "Publications",
           headerShown: false,
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="pencil" size={size} color={color} />
+            <AntDesign name="edit" size={size} color={color} />
           ),
         }}
       />
@@ -47,7 +42,7 @@ export default function CommunityLayout() {
           title: "Feed",
           headerShown: false,
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <AntDesign name="staro" size={size} color={color} />
           ),
         }}
       />
@@ -57,7 +52,7 @@ export default function CommunityLayout() {
           title: "Chats",
           headerShown: false,
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="chatbubbles" size={size} color={color} />
+            <AntDesign name="message1" size={size} color={color} />
           ),
         }}
       />
@@ -67,7 +62,7 @@ export default function CommunityLayout() {
           title: "Profile",
           headerShown: false,
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <AntDesign name="smileo" size={size} color={color} />
           ),
         }}
       />
