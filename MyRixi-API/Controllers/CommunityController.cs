@@ -36,33 +36,6 @@ public class CommunityController : Controller
         _logger = logger;
         _userManager = userManager;
     }
-
-    // méthode pour récupérer les communités rejoint de l'utilisateur connecté
-    [Authorize]
-    [HttpGet("joined")]
-    public async Task<IActionResult> GetJoinedCommunities()
-    {
-        try
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
-            user = await _userRepository.GetByIdAsync(user.Id);
-            if (user == null) return NotFound();
-        
-            var communities = await _communityRepository.GetJoinedCommunitiesAsync(user.Id);
-            // Pour chaque communauté, on passe le CurrentUserId dans le mapping
-            var communityDtos = communities.Select(c => 
-                    _mapper.Map<JoinedCommunityResponseDto>(c, opts => opts.Items["CurrentUserId"] = user.Id))
-                .ToList();
-        
-            return Ok(communityDtos);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while fetching joined communities");
-            return StatusCode(500, "An error occurred while processing your request");
-        }
-    }
     
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCommunity(Guid id)
