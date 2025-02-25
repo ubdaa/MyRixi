@@ -176,6 +176,8 @@ public class CommunityController : Controller
             {
                 Name = model.Name,
                 Description = model.Description,
+                IsPrivate = model.IsPrivate,
+                IsInviteOnly = model.IsInviteOnly,
                 IconId = icon.Id,
                 Icon = icon,
                 CoverId = cover.Id,
@@ -191,6 +193,7 @@ public class CommunityController : Controller
             
             var profile = _mapper.Map<CommunityProfile>(user);
             profile.CommunityId = community.Id;
+            profile.JoinStatus = JoinStatus.Accepted;
             profile.Role = "Owner";
             
             community.Members.Add(profile);

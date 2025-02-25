@@ -9,7 +9,11 @@ public class CreateCommunityDto
     
     [Required]
     public string Description { get; set; } = string.Empty;
+    
+    [Required]
     public bool IsPrivate { get; set; }
+    [Required]
+    public bool IsInviteOnly { get; set; }
     
     [Required]
     public IFormFile Icon { get; set; } = null!;
