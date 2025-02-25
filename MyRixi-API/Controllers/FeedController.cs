@@ -8,6 +8,8 @@ using MyRixiApi.Models;
 
 namespace MyRixiApi.Controllers;
 
+[ApiController]
+[Route("v1/[controller]")]
 public class FeedController : Controller
 {
     private readonly IMapper _mapper;

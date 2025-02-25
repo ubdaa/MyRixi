@@ -22,7 +22,15 @@ export default function Home() {
         </View>
       </TouchableOpacity>
       
-      <TouchableOpacity onPress={() => { logout(); router.replace({ pathname: '/login' }) }}>
+      <TouchableOpacity onPress={async () => { 
+        try {
+          const response = await fetch('https://api.myrixi.com/communities');
+          const data = await response.json();
+          console
+        } catch (error) {
+          console.log(error);
+        }
+       }}>
         <View>
           <Text>Fetch communities</Text>
         </View>

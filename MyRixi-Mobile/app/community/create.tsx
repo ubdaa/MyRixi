@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Switch } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { apiPostRequest } from '@/services/api';
 import { AxiosError } from 'axios';
-import * as FileSystem from 'expo-file-system';
 
 interface CommunityRule {
   title: string;
@@ -21,6 +20,8 @@ export default function CreateCommunityScreen() {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [bannerUrl, setBannerUrl] = useState('');
   const [rules, setRules] = useState<CommunityRule[]>([]);
+
+  const router = useRouter();
 
   const addRule = () => {
     setRules([...rules, { title: '', description: '' }]);
@@ -62,8 +63,6 @@ export default function CreateCommunityScreen() {
     formData.append('isInviteOnly', isInviteOnly.toString());
     
     if (avatarUrl) {
-      // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(avatarUrl);
       formData.append('icon', {
         uri: avatarUrl,
         name: 'icon.jpg',
@@ -90,7 +89,7 @@ export default function CreateCommunityScreen() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      router.back();
+      router.replace("/communities");
     } catch (error) {
       if (error instanceof AxiosError) {
         console.error(error.response?.data);

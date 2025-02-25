@@ -11,7 +11,7 @@ export default function CommunitiesScreen() {
 
   useEffect(() => {
     fetchCommunities();
-  });
+  }, [fetchCommunities]);
 
   return (
     <SafeAreaView style={styles.container}>
