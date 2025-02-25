@@ -19,6 +19,8 @@ public class CommunityProfile
     public bool IsSuspended { get; set; } = false;
     public bool IsBanned { get; set; } = false;
     
+    public bool IsOwner { get; set; } = false;
+    
     public JoinStatus JoinStatus { get; set; } = JoinStatus.Pending;
     
     // images for profile and cover

@@ -34,12 +34,6 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             .WithOne(u => u.UserProfile)
             .HasForeignKey<UserProfile>(up => up.UserId);
         
-        modelBuilder.Entity<Community>()
-            .HasOne(c => c.Owner)
-            .WithMany()
-            .HasForeignKey(c => c.OwnerId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         modelBuilder.Entity<CommunityProfile>()
             .HasOne(cp => cp.User)
             .WithMany(u => u.CommunityProfiles)

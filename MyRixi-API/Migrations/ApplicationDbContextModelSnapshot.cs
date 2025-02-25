@@ -257,16 +257,11 @@ namespace MyRixiApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CoverId");
 
                     b.HasIndex("IconId");
-
-                    b.HasIndex("OwnerId");
 
                     b.ToTable("Communities");
                 });
@@ -288,6 +283,9 @@ namespace MyRixiApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("IsBanned")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsOwner")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsSuspended")
@@ -758,17 +756,9 @@ namespace MyRixiApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyRixiApi.Models.CommunityProfile", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Cover");
 
                     b.Navigation("Icon");
-
-                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.CommunityProfile", b =>

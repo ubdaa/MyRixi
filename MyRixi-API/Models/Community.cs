@@ -14,9 +14,6 @@ public class Community
     public Guid CoverId { get; set; }
     public Media Cover { get; set; } = null!;
     
-    public Guid OwnerId { get; set; }
-    public CommunityProfile Owner { get; set; } = null!;
-    
     public ICollection<CommunityRule> Rules { get; set; } = new List<CommunityRule>();
     public ICollection<CommunityProfile> Members { get; set; } = new List<CommunityProfile>();
     public ICollection<Post> Posts { get; set; } = new List<Post>();

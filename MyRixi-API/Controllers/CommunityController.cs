@@ -197,6 +197,7 @@ public class CommunityController : Controller
             
             var community = new Community
             {
+                Id = Guid.NewGuid(),
                 Name = model.Name,
                 Description = model.Description,
                 IsPrivate = model.IsPrivate,
@@ -213,16 +214,20 @@ public class CommunityController : Controller
                     Order = i
                 }).ToList() ?? new List<CommunityRule>()
             };
-            
+        
+            // Créer le profil de propriétaire avec un GUID généré
             var profile = _mapper.Map<CommunityProfile>(user);
+            profile.Id = Guid.NewGuid();
             profile.CommunityId = community.Id;
             profile.JoinStatus = JoinStatus.Accepted;
             profile.Role = "Owner";
-            
+            profile.IsOwner = true;
+        
+            // Lier le propriétaire à la communauté
             community.Members.Add(profile);
             
             await _communityRepository.CreateAsync(community);
-            
+        
             return Ok(_mapper.Map<CommunityResponseDto>(community));
         }
         catch (Exception ex)

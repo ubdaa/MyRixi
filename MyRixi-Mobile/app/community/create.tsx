@@ -17,6 +17,7 @@ export default function CreateCommunityScreen() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const [isInviteOnly, setIsInviteOnly] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [bannerUrl, setBannerUrl] = useState('');
   const [rules, setRules] = useState<CommunityRule[]>([]);
@@ -58,6 +59,7 @@ export default function CreateCommunityScreen() {
     formData.append('name', name);
     formData.append('description', description);
     formData.append('isPrivate', isPrivate.toString());
+    formData.append('isInviteOnly', isInviteOnly.toString());
     
     if (avatarUrl) {
       // Get file info
@@ -70,8 +72,6 @@ export default function CreateCommunityScreen() {
     }
     
     if (bannerUrl) {
-      // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(bannerUrl);
       formData.append('cover', {
         uri: bannerUrl,
         name: 'cover.jpg',
@@ -85,7 +85,7 @@ export default function CreateCommunityScreen() {
     });
   
     try {
-      const response = await apiPostRequest('/community/create', formData, {
+      await apiPostRequest('/community/create', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -163,6 +163,16 @@ export default function CreateCommunityScreen() {
             <Switch
               value={isPrivate}
               onValueChange={setIsPrivate}
+              trackColor={{ false: '#767577', true: '#4c669f' }}
+              thumbColor={isPrivate ? '#fff' : '#f4f3f4'}
+            />
+          </View>
+
+          <View style={styles.switchContainer}>
+            <Text style={styles.label}>Invite only</Text>
+            <Switch
+              value={isInviteOnly}
+              onValueChange={setIsInviteOnly}
               trackColor={{ false: '#767577', true: '#4c669f' }}
               thumbColor={isPrivate ? '#fff' : '#f4f3f4'}
             />
@@ -329,6 +339,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   rulesSection: {
+    marginTop: 8,
     marginBottom: 24,
   },
   ruleContainer: {
