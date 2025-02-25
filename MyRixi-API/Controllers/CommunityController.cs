@@ -48,12 +48,14 @@ public class CommunityController : Controller
             if (user == null) return Unauthorized();
             user = await _userRepository.GetByIdAsync(user.Id);
             if (user == null) return NotFound();
-            
+        
             var communities = await _communityRepository.GetJoinedCommunitiesAsync(user.Id);
-            var communityDtos = communities.Select(c => _mapper.Map<CommunityResponseDto>(c)).ToList();
-            
-            
-            return Ok(communities);
+            // Pour chaque communauté, on passe le CurrentUserId dans le mapping
+            var communityDtos = communities.Select(c => 
+                    _mapper.Map<JoinedCommunityResponseDto>(c, opts => opts.Items["CurrentUserId"] = user.Id))
+                .ToList();
+        
+            return Ok(communityDtos);
         }
         catch (Exception ex)
         {

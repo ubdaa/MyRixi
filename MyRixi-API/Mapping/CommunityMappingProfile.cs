@@ -39,7 +39,7 @@ public class CommunityMappingProfile : Profile
             .ForMember(dest => dest.IsPrivate, opt => opt.MapFrom(src => src.IsPrivate))
             .ForMember(dest => dest.Rules, opt => opt.MapFrom(src => src.Rules))
             // Mapping personnalisé pour la propriété "Member"
-            .ForMember(dest => dest.Member, opt => opt.MapFrom((src, dest, destMember, context) =>
+            .ForMember(dest => dest.Profile, opt => opt.MapFrom((src, dest, destMember, context) =>
             {
                 // On attend que le CurrentUserId soit passé dans le contexte
                 if (context.Items.TryGetValue("CurrentUserId", out object? currentUserIdObj) &&
