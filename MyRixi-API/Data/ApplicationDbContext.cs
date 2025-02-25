@@ -63,6 +63,16 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
         modelBuilder.Entity<Conversation>()
             .HasMany(c => c.Participants)
             .WithMany();
+        
+        modelBuilder.Entity<Tag>()
+            .HasOne(t => t.Community)
+            .WithMany(c => c.Tags)
+            .HasForeignKey(t => t.CommunityId);
+        
+        modelBuilder.Entity<Tag>()
+            .HasOne(t => t.Post)
+            .WithMany(p => p.Tags)
+            .HasForeignKey(t => t.PostId);
     }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
