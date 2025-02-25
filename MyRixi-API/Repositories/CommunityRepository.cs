@@ -50,6 +50,19 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Community>> GetJoinedCommunitiesAsync(Guid userId)
+    {
+        // on inclut aussi le profile de la communauté pour avoir les informations sur le membre
+        return await _context.Communities
+            .Where(c => c.Members.Any(m => m.UserId == userId && m.JoinStatus == JoinStatus.Accepted))
+            .Include(c => c.Icon)
+            .Include(c => c.Cover)
+            .Include(c => c.Rules)
+            .Include(c => c.Members)
+                .ThenInclude(m => m.User)
+            .ToListAsync();
+    }
+
     public async Task<CommunityProfile?> GetMemberProfileAsync(Guid communityId, Guid userId)
     {
         return await _context.CommunityProfiles

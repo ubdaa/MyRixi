@@ -36,11 +36,30 @@ public class CommunityController : Controller
         _logger = logger;
         _userManager = userManager;
     }
-    
-    [HttpGet("test")]
-    public IActionResult Test()
+
+    // méthode pour récupérer les communités rejoint de l'utilisateur connecté
+    [Authorize]
+    [HttpGet("joined")]
+    public async Task<IActionResult> GetJoinedCommunities()
     {
-        return Ok("Hello World");
+        try
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+            user = await _userRepository.GetByIdAsync(user.Id);
+            if (user == null) return NotFound();
+            
+            var communities = await _communityRepository.GetJoinedCommunitiesAsync(user.Id);
+            var communityDtos = communities.Select(c => _mapper.Map<CommunityResponseDto>(c)).ToList();
+            
+            
+            return Ok(communities);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching joined communities");
+            return StatusCode(500, "An error occurred while processing your request");
+        }
     }
     
     [HttpGet("{id}")]
