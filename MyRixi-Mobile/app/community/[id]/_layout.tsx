@@ -14,8 +14,6 @@ interface Route {
 
 // --- Composant TabBar personnalisé ---
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  const insets = useSafeAreaInsets();
-  
   const handleTabPress = (route: Route, isFocused: boolean): void => {
     const event = navigation.emit({
       type: 'tabPress',
@@ -53,7 +51,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const getTabLabel = (routeName: string): string => {
     switch (routeName) {
       case 'members': return 'Membres';
-      case 'posts': return 'Publications';
+      case 'posts': return 'Posts';
       case 'index': return 'Feed';
       case 'chats': return 'Chats';
       case 'profile': return 'Profil';
@@ -148,6 +146,8 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(229, 229, 229, 1)',
     borderRadius: 100,
     overflow: 'hidden',
     paddingVertical: 10,
