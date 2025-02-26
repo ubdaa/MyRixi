@@ -70,4 +70,29 @@ public class MessageRepository : GenericRepository<Message>, IMessageRepository
             .OrderByDescending(m => m.SentAt)
             .ToListAsync();
     }
+
+    public Task<Message> SendMessageAsync(Message message)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Message?> GetMessageAsync(Guid messageId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task DeleteMessageAsync(Guid messageId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<MessageReaction> AddReactionAsync(Guid messageId, Guid userId, string emoji)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task RemoveReactionAsync(Guid messageId, Guid userId, string emoji)
+    {
+        throw new NotImplementedException();
+    }
 }

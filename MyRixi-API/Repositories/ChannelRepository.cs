@@ -55,7 +55,14 @@ public class ChannelRepository : GenericRepository<Channel>, IChannelRepository
             .FirstOrDefaultAsync(c => c.Id == channelId);
     }
 
-    public async Task<Channel?> GetOrCreatePrivateChannelAsync(Guid user1Id, Guid user2Id)
+    public async Task<Channel> CreateCommunityChannelAsync(Channel channel)
+    {
+        await _context.Channels.AddAsync(channel);
+        await _context.SaveChangesAsync();
+        return channel;
+    }
+
+    public async Task<Channel?> CreateOrGetPrivateChannelAsync(Guid user1Id, Guid user2Id)
     {
         // Chercher un canal privé existant entre ces deux utilisateurs
         var existingChannel = await _context.Channels
@@ -92,6 +99,25 @@ public class ChannelRepository : GenericRepository<Channel>, IChannelRepository
         return newChannel;
     }
 
+    public async Task UpdateChannelAsync(Channel channel)
+    {
+        await UpdateAsync(channel);
+    }
+
+    public async Task DeleteChannelAsync(Guid channelId)
+    {
+        await DeleteAsync(channelId);
+    }
+
+    public Task<bool> UserCanAccessChannelAsync(Guid channelId, Guid userId)
+    {
+        var channel = _context.Channels
+            .Include(c => c.Participants)
+            .FirstOrDefault(c => c.Id == channelId);
+        
+        return Task.FromResult(channel != null && channel.Participants.Any(p => p.Id == userId));
+    }
+
     public async Task AddUserToChannelAsync(Guid channelId, Guid userId)
     {
         var channel = await _context.Channels
@@ -122,5 +148,17 @@ public class ChannelRepository : GenericRepository<Channel>, IChannelRepository
                 await _context.SaveChangesAsync();
             }
         }
+    }
+
+    public async Task<Channel?> GetChannelDetailAsync(Guid channelId, int messagePageSize, int pageNumber)
+    {
+        return await _context.Channels
+            .Include(c => c.Messages
+                .OrderByDescending(m => m.SentAt)
+                .Skip((pageNumber - 1) * messagePageSize)
+                .Take(messagePageSize))
+            .ThenInclude(m => m.Sender)
+            .Include(c => c.Participants)
+            .FirstOrDefaultAsync(c => c.Id == channelId);
     }
 }
