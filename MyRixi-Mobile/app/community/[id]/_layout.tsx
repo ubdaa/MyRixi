@@ -1,32 +1,15 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useCommunity } from "@/contexts/CommunityContext";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
 interface Route {
   key: string;
   name: string;
-}
-
-interface TabBarLabelProps {
-  focused: boolean;
-  color: string;
-  position: 'below-icon' | 'beside-icon';
-  children: string;
-}
-
-interface DescriptorItem {
-  options: {
-    tabBarLabel?: string | ((props: TabBarLabelProps) => React.ReactNode);
-    title?: string;
-  };
 }
 
 // --- Composant TabBar personnalisé ---
@@ -83,7 +66,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
       <BlurView 
         intensity={80} 
         tint="light" 
-        style={[styles.tabBarContainer, { paddingBottom: insets.bottom > 0 ? insets.bottom : 8 }]}
+        style={styles.tabBarContainer}
       >
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
@@ -152,50 +135,19 @@ export default function CommunityLayout() {
 };
 
 const styles = StyleSheet.create({
-  // Styles pour le header commun
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    height: 60,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(230, 230, 230, 0.5)',
-  },
-  optionsButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(230, 230, 230, 0.5)',
-  },
-  
   // Conteneur pour les ombres avec coins arrondis
   tabBarShadowContainer: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 36,
     left: 20,
     right: 20,
     borderRadius: 100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
     elevation: 10,
     backgroundColor: 'transparent',
   },
   tabBarContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderRadius: 100,
     overflow: 'hidden',
     paddingVertical: 10,
@@ -220,7 +172,7 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     position: 'absolute',
-    top: -10,
+    top: -8,
     width: 4,
     height: 4,
     borderRadius: 2,
