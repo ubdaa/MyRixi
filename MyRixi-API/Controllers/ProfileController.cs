@@ -30,7 +30,7 @@ public class ProfileController : Controller
     }
     
     [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetGlobalProfile(Guid userId)
+    public async Task<IActionResult> GetUserProfile(Guid userId)
     {
         return Ok();
     }

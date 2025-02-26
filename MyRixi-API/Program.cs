@@ -82,6 +82,9 @@ builder.Services.AddScoped<ICommunityRepository, CommunityRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChannelRepository, ChannelRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+builder.Services.AddScoped<ICommunityProfileRepository, CommunityProfileRepository>();
+
 
 // services
 builder.Services.AddScoped<IMediaService, MediaService>();
