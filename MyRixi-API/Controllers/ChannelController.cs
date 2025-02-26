@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MyRixiApi.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
 [Authorize]
+[ApiController]
+[Route("v1/[controller]")]
 public class ChannelController : ControllerBase
 {
     private readonly IMapper _mapper;

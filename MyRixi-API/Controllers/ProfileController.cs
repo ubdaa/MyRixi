@@ -9,7 +9,7 @@ using Exception = System.Exception;
 namespace MyRixiApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("v1/[controller]")]
 public class ProfileController : Controller
 {
     private readonly IMapper _mapper;
@@ -50,6 +50,25 @@ public class ProfileController : Controller
         }
     }
     
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetUserProfile(Guid userId)
+    {
+        try
+        {
+            var profile = await _userProfileRepository.GetByUserIdAsync(userId);
+            if (profile == null)
+            {
+                return NotFound();
+            }
+            return Ok(_mapper.Map<UserProfileDto>(profile));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while getting user profile");
+            return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+    
     [Authorize]
     [HttpGet("community/{communityId}")]
     public async Task<IActionResult> GetCommunityProfile(Guid communityId)
@@ -67,25 +86,6 @@ public class ProfileController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error while getting community profile");
-            return StatusCode(500, "An error occurred while processing your request");
-        }
-    }
-    
-    [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetUserProfile(Guid userId)
-    {
-        try
-        {
-            var profile = await _userProfileRepository.GetByUserIdAsync(userId);
-            if (profile == null)
-            {
-                return NotFound();
-            }
-            return Ok(_mapper.Map<UserProfileDto>(profile));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error while getting user profile");
             return StatusCode(500, "An error occurred while processing your request");
         }
     }

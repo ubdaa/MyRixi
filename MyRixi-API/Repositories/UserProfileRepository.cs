@@ -13,6 +13,10 @@ public class UserProfileRepository : GenericRepository<UserProfile>, IUserProfil
 
     public async Task<UserProfile?> GetByUserIdAsync(Guid userId)
     {
-        return await _context.UserProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        return await _context.UserProfiles
+            .Include(up => up.User)
+            .Include(up => up.ProfilePicture)
+            .Include(up => up.CoverPicture)
+            .FirstOrDefaultAsync(x => x.UserId == userId);
     }
 }

@@ -8,9 +8,9 @@ using MyRixiApi.Models;
 
 namespace MyRixiApi.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
 [Authorize]
+[ApiController]
+[Route("v1/[controller]")]
 public class MessageController : ControllerBase
 {
     private readonly IMapper _mapper;
