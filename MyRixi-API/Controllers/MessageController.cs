@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using MyRixiApi.Dto.Channel;
 using MyRixiApi.Dto.Media;
@@ -13,12 +14,16 @@ namespace MyRixiApi.Controllers;
 [Authorize]
 public class MessageController : ControllerBase
 {
+    private readonly IMapper _mapper;
+    
     private readonly IMessageRepository _messageService;
     private readonly IChannelRepository _channelService;
 
-    public MessageController(IMessageRepository messageService, 
-                           IChannelRepository channelService)
+    public MessageController(IMapper mapper,
+        IMessageRepository messageService, 
+        IChannelRepository channelService)
     {
+        _mapper = mapper;
         _messageService = messageService;
         _channelService = channelService;
     }
@@ -40,7 +45,7 @@ public class MessageController : ControllerBase
         
         var messages = await _messageService.GetChannelMessagesAsync(channelId, pageSize, pageNumber);
         
-        return Ok(messages.Select(m => MapMessageToDto(m)));
+        return Ok(messages.Select(m => _mapper.Map<MessageDto>(m)));
     }
 
     [HttpPost]
@@ -75,7 +80,7 @@ public class MessageController : ControllerBase
         
         var sentMessage = await _messageService.SendMessageAsync(newMessage);
         
-        return CreatedAtAction(nameof(GetMessage), new { messageId = sentMessage.Id }, MapMessageToDto(sentMessage));
+        return CreatedAtAction(nameof(GetMessage), new { messageId = sentMessage.Id }, _mapper.Map<MessageDto>(sentMessage));
     }
 
     [HttpGet("{messageId}")]
@@ -93,7 +98,7 @@ public class MessageController : ControllerBase
             return Forbid();
         }
         
-        return Ok(MapMessageToDto(message));
+        return Ok(_mapper.Map<MessageDto>(message));
     }
 
     [HttpDelete("{messageId}")]
@@ -163,37 +168,6 @@ public class MessageController : ControllerBase
         
         await _messageService.MarkMessagesAsReadAsync(channelId, userId);
         return Ok(new { Success = true });
-    }
-    
-    // Méthodes privées pour mapper les entités vers les DTOs
-    private MessageDto MapMessageToDto(Message message)
-    {
-        return new MessageDto
-        {
-            Id = message.Id,
-            Content = message.Content,
-            SentAt = message.SentAt,
-            IsRead = message.IsRead,
-            Sender = new UserChannelDto
-            {
-                Id = message.Sender.Id,
-                UserName = message.Sender.UserName,
-                Avatar = message.Sender.Avatar
-            },
-            Attachments = message.Attachments.Select(a => new MediaDto
-            {
-                Id = a.Id,
-                Type = a.Type,
-                Url = a.Url
-            }).ToList(),
-            Reactions = message.Reactions.GroupBy(r => r.Emoji)
-                .Select(g => new ReactionDto
-                {
-                    Emoji = g.Key,
-                    Count = g.Count(),
-                    Users = g.SelectMany(mr => mr.Users.Select(u => u.Id)).ToList()
-                }).ToList()
-        };
     }
     
     private Guid GetCurrentUserId()

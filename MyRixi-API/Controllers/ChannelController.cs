@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyRixiApi.Dto.Channel;
@@ -24,12 +25,16 @@ namespace MyRixiApi.Controllers;
 [Authorize]
 public class ChannelController : ControllerBase
 {
+    private readonly IMapper _mapper;
+    
     private readonly IChannelRepository _channelService;
     private readonly IMessageRepository _messageService;
 
-    public ChannelController(IChannelRepository channelService, 
+    public ChannelController(IMapper mapper,
+        IChannelRepository channelService, 
         IMessageRepository messageService)
     {
+        _mapper = mapper;
         _channelService = channelService;
         _messageService = messageService;
     }
@@ -38,7 +43,7 @@ public class ChannelController : ControllerBase
     public async Task<ActionResult<IEnumerable<ChannelDto>>> GetCommunityChannels(Guid communityId)
     {
         var channels = await _channelService.GetCommunityChannelsAsync(communityId);
-        return Ok(channels.Select(c => MapChannelToDto(c)));
+        return Ok(channels.Select(c => _mapper.Map<ChannelDto>(c)));
     }
 
     [HttpGet("private")]
@@ -46,7 +51,7 @@ public class ChannelController : ControllerBase
     {
         var userId = GetCurrentUserId();
         var channels = await _channelService.GetPrivateChannelsForUserAsync(userId);
-        return Ok(channels.Select(c => MapChannelToDto(c)));
+        return Ok(channels.Select(c => _mapper.Map<ChannelDto>(c)));
     }
 
     [HttpGet("{channelId}")]
@@ -68,7 +73,7 @@ public class ChannelController : ControllerBase
         // Marquer les messages comme lus
         await _messageService.MarkMessagesAsReadAsync(channelId, userId);
             
-        return Ok(MapChannelToDetailDto(channel));
+        return Ok(_mapper.Map<ChannelDetailDto>(channel));
     }
 
     [HttpPost("community/{communityId}")]
@@ -86,7 +91,7 @@ public class ChannelController : ControllerBase
         };
         
         var createdChannel = await _channelService.CreateCommunityChannelAsync(newChannel);
-        return CreatedAtAction(nameof(GetChannelDetail), new { channelId = createdChannel.Id }, MapChannelToDto(createdChannel));
+        return CreatedAtAction(nameof(GetChannelDetail), new { channelId = createdChannel.Id }, _mapper.Map<ChannelDto>(createdChannel));
     }
     
     [HttpPost("private/{userId}")]
@@ -101,7 +106,7 @@ public class ChannelController : ControllerBase
         if (channel == null)
             return NotFound("Utilisateur introuvable");
             
-        return Ok(MapChannelToDto(channel));
+        return Ok(_mapper.Map<ChannelDto>(channel));
     }
     
     [HttpPut("{channelId}")]
@@ -130,66 +135,6 @@ public class ChannelController : ControllerBase
         return NoContent();
     }
     
-    // Méthodes privées pour mapper les entités vers les DTOs
-    private ChannelDto MapChannelToDto(Channel channel)
-    {
-        return new ChannelDto
-        {
-            Id = channel.Id,
-            Name = channel.Name,
-            Description = channel.Description,
-            IsPrivate = channel.IsPrivate,
-            Type = channel.Type.ToString(),
-            CommunityId = channel.CommunityId,
-            ParticipantCount = channel.Participants.Count
-        };
-    }
-    
-    private ChannelDetailDto MapChannelToDetailDto(Channel channel)
-    {
-        return new ChannelDetailDto
-        {
-            Id = channel.Id,
-            Name = channel.Name,
-            Description = channel.Description,
-            IsPrivate = channel.IsPrivate,
-            Type = channel.Type.ToString(),
-            CommunityId = channel.CommunityId,
-            Participants = channel.Participants.Select(p => new UserChannelDto 
-            { 
-                Id = p.Id,
-                UserName = p.UserName,
-                Avatar = p.Avatar
-            }).ToList(),
-            Messages = channel.Messages.Select(m => new MessageDto
-            {
-                Id = m.Id,
-                Content = m.Content,
-                SentAt = m.SentAt,
-                IsRead = m.IsRead,
-                Sender = new UserChannelDto
-                {
-                    Id = m.Sender.Id,
-                    UserName = m.Sender.UserName,
-                    Avatar = m.Sender.Avatar
-                },
-                Attachments = m.Attachments.Select(a => new MediaDto
-                {
-                    Id = a.Id,
-                    Type = a.Type,
-                    Url = a.Url
-                }).ToList(),
-                // bien rajouter les réactions des utilisateurs
-                Reactions = m.Reactions.GroupBy(r => r.Emoji)
-                    .Select(g => new ReactionDto
-                    {
-                        Emoji = g.Key,
-                        Count = g.Count(),
-                        Users = g.SelectMany(mr => mr.Users.Select(u => u.Id)).ToList()
-                    }).ToList()
-            }).ToList()
-        };
-    }
     
     private Guid GetCurrentUserId()
     {
