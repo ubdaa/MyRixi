@@ -22,6 +22,24 @@ export default function TabsLayout() {
             <Ionicons name="dice" size={size} color={color} />
           ),
         }}/>
+      <Tabs.Screen
+        name="discovery"
+        options={{
+          title: 'Discovery',
+          headerShown: false,
+          tabBarIcon: ({ size, color }) => (
+            <Ionicons name="balloon" size={size} color={color} />
+          ),
+        }}/>
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          headerShown: false,
+          tabBarIcon: ({ size, color }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}/>
       <Tabs.Screen 
         name="home"
         options={{
