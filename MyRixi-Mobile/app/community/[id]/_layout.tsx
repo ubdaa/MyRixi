@@ -10,48 +10,6 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
-interface CommonHeaderProps {
-  title?: string;
-}
-
-function CommonHeader({ title }: CommonHeaderProps) {
-  const router = useRouter();
-  const { communities } = useCommunity();
-  const insets = useSafeAreaInsets();
-
-  const { id } = useLocalSearchParams();
-  const community = communities.find((c) => c.id === id);
-  
-  const handleBackPress = (): void => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push("/(tabs)/home");
-  };
-  
-  return (
-    <View style={[styles.headerContainer, { paddingTop: insets.top }]}>
-      <TouchableOpacity 
-        style={styles.backButton} 
-        onPress={handleBackPress}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="chevron-back" size={24} color="#4c669f" />
-      </TouchableOpacity>
-      
-      <Text style={styles.headerTitle}>
-        {title || (community?.name || "Communauté")}
-      </Text>
-      
-      <TouchableOpacity 
-        style={styles.optionsButton}
-        onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="ellipsis-horizontal" size={24} color="#4c669f" />
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 interface Route {
   key: string;
   name: string;
@@ -69,10 +27,6 @@ interface DescriptorItem {
     tabBarLabel?: string | ((props: TabBarLabelProps) => React.ReactNode);
     title?: string;
   };
-}
-
-interface Descriptors {
-  [key: string]: DescriptorItem;
 }
 
 // --- Composant TabBar personnalisé ---
@@ -171,7 +125,7 @@ interface TabItem {
 export default function CommunityLayout() {
   const tabs: TabItem[] = [
     { name: "members", title: "Membres" },
-    { name: "posts", title: "Publications" },
+    { name: "posts", title: "Posts" },
     { name: "index", title: "Feed" },
     { name: "chats", title: "Chats" },
     { name: "profile", title: "Profil" }
@@ -190,8 +144,6 @@ export default function CommunityLayout() {
           name={tab.name}
           options={{
             title: tab.title,
-            // Définir un header commun pour toutes les tabs
-            header: () => <CommonHeader title={tab.title} />,
           }}
         />
       ))}
@@ -233,7 +185,7 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     right: 20,
-    borderRadius: 30,
+    borderRadius: 100,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -241,13 +193,13 @@ const styles = StyleSheet.create({
     elevation: 10,
     backgroundColor: 'transparent',
   },
-  // Styles pour la tab bar (BlurView)
   tabBarContainer: {
     flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 30,
+    borderRadius: 100,
     overflow: 'hidden',
     paddingVertical: 10,
+    paddingHorizontal: 20,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -255,7 +207,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 2,
   },
   tabContent: {
     alignItems: 'center',
@@ -268,7 +220,7 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     position: 'absolute',
-    top: -18,
+    top: -10,
     width: 4,
     height: 4,
     borderRadius: 2,
