@@ -50,7 +50,7 @@ export function CommunityCard ({ community }: CommunityCardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 24,
     marginBottom: 16,
     overflow: 'hidden',
     shadowColor: '#000',

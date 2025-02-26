@@ -14,7 +14,7 @@ export default function CommunitiesScreen() {
   }, [fetchCommunities]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>
       <View style={styles.header}>
         <Text style={styles.title}>Communities</Text>
         <Link href="/community/create" asChild>
@@ -36,8 +36,8 @@ export default function CommunitiesScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#f5f5f5',
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
