@@ -12,4 +12,5 @@ export interface Profile {
   bio: string;
   profilePicture: Media;
   coverPicture: Media;
+  user: UserChannel;
 }
