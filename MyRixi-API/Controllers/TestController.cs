@@ -2,11 +2,13 @@
 
 namespace MyRixiApi.Controllers;
 
-public class TestController : Controller
+[Route("v1/[controller]")]
+[ApiController]
+public class TestController : ControllerBase
 {
-    // GET
-    public IActionResult Index()
+    [HttpGet]
+    public IActionResult Get()
     {
-        return View();
+        return Ok(new { message = "API accessible !" });
     }
 }

@@ -43,6 +43,34 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Logging
+builder.Services.AddLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+    logging.AddDebug();
+    logging.SetMinimumLevel(LogLevel.Debug);
+});
+
+// Remplacez votre configuration CORS actuelle par celle-ci
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder
+            .WithOrigins(
+                "http://localhost:5000",
+                "http://10.0.2.2:5000",
+                "http://172.20.10.2:5000",
+                "capacitor://localhost",
+                "http://localhost"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials(); // Important pour les tokens d'authentification
+    });
+});
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
@@ -75,6 +103,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 app.UseAuthentication(); // Ajoutez cette ligne pour gérer l'authentification
 app.UseAuthorization();  // Puis l'autorisation
 app.MapControllers(); // Mapper les contrôleurs

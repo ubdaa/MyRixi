@@ -1,7 +1,11 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-const API_URL = 'http://10.0.2.2:5106/v1';
+// Définissez une URL de base cohérente
+const API_URL = Platform.OS === "android" 
+  ? 'http://10.0.2.2:5000/v1' 
+  : 'http://172.20.10.2:5000/v1';
 
 const api = axios.create({
   baseURL: API_URL,
