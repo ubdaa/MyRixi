@@ -11,8 +11,10 @@ public class CommunityProfileRepository : GenericRepository<CommunityProfile>, I
     {
     }
 
-    public async Task<CommunityProfile?> GetByUserIdAsync(Guid userId)
+    public async Task<CommunityProfile?> GetByUserIdAsync(Guid communityId, Guid userId)
     {
-        return await _context.CommunityProfiles.FirstOrDefaultAsync(x => x.UserId == userId);
+        return await _context.CommunityProfiles
+            .Include(cp => cp.Community)
+            .FirstOrDefaultAsync(cp => cp.CommunityId == communityId && cp.UserId == userId);
     }
 }

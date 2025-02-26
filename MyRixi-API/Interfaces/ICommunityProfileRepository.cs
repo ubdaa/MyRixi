@@ -4,5 +4,5 @@ namespace MyRixiApi.Interfaces;
 
 public interface ICommunityProfileRepository : IGenericRepository<CommunityProfile>
 {
-    Task<CommunityProfile?> GetByUserIdAsync(Guid userId);
+    Task<CommunityProfile?> GetByUserIdAsync(Guid communityId, Guid userId);
 }
