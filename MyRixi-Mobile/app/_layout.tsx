@@ -11,7 +11,6 @@ export default function RootLayout() {
         <CommunityProvider>
           <Stack screenOptions={{
               headerShown: false,
-              animation: 'flip',
             }}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
             <Stack.Screen name="community/create" options={{ presentation: 'modal', headerTitle: 'Création communauté' }} />
