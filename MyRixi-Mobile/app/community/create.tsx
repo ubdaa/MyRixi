@@ -21,6 +21,8 @@ export default function CreateCommunityScreen() {
   const [bannerUrl, setBannerUrl] = useState('');
   const [rules, setRules] = useState<CommunityRule[]>([]);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
 
   const addRule = () => {
@@ -56,6 +58,7 @@ export default function CreateCommunityScreen() {
   };
 
   const handleCreate = async () => {
+    setIsLoading(true);
     const formData = new FormData();
     formData.append('name', name);
     formData.append('description', description);
@@ -95,6 +98,8 @@ export default function CreateCommunityScreen() {
         console.error(error.response?.data);
       }
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -211,7 +216,7 @@ export default function CreateCommunityScreen() {
           <TouchableOpacity
             style={[styles.createButton, !name && styles.createButtonDisabled]}
             onPress={handleCreate}
-            disabled={!name}
+            disabled={(!name && !description && !bannerUrl && !avatarUrl) || isLoading}
           >
             <Text style={styles.createButtonText}>Create Community</Text>
           </TouchableOpacity>
