@@ -21,7 +21,9 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
     public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<Channel> Channels { get; set; }
     public DbSet<Message> Messages { get; set; }
+    public DbSet<MessageReaction> MessageReactions { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Tag> Tags { get; set; }
 
@@ -52,7 +54,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
         modelBuilder.Entity<Message>()
             .HasOne(m => m.Sender)
             .WithMany(u => u.Messages)
-            .HasForeignKey(m => m.UserId);
+            .HasForeignKey(m => m.SenderId);
 
         modelBuilder.Entity<Conversation>()
             .HasMany(c => c.Participants)
@@ -67,6 +69,17 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             .HasOne(t => t.Post)
             .WithMany(p => p.Tags)
             .HasForeignKey(t => t.PostId);
+        
+        // Ajout des clés étrangères pour les channels
+        modelBuilder.Entity<Channel>()
+            .HasOne(c => c.Community)
+            .WithMany(c => c.Channels)
+            .HasForeignKey(c => c.CommunityId);
+
+        modelBuilder.Entity<MessageReaction>()
+            .HasOne(c => c.Message)
+            .WithMany(m => m.Reactions)
+            .HasForeignKey(c => c.MessageId);
     }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
