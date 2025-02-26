@@ -6,7 +6,7 @@ export interface UserChannel {
   avatar: string;
 }
 
-export interface UserProfile {
+export interface Profile {
   id: string;
   displayName: string;
   bio: string;
