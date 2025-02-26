@@ -91,6 +91,7 @@ builder.Services.AddScoped<IStorageService, MinioStorageService>();
 builder.Services.AddAutoMapper(typeof(CommunityMappingProfile));
 builder.Services.AddAutoMapper(typeof(ChannelMappingProfile));
 builder.Services.AddAutoMapper(typeof(MessageMappingProfile));
+builder.Services.AddAutoMapper(typeof(ProfileMappingProfile));
 
 var app = builder.Build();
 
