@@ -1,21 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyRixiApi.Dto.Channel;
-using MyRixiApi.Dto.Media;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using MyRixiApi.Dto.Channel;
-using MyRixiApi.Dto.Media;
-
-using MyRixiApi.Interfaces;
-using MyRixiApi.Models;
 
 namespace MyRixiApi.Controllers;
 
@@ -77,7 +66,7 @@ public class ChannelController : ControllerBase
     }
 
     [HttpPost("community/{communityId}")]
-    public async Task<ActionResult<ChannelDto>> CreateCommunityChannel(Guid communityId, CreateChannelDto channelDto)
+    public async Task<ActionResult<ChannelDto>> CreateCommunityChannel(Guid communityId, [FromForm] CreateChannelDto channelDto)
     {
         // TODO: Vérifier si l'utilisateur a les droits suffisants dans la communauté
         
@@ -134,7 +123,6 @@ public class ChannelController : ControllerBase
         await _channelService.DeleteChannelAsync(channelId);
         return NoContent();
     }
-    
     
     private Guid GetCurrentUserId()
     {

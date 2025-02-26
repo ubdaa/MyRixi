@@ -3,7 +3,6 @@ using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using MyRixiApi.Dto.Channel;
-using MyRixiApi.Dto.Media;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
 
@@ -48,13 +47,13 @@ public class MessageController : ControllerBase
         return Ok(messages.Select(m => _mapper.Map<MessageDto>(m)));
     }
 
-    [HttpPost]
-    public async Task<ActionResult<MessageDto>> SendMessage(CreateMessageDto messageDto)
+    [HttpPost("channel/{channelId}/send")]
+    public async Task<ActionResult<MessageDto>> SendMessage(Guid channelId, [FromForm] CreateMessageDto messageDto)
     {
         var userId = GetCurrentUserId();
         
         // Vérifier si l'utilisateur peut accéder à ce canal
-        var canAccess = await _channelService.UserCanAccessChannelAsync(messageDto.ChannelId, userId);
+        var canAccess = await _channelService.UserCanAccessChannelAsync(channelId, userId);
         if (!canAccess)
         {
             return Forbid();
@@ -63,7 +62,7 @@ public class MessageController : ControllerBase
         var newMessage = new Message
         {
             Content = messageDto.Content,
-            ChannelId = messageDto.ChannelId,
+            ChannelId = channelId,
             SenderId = userId
         };
         
@@ -137,7 +136,7 @@ public class MessageController : ControllerBase
             return Forbid();
         }
         
-        var reaction = await _messageService.AddReactionAsync(messageId, userId, reactionDto.Emoji);
+        await _messageService.AddReactionAsync(messageId, userId, reactionDto.Emoji);
         return Ok(new { Success = true });
     }
 
