@@ -57,10 +57,9 @@ public class AuthController : ControllerBase
         if (result.Succeeded)
         {
             // Générer une image de profil
-            await using var profileImageStream = await ProfilePictureGenerator.GenerateProfilePictureAsync();
+            var profileUrl = await ProfilePictureGenerator.GenerateRandomProfilePictureAsync(_storageService, user.Id);
 
             // Uploader l'image
-            var profileUrl = await _storageService.UploadFileAsync(profileImageStream, "profile", $"{user.Id}.webp", "image/webp");
             user.UserProfile.ProfilePicture.Url = profileUrl;
             user.UserProfile.ProfilePicture.Type = "image";
 
