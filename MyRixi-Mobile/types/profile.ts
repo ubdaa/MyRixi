@@ -10,6 +10,7 @@ export interface Profile {
   id: string;
   displayName: string;
   bio: string;
+  joinedAt: Date;
   profilePicture: Media;
   coverPicture: Media;
   user: UserChannel;

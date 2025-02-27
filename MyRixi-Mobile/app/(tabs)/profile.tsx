@@ -1,7 +1,8 @@
-import { ProfileCard } from '@/components/profile/profile-card';
-import { useProfile } from '@/contexts/ProfileContext';
-import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useProfile } from "@/contexts/ProfileContext";
+import { useEffect } from "react";
+import { ActivityIndicator, ScrollView, StyleSheet, View, Text, RefreshControl } from "react-native";
+import ProfileHeader from "@/components/profile/profile-header";
+import ProfileDetails from "@/components/profile/profile-details";
 
 export default function ProfileScreen() {
   const { fetchProfile, profile, loading } = useProfile();
@@ -12,40 +13,38 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text>Loading...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1DA1F2" />
       </View>
     );
   }
 
   if (!profile) {
     return (
-      <View style={styles.container}>
-        <Text>Error loading profile</Text>
+      <View style={styles.loadingContainer}>
+        <Text>Erreur lors du chargement du profil.</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <ProfileCard profile={profile} />
-    </View>
+    <ScrollView style={styles.container} refreshControl={
+      <RefreshControl refreshing={loading} onRefresh={fetchProfile} />
+    }>
+      <ProfileHeader profile={profile} />
+      <ProfileDetails profile={profile} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    justifyContent: 'center',
+    backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  text: {
-    fontSize: 16,
-    marginBottom: 10,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
