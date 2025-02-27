@@ -28,7 +28,6 @@ export default function ProfileHeader({ profile }: { profile: Profile }) {
     <View style={styles.container}>
       <View style={styles.coverContainer}>
         <Image style={styles.coverImage} source={{ uri: profile.coverPicture.url }} />
-        <BlurView intensity={50} tint="dark" style={styles.blurOverlay} />
       </View>
       <View style={styles.profileContainer}>
         <Animated.Image
@@ -103,7 +102,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   primaryButton: {
-    backgroundColor: "#1DA1F2",
+    backgroundColor: "#4c669f",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 24,

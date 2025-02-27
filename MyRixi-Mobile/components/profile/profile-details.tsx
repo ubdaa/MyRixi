@@ -210,14 +210,14 @@ const styles = StyleSheet.create({
   },
   activeTabButton: {
     borderBottomWidth: 2,
-    borderBottomColor: "#1DA1F2",
+    borderBottomColor: "#4c669f",
   },
   tabButtonText: {
     color: "gray",
     fontWeight: "500",
   },
   activeTabButtonText: {
-    color: "#1DA1F2",
+    color: "#4c669f",
     fontWeight: "bold",
   },
   contentContainer: {
