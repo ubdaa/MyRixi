@@ -14,3 +14,7 @@ export interface Profile {
   coverPicture: Media;
   user: UserChannel;
 }
+
+export interface CommunityProfile extends Profile {
+  communityId: string;
+}

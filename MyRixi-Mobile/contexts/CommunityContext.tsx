@@ -1,5 +1,3 @@
-// /contexts/CommunityContext.tsx
-
 import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
 import { Community } from '@/types/community';
 import * as communityService from '@/services/communityService';
@@ -16,7 +14,7 @@ export interface CommunityContextType {
 
 const CommunityContext = createContext<CommunityContextType | undefined>(undefined);
 
-export const CommunityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function CommunityProvider({ children }: { children: ReactNode }) {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

@@ -1,11 +1,34 @@
+import { ProfileCard } from '@/components/profile/profile-card';
+import { useProfile } from '@/contexts/ProfileContext';
+import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 export default function ProfileScreen() {
+  const { fetchProfile, profile, loading } = useProfile();
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <View style={styles.container}>
+        <Text>Error loading profile</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Mon profil</Text>
-      <Text style={styles.text}>Vous pouvez modifier votre profil ici.</Text>
-      <Text style={styles.text}>Vous pouvez changer votre email, votre mot de passe et votre nom d'utilisateur.</Text>
+      <ProfileCard profile={profile} />
     </View>
   );
 }
