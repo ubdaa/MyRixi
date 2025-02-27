@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MyRixiApi.Dto.Auth;
+using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
+using MyRixiApi.Utilities;
 
 namespace MyRixiApi.Controllers;
 
@@ -16,17 +18,21 @@ public class AuthController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly IConfiguration _configuration;
+    
+    private readonly IStorageService _storageService;
 
     public AuthController(
         UserManager<User> userManager,
         SignInManager<User> signInManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IStorageService storageService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
+        _storageService = storageService;
     }
-
+    
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto model)
     {
@@ -35,7 +41,7 @@ public class AuthController : ControllerBase
 
         var user = new User
         {
-            UserName = model.Email,
+            UserName = model.Username,
             Email = model.Email,
             UserProfile = new UserProfile
             {
@@ -50,6 +56,21 @@ public class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
+            // Générer une image de profil
+            await using var profileImageStream = await ProfilePictureGenerator.GenerateProfilePictureAsync();
+
+            // Uploader l'image
+            var profileUrl = await _storageService.UploadFileAsync(profileImageStream, "profile", $"{user.Id}.webp", "image/webp");
+            user.UserProfile.ProfilePicture.Url = profileUrl;
+            user.UserProfile.ProfilePicture.Type = "image";
+
+            var coverUrl = "https://minio-ysskscsocw084wok808w04wo.109.199.107.134.sslip.io/public/cover/default.webp";
+            user.UserProfile.CoverPicture.Url = coverUrl;
+            user.UserProfile.CoverPicture.Type = "image";
+
+            // Enregistrer l'utilisateur avec son image
+            await _userManager.UpdateAsync(user);
+
             await _signInManager.SignInAsync(user, isPersistent: false);
             return Ok(new { Token = GenerateJwtToken(user) });
         }

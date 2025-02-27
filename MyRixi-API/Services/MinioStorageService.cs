@@ -10,6 +10,8 @@ public class MinioStorageService : IStorageService
     private readonly IMinioClient _minioClient;
     private readonly string _bucketName;
     
+    private readonly string _storageUrl;
+    
     public MinioStorageService(IConfiguration configuration)
     {
         _minioClient = new MinioClient()
@@ -21,7 +23,8 @@ public class MinioStorageService : IStorageService
             .WithSSL(false) // Selon votre configuration
             .Build();
         
-        _bucketName = configuration["Minio:BucketName"];
+        _bucketName = configuration["Minio:BucketName"]!;
+        _storageUrl = configuration["Minio:Endpoint"]!;
     }
     
     public async Task<string> UploadFileAsync(IFormFile file, string prefix)
@@ -56,7 +59,7 @@ public class MinioStorageService : IStorageService
         }
         
         // Retourne l'URL du fichier
-        return $"{_bucketName}/{fileName}";
+        return $"{_storageUrl}/{_bucketName}/{fileName}";
     }
 
     public async Task<string> UploadFileAsync(Stream fileStream, string prefix, string fileName, string contentType)
@@ -90,7 +93,7 @@ public class MinioStorageService : IStorageService
         }
         
         // Retourne l'URL du fichier
-        return $"{_bucketName}/{bucketFileName}";
+        return $"{_storageUrl}/{_bucketName}/{bucketFileName}";
     }
     
     public async Task DeleteFileAsync(string fileUrl)
