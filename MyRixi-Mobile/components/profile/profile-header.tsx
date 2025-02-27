@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Profile } from "@/types/profile";
-import { Animated, Image, StyleSheet, Text, View } from "react-native";
+import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { BlurView } from 'expo-blur';
+import { Feather } from '@expo/vector-icons';
 
 export default function ProfileHeader({ profile }: { profile: Profile }) {
   const profileScale = useRef(new Animated.Value(0)).current;
@@ -38,6 +39,17 @@ export default function ProfileHeader({ profile }: { profile: Profile }) {
           <Text style={styles.displayName}>{profile.displayName}</Text>
           <Text style={styles.username}>@{profile.user.userName}</Text>
         </Animated.View>
+
+        {/* Actions du profil */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Modifier le profil</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.secondaryButton}>
+            <Feather name="share-2" size={18} color="#333" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -83,5 +95,32 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 16,
     color: "gray",
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 15,
+    paddingHorizontal: 15,
+  },
+  primaryButton: {
+    backgroundColor: "#1DA1F2",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    marginRight: 12,
+    elevation: 2,
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  secondaryButton: {
+    backgroundColor: "#f1f1f1",
+    padding: 10,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 2,
   },
 });
