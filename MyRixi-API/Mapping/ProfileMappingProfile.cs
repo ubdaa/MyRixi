@@ -8,6 +8,7 @@ public class ProfileMappingProfile : Profile
 {
     public ProfileMappingProfile()
     {
+        // on map la date de JoinedAt de l'utilisateur
         CreateMap<UserProfile, UserProfileDto>();
         CreateMap<CommunityProfile, CommunityProfileDto>();
     }

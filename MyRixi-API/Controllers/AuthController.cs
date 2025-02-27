@@ -82,13 +82,18 @@ public class AuthController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+        
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null)
+            return Unauthorized();
 
-        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, 
+        if (user.UserName == null) return Unauthorized();
+        
+        var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, 
             isPersistent: false, lockoutOnFailure: false);
 
         if (result.Succeeded)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
             return Ok(new { Token = GenerateJwtToken(user!) });
         }
 

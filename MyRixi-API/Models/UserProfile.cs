@@ -5,6 +5,7 @@ public class UserProfile
     public Guid Id { get; set; }
     public string DisplayName { get; set; } = string.Empty;
     public string Bio { get; set; } = string.Empty;
+    public DateTime JoinedAt { get; set; } = DateTime.Now;
     
     public Guid ProfilePictureId { get; set; }
     public Media ProfilePicture { get; set; } = null!;

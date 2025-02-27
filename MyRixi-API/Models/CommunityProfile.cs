@@ -16,6 +16,8 @@ public class CommunityProfile
     public string Preferences { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     
+    public DateTime JoinedAt { get; set; } = DateTime.Now;
+    
     public bool IsSuspended { get; set; } = false;
     public bool IsBanned { get; set; } = false;
     

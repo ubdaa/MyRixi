@@ -59,7 +59,7 @@ public class MinioStorageService : IStorageService
         }
         
         // Retourne l'URL du fichier
-        return $"{_storageUrl}/{_bucketName}/{fileName}";
+        return $"https://{_storageUrl}/{_bucketName}/{fileName}";
     }
 
     public async Task<string> UploadFileAsync(Stream fileStream, string prefix, string fileName, string contentType)
@@ -93,7 +93,7 @@ public class MinioStorageService : IStorageService
         }
         
         // Retourne l'URL du fichier
-        return $"{_storageUrl}/{_bucketName}/{bucketFileName}";
+        return $"https://{_storageUrl}/{_bucketName}/{bucketFileName}";
     }
     
     public async Task DeleteFileAsync(string fileUrl)

@@ -8,6 +8,7 @@ public class UserProfileDto
     public Guid Id { get; set; }
     public string DisplayName { get; set; } = string.Empty;
     public string Bio { get; set; } = string.Empty;
+    public DateTime JoinedAt { get; set; }
     
     public MediaDto ProfilePicture { get; set; } = null!;
     public MediaDto CoverPicture { get; set; } = null!;
