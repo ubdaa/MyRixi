@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useChannel } from '@/hooks/useChannel';
 import ChannelItem from './channel-item';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function CommunityChannels() {
   const router = useRouter();
@@ -53,6 +54,15 @@ export default function CommunityChannels() {
   
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Chats</Text>
+        <Link href="/community/create" asChild>
+          <TouchableOpacity style={styles.createButton}>
+            <Ionicons name="add" size={24} color="#fff" />
+            <Text style={styles.createButtonText}>Create</Text>
+          </TouchableOpacity>
+        </Link>
+      </View>
       <FlatList
         data={communityChannels}
         keyExtractor={(item) => item.id}
@@ -74,9 +84,6 @@ export default function CommunityChannels() {
           </View>
         }
       />
-      <TouchableOpacity style={styles.addButton} onPress={handleNewChannel}>
-        <Text style={styles.addButtonText}>+ Créer un canal</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -90,6 +97,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e5e5',
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  createButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4c669f',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  createButtonText: {
+    color: '#fff',
+    marginLeft: 4,
+    fontWeight: 'bold',
   },
   errorText: {
     color: 'red',
