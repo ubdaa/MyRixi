@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { CommunitiesList } from '@/components/community/community-list';
+import { CommunitiesList } from '@/components/community/main/community-list';
 import { useCommunity } from '@/contexts/CommunityContext';
 
 export default function CommunitiesScreen() {

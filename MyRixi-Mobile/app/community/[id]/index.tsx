@@ -1,10 +1,10 @@
 import { useLocalSearchParams } from 'expo-router';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
-import { CommunityCover } from '@/components/community/community-cover'; // Adaptez selon votre structure
+import { CommunityCover } from '@/components/community/main/community-cover'; // Adaptez selon votre structure
 import { fetchCommunityById } from '@/services/communityService';
 import { Community } from '@/types/community';
-import { CommunityAvatar } from '@/components/community/community-avatar';
+import { CommunityAvatar } from '@/components/community/main/community-avatar';
 
 export default function CommunityScreen() {
   const { id } = useLocalSearchParams();
