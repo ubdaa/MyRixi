@@ -1,9 +1,10 @@
+import CommunityChannels from '@/components/community/channels/channels-list';
 import { View, Text, StyleSheet } from 'react-native';
 
 export default function CommunityChatsScreen() {
   return (
     <View style={styles.container}>
-      <Text>Chat</Text>
+      <CommunityChannels />
     </View>
   );
 }
@@ -11,6 +12,5 @@ export default function CommunityChatsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
   },
 });
