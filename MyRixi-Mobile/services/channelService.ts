@@ -5,14 +5,14 @@ import { apiDeleteRequest, apiGetRequest, apiPostRequest, apiPutRequest } from "
    * Récupère tous les canaux d'une communauté
    */
 export async function getCommunityChannels(communityId: string): Promise<Channel[]> {
-  return apiGetRequest<Channel[]>(`/Channel/community/${communityId}`, {});
+  return apiGetRequest<Channel[]>(`/channel/community/${communityId}`, {});
 }
 
 /**
  * Récupère tous les canaux privés de l'utilisateur connecté
  */
 export async function getMyPrivateChannels(): Promise<Channel[]> {
-  return apiGetRequest<Channel[]>('/Channel/private', {});
+  return apiGetRequest<Channel[]>('/channel/private', {});
 }
 
 /**
@@ -20,7 +20,7 @@ export async function getMyPrivateChannels(): Promise<Channel[]> {
  */
 export async function getChannelDetail(channelId: string, options: ChannelMessagesOptions = {}): Promise<ChannelDetail> {
   const { pageSize = 20, pageNumber = 1 } = options;
-  return apiGetRequest<ChannelDetail>(`/Channel/${channelId}`, {
+  return apiGetRequest<ChannelDetail>(`/channel/${channelId}`, {
     params: { pageSize, pageNumber }
   });
 }
@@ -34,7 +34,7 @@ export async function createCommunityChannel(communityId: string, channel: Creat
   formData.append('description', channel.description);
   formData.append('isPrivate', String(channel.isPrivate));
   
-  return apiPostRequest<Channel>(`/Channel/community/${communityId}`, formData, {
+  return apiPostRequest<Channel>(`/channel/community/${communityId}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -45,7 +45,7 @@ export async function createCommunityChannel(communityId: string, channel: Creat
  * Crée ou récupère un canal privé avec un utilisateur
  */
 export async function createOrGetPrivateChannel(userId: string): Promise<Channel> {
-  return apiPostRequest<Channel>(`/Channel/private/${userId}`, new FormData(), {
+  return apiPostRequest<Channel>(`/channel/private/${userId}`, new FormData(), {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

@@ -12,14 +12,14 @@ public static class ProfilePictureGenerator
         // Dimensions originales et finales
         const int originalSize = 8;
         const int finalSize = 256;
-            
+        
         // Générer des couleurs aléatoires avec un bon contraste
         var random = new Random(Environment.TickCount);
         var backgroundColor = GetRandomColor(random);
         var foregroundColor = GetContrastingColor(backgroundColor);
             
         // Créer une matrice pour générer un motif symétrique
-        var pattern = random.NextDouble() < 0.8 ? GenerateSymmetricalPattern(random, originalSize) :
+        var pattern = random.NextDouble() < 0.9 ? GenerateSymmetricalPattern(random, originalSize) :
             GenerateRandomPattern(random, originalSize);
             
         // Créer l'image

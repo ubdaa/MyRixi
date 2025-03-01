@@ -10,7 +10,7 @@ export default function CommunityScreen() {
   const { id } = useLocalSearchParams();
   const [community, setCommunity] = useState<Community>();
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     if (id) {
       setLoading(true);

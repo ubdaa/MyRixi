@@ -1,5 +1,5 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { Tabs, useLocalSearchParams, useRouter } from "expo-router";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
@@ -14,6 +14,9 @@ interface Route {
 
 // --- Composant TabBar personnalisé ---
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const router = useRouter();
+  const params = useLocalSearchParams(); // Récupère les paramètres (dont l'id)
+  
   const handleTabPress = (route: Route, isFocused: boolean): void => {
     const event = navigation.emit({
       type: 'tabPress',
@@ -23,8 +26,18 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
     if (!isFocused && !event.defaultPrevented) {
       // Feedback haptique lors du changement d'onglet
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      navigation.navigate(route.name);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);      
+      
+      // Navigation en conservant l'id
+      if (!isFocused && !event.defaultPrevented) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+        // Navigation en conservant l'id
+        router.replace({
+          pathname: `/community/[id]/${route.name}` as any,
+          params
+        });
+      }
     }
   };
   
@@ -37,7 +50,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         return <AntDesign name="addusergroup" size={size} color={color} />;
       case 'posts':
         return <AntDesign name="edit" size={size} color={color} />;
-      case 'index':
+      case 'feed':
         return <AntDesign name={isFocused ? "star" : "staro"} size={size} color={color} />;
       case 'chats':
         return <AntDesign name="message1" size={size} color={color} />;
@@ -52,7 +65,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     switch (routeName) {
       case 'members': return 'Membres';
       case 'posts': return 'Posts';
-      case 'index': return 'Feed';
+      case 'feed': return 'Feed';
       case 'chats': return 'Chats';
       case 'profile': return 'Profil';
       default: return routeName;
@@ -107,7 +120,7 @@ export default function CommunityLayout() {
   const tabs: TabItem[] = [
     { name: "members", title: "Membres" },
     { name: "posts", title: "Posts" },
-    { name: "index", title: "Feed" },
+    { name: "feed", title: "Feed" },
     { name: "chats", title: "Chats" },
     { name: "profile", title: "Profil" }
   ];

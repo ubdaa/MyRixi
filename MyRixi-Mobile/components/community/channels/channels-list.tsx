@@ -5,9 +5,8 @@ import ChannelItem from './channel-item';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function CommunityChannels() {
-  const router = useRouter();
-  const { id } = useLocalSearchParams();
+export default function CommunityChannels({ communityId }: { communityId: string }) {
+  const id = useLocalSearchParams();
   
   const { 
     loading, 
@@ -18,19 +17,16 @@ export default function CommunityChannels() {
   
   // Charger les canaux quand le composant est monté ou quand communityId change
   useEffect(() => {
+    console.log('communityId', communityId);
+    console.log('id', Array.isArray(id) ? id[0] : id);
     if (id) {
-      loadCommunityChannels(id as string);
+      loadCommunityChannels(Array.isArray(id) ? id[0] : id);
     }
-  }, [id, loadCommunityChannels]);
+  }, [id]);
   
   // Gérer l'appui sur un canal
   const handleChannelPress = (channelId: string) => {
     //router.push('/channel', { channelId });
-  };
-  
-  // Gérer la création d'un nouveau canal
-  const handleNewChannel = () => {
-    //navigation.navigate('CreateChannel', { id });
   };
   
   if (loading && communityChannels.length === 0) {
@@ -45,7 +41,7 @@ export default function CommunityChannels() {
     return (
       <View style={styles.centered}>
         <Text style={styles.errorText}>Erreur lors du chargement des canaux</Text>
-        <TouchableOpacity onPress={() => loadCommunityChannels(id as string)}>
+        <TouchableOpacity onPress={() => loadCommunityChannels(Array.isArray(id) ? id[0] : id)}>
           <Text style={styles.retryButton}>Réessayer</Text>
         </TouchableOpacity>
       </View>
@@ -56,7 +52,10 @@ export default function CommunityChannels() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Chats</Text>
-        <Link href="/community/create" asChild>
+        <Link href={{ 
+          pathname: "/channel/create",
+          params: { communityId: Array.isArray(id) ? id[0] : id }
+        }} asChild>
           <TouchableOpacity style={styles.createButton}>
             <Ionicons name="add" size={24} color="#fff" />
             <Text style={styles.createButtonText}>Create</Text>
@@ -77,7 +76,7 @@ export default function CommunityChannels() {
           />
         )}
         refreshing={loading}
-        onRefresh={() => loadCommunityChannels(id as string)}
+        onRefresh={() => loadCommunityChannels(Array.isArray(id) ? id[0] : id)}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>Aucun canal disponible</Text>
