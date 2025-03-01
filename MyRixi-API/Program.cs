@@ -129,6 +129,6 @@ app.UseCors("AllowAll");
 app.UseAuthentication(); // Ajoutez cette ligne pour gérer l'authentification
 app.UseAuthorization();  // Puis l'autorisation
 app.MapControllers(); // Mapper les contrôleurs
-app.MapHub<ChatHub>("/v1/chat");
+app.MapHub<ChatHub>("/v1/hubs/chat");
 
 app.Run();

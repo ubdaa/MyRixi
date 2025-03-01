@@ -1,6 +1,16 @@
+import useChannel from '@/hooks/useChannel';
 import { View, Text, StyleSheet } from 'react-native';
+import { Platform } from 'react-native';
+
+// Définissez une URL de base cohérente
+const API_URL = Platform.OS === "android" 
+  ? 'http://10.0.2.2:5000/v1' 
+  : 'http://172.20.10.2:5000/v1';
 
 export default function Home() {
+  const channel = useChannel();
+  channel.connectSignalR(`${API_URL}/hubs/chat`);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bienvenue sur MyRixi</Text>

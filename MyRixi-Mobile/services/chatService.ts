@@ -1,6 +1,8 @@
 import * as signalR from '@microsoft/signalr';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export class ChatService {
+
   connection: signalR.HubConnection | null;
   callbacks: {
     messageReceived: (user: string, message: string) => void,
@@ -17,7 +19,10 @@ export class ChatService {
 
   async connect(url: string) {
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(url)
+      .withUrl(url, {
+        accessTokenFactory: async () => await AsyncStorage.getItem('token') || '',
+        transport: signalR.HttpTransportType.WebSockets
+      })
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
