@@ -33,12 +33,12 @@ public class ChatHub : Hub
         var userId = GetCurrentUserId();
         var connectionId = Context.ConnectionId;
 
-        // Récupération du paramètre depuis l'URL
+        /*// Récupération du paramètre depuis l'URL
         var communityIdQuery = Context.GetHttpContext()?.Request.Query["communityId"];
         if (!Guid.TryParse(communityIdQuery, out var communityId))
         {
             throw new HubException("ID de communauté invalide");
-        }
+        }*/
 
         _connectionManager.AddConnection(userId, connectionId);
 

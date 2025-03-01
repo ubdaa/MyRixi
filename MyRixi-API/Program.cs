@@ -86,11 +86,10 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<ICommunityProfileRepository, CommunityProfileRepository>();
 
-
-
 // services
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IStorageService, MinioStorageService>();
+builder.Services.AddScoped<IUserConnectionManager, UserConnectionManager>();
 
 // ajout des mapper
 builder.Services.AddAutoMapper(typeof(CommunityMappingProfile));
