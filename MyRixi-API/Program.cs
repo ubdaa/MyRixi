@@ -98,6 +98,9 @@ builder.Services.AddAutoMapper(typeof(ChannelMappingProfile));
 builder.Services.AddAutoMapper(typeof(MessageMappingProfile));
 builder.Services.AddAutoMapper(typeof(ProfileMappingProfile));
 
+// SignalR
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // ensure database is created
