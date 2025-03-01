@@ -38,6 +38,17 @@ export class ChatService {
     }
   }
 
+  async disconnect() {
+    if (this.connection) {
+      try {
+        await this.connection.stop();
+        console.log('SignalR Disconnected');
+      } catch (err) {
+        console.error('SignalR Disconnection Error: ', err);
+      }
+    }
+  }
+
   onMessageReceived(callback: (user: string, message: string) => void) {
     this.callbacks.messageReceived = callback;
   }

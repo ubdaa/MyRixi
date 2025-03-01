@@ -43,7 +43,7 @@ public class ChatHub : Hub
         _connectionManager.AddConnection(userId, connectionId);
 
         // Récupérer tous les canaux de l'utilisateur pour cette communauté
-        var communityChannels = await _channelService.GetUserCommunityChannelsAsync(userId, communityId);
+        var communityChannels = await _channelService.GetUserCommunityChannelsAsync(userId);
         var privateChannels = await _channelService.GetPrivateChannelsForUserAsync(userId);
 
         var allChannels = communityChannels.Concat(privateChannels);

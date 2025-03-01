@@ -35,6 +35,14 @@ public class ChannelRepository : GenericRepository<Channel>, IChannelRepository
             .ToListAsync();
     }
 
+    public Task<IEnumerable<Channel>> GetUserCommunityChannelsAsync(Guid userId)
+    {
+        return Task.FromResult(_context.Channels
+            .Where(c => c.Type == ChatType.CommunityChannel && c.AllowedMembers.Any(u => u.UserId == userId))
+            .Include(c => c.AllowedMembers)
+            .ToList() as IEnumerable<Channel>);
+    }
+
     public Task<IEnumerable<Channel>> GetUserCommunityChannelsAsync(Guid userId, Guid communityId)
     {
         return Task.FromResult(_context.Channels
