@@ -17,7 +17,6 @@ export default function CreateChannelScreen() {
 
   const router = useRouter();
 
-
   if (!communityId) {
     <View style={styles.container}>
       <Text>Community ID is required</Text>
@@ -53,7 +52,6 @@ export default function CreateChannelScreen() {
     // }
 
     try {
-      console.log(communityId);
       await apiPostRequest(`/channel/community/${communityId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',

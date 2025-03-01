@@ -5,6 +5,7 @@ namespace MyRixiApi.Interfaces;
 public interface IChannelRepository : IGenericRepository<Channel>
 {
     Task<IEnumerable<Channel>> GetCommunityChannelsAsync(Guid communityId);
+    Task<IEnumerable<Channel>> GetUserCommunityChannelsAsync(Guid userId, Guid communityId);
     Task<IEnumerable<Channel>> GetPrivateChannelsForUserAsync(Guid userId);
     Task<Channel?> GetChannelWithMessagesAsync(Guid channelId, int pageSize, int pageNumber);
     Task AddUserToChannelAsync(Guid channelId, Guid userId);

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyRixiApi.Data;
+using MyRixiApi.Hubs;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Mapping;
 using MyRixiApi.Models;
@@ -86,6 +87,7 @@ builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<ICommunityProfileRepository, CommunityProfileRepository>();
 
 
+
 // services
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IStorageService, MinioStorageService>();
@@ -124,5 +126,6 @@ app.UseCors("AllowAll");
 app.UseAuthentication(); // Ajoutez cette ligne pour gérer l'authentification
 app.UseAuthorization();  // Puis l'autorisation
 app.MapControllers(); // Mapper les contrôleurs
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();
