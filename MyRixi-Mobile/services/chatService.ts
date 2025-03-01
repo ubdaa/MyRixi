@@ -2,7 +2,6 @@ import * as signalR from '@microsoft/signalr';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export class ChatService {
-
   connection: signalR.HubConnection | null;
   callbacks: {
     messageReceived: (user: string, message: string) => void,
@@ -23,6 +22,7 @@ export class ChatService {
         accessTokenFactory: async () => await AsyncStorage.getItem('token') || '',
         transport: signalR.HttpTransportType.WebSockets
       })
+      .withAutomaticReconnect()
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
@@ -72,20 +72,20 @@ export class ChatService {
     }
   }
 
-  async joinGroup(groupName: string) {
+  async joinChannel(channelId: string) {
     if (this.connection) {
       try {
-        await this.connection.invoke('JoinGroup', groupName);
+        await this.connection.invoke('JoinChannel', channelId);
       } catch (err) {
         console.error('Error joining group: ', err);
       }
     }
   }
 
-  async sendToGroup(groupName: string, user: string, message: string) {
+  async sendToChannel(channelId: string, user: string, message: string) {
     if (this.connection) {
       try {
-        await this.connection.invoke('SendToGroup', groupName, user, message);
+        await this.connection.invoke('SendMessage', channelId, user, message);
       } catch (err) {
         console.error('Error sending to group: ', err);
       }

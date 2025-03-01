@@ -63,7 +63,7 @@ public class ChatHub : Hub
         
         await base.OnDisconnectedAsync(exception);
     }
-
+    
     public async Task JoinChannel(Guid channelId)
     {
         var userId = GetCurrentUserId();

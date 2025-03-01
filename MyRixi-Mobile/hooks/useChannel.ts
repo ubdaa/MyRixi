@@ -215,12 +215,12 @@ export const useChannel = (): UseChannelReturn => {
     await chatService.sendMessage(user, message);
   }, []);
 
-  const joinGroup = useCallback(async (groupName: string) => {
-    await chatService.joinGroup(groupName);
+  const joinChannel = useCallback(async (groupName: string) => {
+    await chatService.joinChannel(groupName);
   }, []);
 
-  const sendToGroup = useCallback(async (groupName: string, user: string, message: string) => {
-    await chatService.sendToGroup(groupName, user, message);
+  const sendToChannel = useCallback(async (groupName: string, user: string, message: string) => {
+    await chatService.sendToChannel(groupName, user, message);
   }, []);
 
   const onMessageReceived = useCallback((callback: (user: string, message: string) => void) => {
@@ -247,8 +247,8 @@ export const useChannel = (): UseChannelReturn => {
     refreshCurrentChannel,
     connectSignalR,
     sendMessage,
-    joinGroup,
-    sendToGroup,
+    joinGroup: joinChannel,
+    sendToGroup: sendToChannel,
     onMessageReceived,
     onGroupMessageReceived
   };

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function CommunityChannels() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
 
   const { 
     loading, 
@@ -24,7 +25,7 @@ export default function CommunityChannels() {
   
   // Gérer l'appui sur un canal
   const handleChannelPress = (channelId: string) => {
-    //router.push('/channel', { channelId });
+    router.push(`/channel/${channelId}`);
   };
   
   if (loading && communityChannels.length === 0) {

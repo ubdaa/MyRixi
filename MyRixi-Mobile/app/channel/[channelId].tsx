@@ -7,6 +7,7 @@ export default function ChannelScreen() {
   const { channelId } = useLocalSearchParams();
 
   const channel = useChannel();
+  channel.joinGroup(Array.isArray(channelId) ? channelId[0] : channelId);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
