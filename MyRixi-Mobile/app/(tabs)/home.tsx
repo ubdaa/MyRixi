@@ -9,7 +9,7 @@ const API_URL = Platform.OS === "android"
 
 export default function Home() {
   const channel = useChannel();
-  channel.connectSignalR(`${API_URL}/hubs/chat`);
+  channel.connectSignalR();
 
   return (
     <View style={styles.container}>

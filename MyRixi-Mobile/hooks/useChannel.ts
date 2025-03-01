@@ -17,6 +17,7 @@ import {
   deleteChannel as deleteChannelService 
 } from '@/services/channelService';
 import { ChatService } from '@/services/chatService';
+import { Platform } from 'react-native';
 
 const chatService = new ChatService();
 
@@ -41,13 +42,21 @@ interface UseChannelReturn {
   refreshCurrentChannel: () => Promise<void>;
 
   // Actions liées à SignalR / Chat
-  connectSignalR: (url: string) => Promise<void>;
+  chatService: ChatService;
+
+  connectSignalR: () => Promise<boolean>;
   sendMessage: (user: string, message: string) => Promise<void>;
-  joinGroup: (groupName: string) => Promise<void>;
-  sendToGroup: (groupName: string, user: string, message: string) => Promise<void>;
+  joinChannel: (channelId: string) => Promise<boolean>;
+  leaveChannel: (channelId: string) => Promise<boolean>;
+  sendToChannel: (channelId: string, user: string, message: string) => Promise<void>;
   onMessageReceived: (callback: (user: string, message: string) => void) => void;
   onGroupMessageReceived: (callback: (group: string, user: string, message: string) => void) => void;
 }
+
+// Définissez une URL de base cohérente
+const API_URL = Platform.OS === "android" 
+  ? 'http://10.0.2.2:5000/v1' 
+  : 'http://172.20.10.2:5000/v1';
 
 export const useChannel = (): UseChannelReturn => {
   // États
@@ -207,28 +216,29 @@ export const useChannel = (): UseChannelReturn => {
   }, [currentChannelOptions, loadChannelDetail]);
 
   // Actions liées à SignalR / Chat
-  const connectSignalR = useCallback(async (url: string) => {
-    await chatService.connect(url);
+  const connectSignalR = useCallback(async () => {
+    return await chatService.connect(`${API_URL}/hubs/chat`);
   }, []);
 
   const sendMessage = useCallback(async (user: string, message: string) => {
-    await chatService.sendMessage(user, message);
+    await chatService.sendMessage(message);
   }, []);
 
-  const joinChannel = useCallback(async (groupName: string) => {
-    await chatService.joinChannel(groupName);
+  const joinChannel = useCallback(async (channelId: string) => {
+    return await chatService.joinChannel(channelId);
+  }, []);
+
+  const leaveChannel = useCallback(async (channelId: string) => {
+    return await chatService.leaveChannel(channelId);
   }, []);
 
   const sendToChannel = useCallback(async (groupName: string, user: string, message: string) => {
-    await chatService.sendToChannel(groupName, user, message);
   }, []);
 
   const onMessageReceived = useCallback((callback: (user: string, message: string) => void) => {
-    chatService.onMessageReceived(callback);
   }, []);
 
   const onGroupMessageReceived = useCallback((callback: (group: string, user: string, message: string) => void) => {
-    chatService.onGroupMessageReceived(callback);
   }, []);
 
   return {
@@ -245,10 +255,12 @@ export const useChannel = (): UseChannelReturn => {
     updateChannel,
     deleteChannel,
     refreshCurrentChannel,
+    chatService,
     connectSignalR,
     sendMessage,
-    joinGroup: joinChannel,
-    sendToGroup: sendToChannel,
+    joinChannel,
+    leaveChannel,
+    sendToChannel,
     onMessageReceived,
     onGroupMessageReceived
   };
