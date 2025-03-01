@@ -12,7 +12,7 @@ type CommunityCardProps = {
 
 export function CommunityCard ({ community }: CommunityCardProps) {
   return (
-    <Link push href={`/community/${community.id}`} asChild>
+    <Link push href={`/community/${community.id}/feed`} asChild>
       <TouchableOpacity style={styles.card}>
         <CommunityCover coverUrl={community.coverUrl} />
         

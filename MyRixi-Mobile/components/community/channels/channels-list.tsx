@@ -5,9 +5,9 @@ import ChannelItem from './channel-item';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function CommunityChannels({ communityId }: { communityId: string }) {
-  const id = useLocalSearchParams();
-  
+export default function CommunityChannels() {
+  const { id } = useLocalSearchParams();
+
   const { 
     loading, 
     error, 
@@ -17,8 +17,6 @@ export default function CommunityChannels({ communityId }: { communityId: string
   
   // Charger les canaux quand le composant est monté ou quand communityId change
   useEffect(() => {
-    console.log('communityId', communityId);
-    console.log('id', Array.isArray(id) ? id[0] : id);
     if (id) {
       loadCommunityChannels(Array.isArray(id) ? id[0] : id);
     }

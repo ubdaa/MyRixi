@@ -3,11 +3,9 @@ import { useLocalSearchParams } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 
 export default function CommunityChatsScreen() {
-  const { id } = useLocalSearchParams();
-
   return (
     <View style={styles.container}>
-      {/* <CommunityChannels communityId={Array.isArray(id) ? id[0] : id} /> */}
+      <CommunityChannels />
     </View>
   );
 }
