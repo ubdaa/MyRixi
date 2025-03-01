@@ -1,6 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Channel, ChannelDetail, ChannelMessagesOptions, CreateChannelRequest, UpdateChannelRequest } from '@/types/channel';
-import { getCommunityChannels, createCommunityChannel, createOrGetPrivateChannel, getMyPrivateChannels, getChannelDetail,  } from '@/services/channelService';
+import * as signalR from '@microsoft/signalr';
+import { 
+  Channel, 
+  ChannelDetail, 
+  ChannelMessagesOptions, 
+  CreateChannelRequest, 
+  UpdateChannelRequest 
+} from '@/types/channel';
+import { 
+  getCommunityChannels, 
+  createCommunityChannel as createCommunityChannelService, 
+  createOrGetPrivateChannel, 
+  getMyPrivateChannels, 
+  getChannelDetail, 
+  updateChannel as updateChannelService, 
+  deleteChannel as deleteChannelService 
+} from '@/services/channelService';
+import { ChatService } from '@/services/chatService';
+
+const chatService = new ChatService();
 
 interface UseChannelReturn {
   // États
@@ -12,7 +30,7 @@ interface UseChannelReturn {
   privateChannels: Channel[];
   currentChannel: ChannelDetail | null;
   
-  // Actions
+  // Actions liées aux canaux
   loadCommunityChannels: (communityId: string) => Promise<void>;
   loadPrivateChannels: () => Promise<void>;
   loadChannelDetail: (channelId: string, options?: ChannelMessagesOptions) => Promise<void>;
@@ -21,24 +39,32 @@ interface UseChannelReturn {
   updateChannel: (channelId: string, channel: UpdateChannelRequest) => Promise<boolean>;
   deleteChannel: (channelId: string) => Promise<boolean>;
   refreshCurrentChannel: () => Promise<void>;
+
+  // Actions liées à SignalR / Chat
+  connectSignalR: (url: string) => Promise<void>;
+  sendMessage: (user: string, message: string) => Promise<void>;
+  joinGroup: (groupName: string) => Promise<void>;
+  sendToGroup: (groupName: string, user: string, message: string) => Promise<void>;
+  onMessageReceived: (callback: (user: string, message: string) => void) => void;
+  onGroupMessageReceived: (callback: (group: string, user: string, message: string) => void) => void;
 }
 
 export const useChannel = (): UseChannelReturn => {
   // États
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
-  
+
   // Données
   const [communityChannels, setCommunityChannels] = useState<Channel[]>([]);
   const [privateChannels, setPrivateChannels] = useState<Channel[]>([]);
   const [currentChannel, setCurrentChannel] = useState<ChannelDetail | null>(null);
   const [currentChannelOptions, setCurrentChannelOptions] = useState<ChannelMessagesOptions & { id: string }>({ id: '' });
-  
-  // Action: Charger les canaux d'une communauté
+
+  // Actions liées aux canaux
   const loadCommunityChannels = useCallback(async (communityId: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const channels = await getCommunityChannels(communityId);
       setCommunityChannels(channels);
@@ -49,12 +75,11 @@ export const useChannel = (): UseChannelReturn => {
       setLoading(false);
     }
   }, []);
-  
-  // Action: Charger les canaux privés
+
   const loadPrivateChannels = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const channels = await getMyPrivateChannels();
       setPrivateChannels(channels);
@@ -65,12 +90,11 @@ export const useChannel = (): UseChannelReturn => {
       setLoading(false);
     }
   }, []);
-  
-  // Action: Charger les détails d'un canal
+
   const loadChannelDetail = useCallback(async (channelId: string, options: ChannelMessagesOptions = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const channel = await getChannelDetail(channelId, options);
       setCurrentChannel(channel);
@@ -82,15 +106,13 @@ export const useChannel = (): UseChannelReturn => {
       setLoading(false);
     }
   }, []);
-  
-  // Action: Créer un canal dans une communauté
+
   const createCommunityChannel = useCallback(async (communityId: string, channel: CreateChannelRequest): Promise<Channel | null> => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const newChannel = await createCommunityChannel(communityId, channel);
-      // Mettre à jour la liste des canaux
+      const newChannel = await createCommunityChannelService(communityId, channel);
       if (newChannel) {
         setCommunityChannels(prev => [...prev, newChannel]);
       }
@@ -103,15 +125,13 @@ export const useChannel = (): UseChannelReturn => {
       setLoading(false);
     }
   }, []);
-  
-  // Action: Créer ou récupérer un canal privé
+
   const createPrivateChannel = useCallback(async (userId: string): Promise<Channel | null> => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const channel = await createOrGetPrivateChannel(userId);
-      // Vérifier si le canal existe déjà dans la liste
       const channelExists = privateChannels.some(c => c.id === channel.id);
       if (!channelExists) {
         setPrivateChannels(prev => [...prev, channel]);
@@ -125,27 +145,24 @@ export const useChannel = (): UseChannelReturn => {
       setLoading(false);
     }
   }, [privateChannels]);
-  
-  // Action: Mettre à jour un canal
+
   const updateChannel = useCallback(async (channelId: string, channel: UpdateChannelRequest): Promise<boolean> => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      await updateChannel(channelId, channel);
-      
-      // Mettre à jour le canal dans les listes
-      const updateChannelInList = (list: Channel[]): Channel[] => 
+      await updateChannelService(channelId, channel);
+
+      const updateChannelInList = (list: Channel[]): Channel[] =>
         list.map(c => c.id === channelId ? { ...c, ...channel } : c);
-      
-      setCommunityChannels(updateChannelInList);
-      setPrivateChannels(updateChannelInList);
-      
-      // Mettre à jour le canal actuel si c'est celui qui est modifié
+
+      setCommunityChannels(prev => updateChannelInList(prev));
+      setPrivateChannels(prev => updateChannelInList(prev));
+
       if (currentChannel && currentChannel.id === channelId) {
         setCurrentChannel({ ...currentChannel, ...channel });
       }
-      
+
       return true;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Une erreur est survenue'));
@@ -155,24 +172,21 @@ export const useChannel = (): UseChannelReturn => {
       setLoading(false);
     }
   }, [currentChannel]);
-  
-  // Action: Supprimer un canal
+
   const deleteChannel = useCallback(async (channelId: string): Promise<boolean> => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      await deleteChannel(channelId);
-      
-      // Supprimer le canal des listes
+      await deleteChannelService(channelId);
+
       setCommunityChannels(prev => prev.filter(c => c.id !== channelId));
       setPrivateChannels(prev => prev.filter(c => c.id !== channelId));
-      
-      // Réinitialiser le canal actuel si c'est celui qui est supprimé
+
       if (currentChannel && currentChannel.id === channelId) {
         setCurrentChannel(null);
       }
-      
+
       return true;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Une erreur est survenue'));
@@ -182,8 +196,7 @@ export const useChannel = (): UseChannelReturn => {
       setLoading(false);
     }
   }, [currentChannel]);
-  
-  // Action: Rafraîchir le canal actuel
+
   const refreshCurrentChannel = useCallback(async () => {
     if (currentChannelOptions.id) {
       await loadChannelDetail(currentChannelOptions.id, {
@@ -192,7 +205,32 @@ export const useChannel = (): UseChannelReturn => {
       });
     }
   }, [currentChannelOptions, loadChannelDetail]);
-  
+
+  // Actions liées à SignalR / Chat
+  const connectSignalR = useCallback(async (url: string) => {
+    await chatService.connect(url);
+  }, []);
+
+  const sendMessage = useCallback(async (user: string, message: string) => {
+    await chatService.sendMessage(user, message);
+  }, []);
+
+  const joinGroup = useCallback(async (groupName: string) => {
+    await chatService.joinGroup(groupName);
+  }, []);
+
+  const sendToGroup = useCallback(async (groupName: string, user: string, message: string) => {
+    await chatService.sendToGroup(groupName, user, message);
+  }, []);
+
+  const onMessageReceived = useCallback((callback: (user: string, message: string) => void) => {
+    chatService.onMessageReceived(callback);
+  }, []);
+
+  const onGroupMessageReceived = useCallback((callback: (group: string, user: string, message: string) => void) => {
+    chatService.onGroupMessageReceived(callback);
+  }, []);
+
   return {
     loading,
     error,
@@ -206,7 +244,13 @@ export const useChannel = (): UseChannelReturn => {
     createPrivateChannel,
     updateChannel,
     deleteChannel,
-    refreshCurrentChannel
+    refreshCurrentChannel,
+    connectSignalR,
+    sendMessage,
+    joinGroup,
+    sendToGroup,
+    onMessageReceived,
+    onGroupMessageReceived
   };
 };
 
