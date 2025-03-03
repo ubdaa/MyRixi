@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import * as signalR from '@microsoft/signalr';
 import { 
   Channel, 
-  ChannelDetail, 
-  ChannelMessagesOptions, 
+  ChannelDetail,
   CreateChannelRequest, 
   UpdateChannelRequest 
 } from '@/types/channel';
@@ -19,7 +18,9 @@ import {
 import { ChatService } from '@/services/chatService';
 import { Platform } from 'react-native';
 
-const chatService = new ChatService();
+export const API_URL = Platform.OS === "android" 
+  ? 'http://10.0.2.2:5000/v1' 
+  : 'http://172.20.10.2:5000/v1';
 
 interface UseChannelReturn {
   // États
@@ -34,40 +35,36 @@ interface UseChannelReturn {
   // Actions liées aux canaux
   loadCommunityChannels: (communityId: string) => Promise<void>;
   loadPrivateChannels: () => Promise<void>;
-  loadChannelDetail: (channelId: string, options?: ChannelMessagesOptions) => Promise<void>;
+  loadChannel: (channelId: string) => Promise<ChannelDetail | null>;
   createCommunityChannel: (communityId: string, channel: CreateChannelRequest) => Promise<Channel | null>;
   createPrivateChannel: (userId: string) => Promise<Channel | null>;
   updateChannel: (channelId: string, channel: UpdateChannelRequest) => Promise<boolean>;
   deleteChannel: (channelId: string) => Promise<boolean>;
-  refreshCurrentChannel: () => Promise<void>;
-
-  // Actions liées à SignalR / Chat
+  
+  // Actions liées à SignalR
   chatService: ChatService;
-
   connectSignalR: () => Promise<boolean>;
-  sendMessage: (user: string, message: string) => Promise<void>;
   joinChannel: (channelId: string) => Promise<boolean>;
   leaveChannel: (channelId: string) => Promise<boolean>;
-  sendToChannel: (channelId: string, user: string, message: string) => Promise<void>;
-  onMessageReceived: (callback: (user: string, message: string) => void) => void;
-  onGroupMessageReceived: (callback: (group: string, user: string, message: string) => void) => void;
+  
+  // Callbacks pour notifications utilisateurs
+  onUserJoinedChannel: (callback: (data: { UserId: string, ChannelId: string }) => void) => void;
+  onUserLeftChannel: (callback: (data: { UserId: string, ChannelId: string }) => void) => void;
+  onConnectionClosed: (callback: (error: Error | undefined) => void) => void;
 }
-
-// Définissez une URL de base cohérente
-const API_URL = Platform.OS === "android" 
-  ? 'http://10.0.2.2:5000/v1' 
-  : 'http://172.20.10.2:5000/v1';
 
 export const useChannel = (): UseChannelReturn => {
   // États
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
-
+  
   // Données
   const [communityChannels, setCommunityChannels] = useState<Channel[]>([]);
   const [privateChannels, setPrivateChannels] = useState<Channel[]>([]);
   const [currentChannel, setCurrentChannel] = useState<ChannelDetail | null>(null);
-  const [currentChannelOptions, setCurrentChannelOptions] = useState<ChannelMessagesOptions & { id: string }>({ id: '' });
+  
+  // Initialisation du service Chat
+  const [chatService] = useState<ChatService>(() => new ChatService());
 
   // Actions liées aux canaux
   const loadCommunityChannels = useCallback(async (communityId: string) => {
@@ -100,17 +97,18 @@ export const useChannel = (): UseChannelReturn => {
     }
   }, []);
 
-  const loadChannelDetail = useCallback(async (channelId: string, options: ChannelMessagesOptions = {}) => {
+  const loadChannel = useCallback(async (channelId: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const channel = await getChannelDetail(channelId, options);
+      const channel = await getChannelDetail(channelId);
       setCurrentChannel(channel);
-      setCurrentChannelOptions({ ...options, id: channelId });
+      return channel;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Une erreur est survenue'));
       console.error('Erreur lors du chargement des détails du canal:', err);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -206,63 +204,75 @@ export const useChannel = (): UseChannelReturn => {
     }
   }, [currentChannel]);
 
-  const refreshCurrentChannel = useCallback(async () => {
-    if (currentChannelOptions.id) {
-      await loadChannelDetail(currentChannelOptions.id, {
-        pageSize: currentChannelOptions.pageSize,
-        pageNumber: currentChannelOptions.pageNumber
-      });
-    }
-  }, [currentChannelOptions, loadChannelDetail]);
-
-  // Actions liées à SignalR / Chat
+  // Actions liées à SignalR
   const connectSignalR = useCallback(async () => {
     return await chatService.connect(`${API_URL}/hubs/chat`);
-  }, []);
-
-  const sendMessage = useCallback(async (user: string, message: string) => {
-    await chatService.sendMessage(message);
-  }, []);
+  }, [chatService]);
 
   const joinChannel = useCallback(async (channelId: string) => {
     return await chatService.joinChannel(channelId);
-  }, []);
+  }, [chatService]);
 
   const leaveChannel = useCallback(async (channelId: string) => {
     return await chatService.leaveChannel(channelId);
-  }, []);
+  }, [chatService]);
 
-  const sendToChannel = useCallback(async (groupName: string, user: string, message: string) => {
-  }, []);
+  // Callbacks pour notifications utilisateurs
+  const onUserJoinedChannel = useCallback((callback: (data: { UserId: string, ChannelId: string }) => void) => {
+    chatService.onUserJoinedChannel(callback);
+  }, [chatService]);
 
-  const onMessageReceived = useCallback((callback: (user: string, message: string) => void) => {
-  }, []);
+  const onUserLeftChannel = useCallback((callback: (data: { UserId: string, ChannelId: string }) => void) => {
+    chatService.onUserLeftChannel(callback);
+  }, [chatService]);
 
-  const onGroupMessageReceived = useCallback((callback: (group: string, user: string, message: string) => void) => {
-  }, []);
+  const onConnectionClosed = useCallback((callback: (error: Error | undefined) => void) => {
+    chatService.onConnectionClosed(callback);
+  }, [chatService]);
+
+  // Connexion SignalR au chargement du hook
+  useEffect(() => {
+    connectSignalR().catch(err => {
+      console.error('Erreur lors de la connexion SignalR:', err);
+      setError(new Error('La connexion au chat a échoué. Veuillez réessayer.'));
+    });
+
+    return () => {
+      chatService.disconnect().catch(err => {
+        console.error('Erreur lors de la déconnexion SignalR:', err);
+      });
+    };
+  }, [connectSignalR, chatService]);
 
   return {
+    // États
     loading,
     error,
+
+    // Données
     communityChannels,
     privateChannels,
     currentChannel,
+    
+    // Actions liées aux canaux
     loadCommunityChannels,
     loadPrivateChannels,
-    loadChannelDetail,
+    loadChannel,
     createCommunityChannel,
     createPrivateChannel,
     updateChannel,
     deleteChannel,
-    refreshCurrentChannel,
+    
+    // Actions liées à SignalR
     chatService,
     connectSignalR,
-    sendMessage,
     joinChannel,
     leaveChannel,
-    sendToChannel,
-    onMessageReceived,
-    onGroupMessageReceived
+    
+    // Callbacks pour notifications utilisateurs
+    onUserJoinedChannel,
+    onUserLeftChannel,
+    onConnectionClosed
   };
 };
 

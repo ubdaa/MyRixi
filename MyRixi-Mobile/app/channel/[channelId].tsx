@@ -1,76 +1,164 @@
+import { ChannelHeader } from "@/components/channel/channel-header";
+import { MessageInput } from "@/components/channel/message-input";
+import { MessageList } from "@/components/channel/message-list";
 import useChannel from "@/hooks/useChannel";
-import signalR from "@microsoft/signalr";
+import useMessages from "@/hooks/useMessages";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChannelScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const navigation = useNavigation();
   const { channelId } = useLocalSearchParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const id = Array.isArray(channelId) ? channelId[0] : channelId || '';
+  
+  // États locaux pour gérer l'affichage
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
 
-  const channel = useChannel();
+  // Hooks personnalisés pour la gestion des canaux et messages
+  const { 
+    loading: channelLoading, 
+    error: channelError, 
+    currentChannel,
+    loadChannel, 
+    joinChannel, 
+    leaveChannel,
+    chatService
+  } = useChannel();
 
+  const { 
+    loading: messagesLoading, 
+    error: messagesError,
+    messages,
+    loadMoreMessages,
+    sendMessage
+  } = useMessages({ 
+    channelId: id, 
+    chatService 
+  });
+
+  // Initialisation du canal
   useEffect(() => {
-    const id = Array.isArray(channelId) ? channelId[0] : channelId;
-
     if (!id) {
-      setError("Channel ID is missing");
-      setIsLoading(false);
+      setConnectionError("Channel ID is missing");
+      setIsInitializing(false);
       return;
     }
 
-    async function joinChannel() {
+    async function initializeChannel() {
       try {
-        setIsLoading(true);
-        const success = await channel.joinChannel(id);
+        // Chargement des détails du canal
+        await loadChannel(id);
+        
+        // Rejoindre le canal pour la connexion en temps réel
+        const success = await joinChannel(id);
         if (!success) {
-          setError("Failed to join channel");
+          setConnectionError("Failed to connect to channel");
         }
       } catch (err) {
-        console.error("Error in joinChannel:", err);
-        setError("An error occurred while joining the channel");
+        console.error("Error initializing channel:", err);
+        setConnectionError("An error occurred while loading the channel");
       } finally {
-        setIsLoading(false);
+        setIsInitializing(false);
       }
     }
 
-    joinChannel();
+    initializeChannel();
 
-    // Clean up function to leave the channel when navigating away
+    // Nettoyage lors du départ de la page
     const listener = navigation.addListener("beforeRemove", (e) => {
       e.preventDefault();
-      console.log("onback");
-      // Do your stuff here
-      channel
-      .leaveChannel(id)
-      .catch((err) => console.error("Error leaving channel:", err));
-      navigation.dispatch(e.data.action);
+      leaveChannel(id)
+        .then(() => navigation.dispatch(e.data.action))
+        .catch(err => {
+          console.error("Error leaving channel:", err);
+          navigation.dispatch(e.data.action);
+        });
     });
-    
+
     return () => {
       if (id) {
-        channel
-        .leaveChannel(id)
-        .catch((err) => console.error("Error leaving channel:", err));
+        leaveChannel(id).catch(err => console.error("Error leaving channel:", err));
       }
       navigation.removeListener("beforeRemove", listener);
     };
-  }, []);
+  }, [id, loadChannel, joinChannel, leaveChannel, navigation]);
 
-  if (isLoading) {
+  // Gestion des états de chargement et d'erreur
+  if (isInitializing || channelLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Loading...</Text>
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading channel...</Text>
       </View>
     );
   }
 
+  // Gestion des erreurs
+  const error = connectionError || channelError?.message || messagesError?.message;
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <View style={styles.centerContent}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Affichage principal du canal
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Channel {channelId}</Text>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <ChannelHeader
+        channel={currentChannel}
+        onBackPress={() => router.back()}
+      />
+      
+      <MessageList
+        messages={messages}
+        loading={messagesLoading}
+        onLoadMore={loadMoreMessages}
+      />
+      
+      <MessageInput
+        channelId={id}
+        onSend={content => sendMessage(content)}
+      />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#36393f',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#36393f',
+  },
+  loadingText: {
+    color: '#ffffff',
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    backgroundColor: '#36393f',
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: '#f04747',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+});
