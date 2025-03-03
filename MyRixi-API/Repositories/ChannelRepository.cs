@@ -131,7 +131,7 @@ public class ChannelRepository : GenericRepository<Channel>, IChannelRepository
             .Include(c => c.Participants)
             .FirstOrDefault(c => c.Id == channelId);
         
-        return Task.FromResult(channel != null && channel.Participants.Any(p => p.Id == userId));
+        return Task.FromResult(channel != null && (channel.Participants.Any(p => p.Id == userId) || !channel.IsPrivate));
     }
 
     public async Task AddUserToChannelAsync(Guid channelId, Guid userId)

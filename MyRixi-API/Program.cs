@@ -40,6 +40,28 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
+        
+        // Ajoutez cette configuration pour les événements
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+            
+                // Si le token n'est pas dans l'URL, essayez de le récupérer des headers
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    accessToken = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                }
+            
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/v1/hubs/chat"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -72,6 +94,13 @@ builder.Services.AddCors(options =>
     });
 });
 
+// SignalR
+builder.Services.AddSignalR().AddJsonProtocol(options => {
+    options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+}).AddHubOptions<ChatHub>(options => {
+    options.EnableDetailedErrors = true;
+});
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
@@ -96,9 +125,6 @@ builder.Services.AddAutoMapper(typeof(CommunityMappingProfile));
 builder.Services.AddAutoMapper(typeof(ChannelMappingProfile));
 builder.Services.AddAutoMapper(typeof(MessageMappingProfile));
 builder.Services.AddAutoMapper(typeof(ProfileMappingProfile));
-
-// SignalR
-builder.Services.AddSignalR();
 
 var app = builder.Build();
 
