@@ -62,7 +62,7 @@ export function MessageList ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#36393f',
+    backgroundColor: '#f5f5f5', 
   },
   listContent: {
     paddingVertical: 16,
@@ -72,17 +72,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#36393f',
+    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   emptyText: {
-    color: '#dcddde',
+    color: '#424242',
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   emptySubText: {
-    color: '#a3a6aa',
+    color: '#757575',
     fontSize: 14,
     textAlign: 'center',
   },

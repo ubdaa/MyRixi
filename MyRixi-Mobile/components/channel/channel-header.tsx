@@ -12,7 +12,7 @@ export function ChannelHeader ({ channel, onBackPress }: ChannelHeaderProps) {
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={24} color="#fff" />
+        <Ionicons name="chevron-back" size={24} color="#424242" />
       </TouchableOpacity>
       
       <View style={styles.headerInfo}>
@@ -24,7 +24,7 @@ export function ChannelHeader ({ channel, onBackPress }: ChannelHeaderProps) {
       
       <View style={styles.headerActions}>
         <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="people" size={22} color="#fff" />
+          <Ionicons name="people" size={22} color="#424242" />
         </TouchableOpacity>
         <Text style={styles.memberCount}>{channel?.participantCount || 0}</Text>
       </View>
@@ -38,9 +38,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#2f3136',
+    backgroundColor: '#f5f5f5',
     borderBottomWidth: 1,
-    borderBottomColor: '#1e1f22',
+    borderBottomColor: '#e0e0e0',
   },
   backButton: {
     padding: 4,
@@ -52,11 +52,11 @@ const styles = StyleSheet.create({
   channelName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: '#424242',
   },
   channelDescription: {
     fontSize: 12,
-    color: '#a3a6aa',
+    color: '#757575',
   },
   headerActions: {
     flexDirection: 'row',
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   memberCount: {
-    color: '#a3a6aa',
+    color: '#424242',
     fontSize: 14,
     marginLeft: 2,
   },

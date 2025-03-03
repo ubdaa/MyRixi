@@ -68,23 +68,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#40444b',
+    backgroundColor: '#fafafa',
     borderTopWidth: 1,
-    borderTopColor: '#202225',
+    borderTopColor: '#e0e0e0',
   },
   iconButton: {
     padding: 8,
   },
   inputContainer: {
     flex: 1,
-    backgroundColor: '#40444b',
+    backgroundColor: '#e0e0e0',
     borderRadius: 20,
     marginHorizontal: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   input: {
-    color: '#dcddde',
+    color: '#424242',
     fontSize: 16,
     maxHeight: 100,
   },
@@ -97,6 +97,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: '#4f545c',
+    backgroundColor: '#cfd8dc',
   },
 });
