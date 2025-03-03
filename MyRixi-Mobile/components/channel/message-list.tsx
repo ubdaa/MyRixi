@@ -48,7 +48,7 @@ export function MessageList ({
       renderItem={({ item, index }) => (
         <Message 
           message={item} 
-          showAvatar={index === 0 || messages[index - 1].sender?.id !== item.userId} 
+          showAvatar={true} 
         />
       )}
       onEndReached={onLoadMore}

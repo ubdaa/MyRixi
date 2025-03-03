@@ -150,6 +150,9 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
         console.log('Message reçu dans le hook:', normalizedMessage);
         setMessages(prev => [normalizedMessage, ...prev]);
       }
+
+      // on refetch les messages avec la page actuelle
+      fetchMessages({ pageSize: pageSize, pageNumber: page });
     };
 
     chatService.onMessageReceived(handleNewMessage);
