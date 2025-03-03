@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   },
   continuedMessage: {
     marginBottom: 4,
-    marginLeft: 46, // To align with the first message that has an avatar
+    marginLeft: 46,
   },
   avatar: {
     width: 40,
@@ -70,12 +70,12 @@ const styles = StyleSheet.create({
   username: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#fff',
+    color: '#424242',
     marginRight: 8,
   },
   date: {
     fontSize: 12,
-    color: '#a3a6aa',
+    color: '#757575',
   },
   bubbleContainer: {
     flexDirection: 'row',
@@ -85,12 +85,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   messageText: {
-    color: '#dcddde',
+    color: '#424242',
     fontSize: 15,
   },
   time: {
     fontSize: 10,
-    color: '#a3a6aa',
+    color: '#757575',
     marginLeft: 6,
   },
 });

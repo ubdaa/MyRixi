@@ -15,7 +15,7 @@ export interface Message {
   reactions: Reaction[];
 }
 
-export interface SendMessageRequest {
+export interface CreateMessageDto {
   content: string;
   channelId: string;
   attachmentIds: string[];

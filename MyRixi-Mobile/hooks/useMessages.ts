@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChannelDetail, ChannelMessagesOptions } from '@/types/channel';
 import { getChannelDetail } from '@/services/channelService';
-import { SendMessageRequest } from '@/types/message';
+import { CreateMessageDto } from '@/types/message';
 import { ChatService } from '@/services/chatService';
 
 interface UseMessagesProps {
@@ -102,9 +102,9 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
     if (!channelId) return false;
     
     try {
-      const messageDto: SendMessageRequest = {
-        channelId,
-        content,
+      const messageDto: CreateMessageDto = {
+        content: content,
+        channelId: channelId,
         attachmentIds: []
       };
 

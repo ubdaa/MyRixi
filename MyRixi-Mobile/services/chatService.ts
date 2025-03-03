@@ -1,4 +1,4 @@
-import { SendMessageRequest } from '@/types/message';
+import { CreateMessageDto } from '@/types/message';
 import * as signalR from '@microsoft/signalr';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -123,10 +123,12 @@ export class ChatService {
     }
   }
 
-  async sendMessage(messageDto: SendMessageRequest) {
+  async sendMessage(messageDto: CreateMessageDto) {
     if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) {
       return false;
     }
+
+    console.log('Sending message: ', messageDto);
 
     try {
       await this.connection.invoke('SendMessage', messageDto);

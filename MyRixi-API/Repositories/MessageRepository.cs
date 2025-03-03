@@ -71,9 +71,9 @@ public class MessageRepository : GenericRepository<Message>, IMessageRepository
             .ToListAsync();
     }
 
-    public Task<Message> SendMessageAsync(Message message)
+    public async Task<Message> SendMessageAsync(Message message)
     {
-        throw new NotImplementedException();
+        return await CreateAsync(message);
     }
 
     public Task<Message?> GetMessageAsync(Guid messageId)

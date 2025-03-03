@@ -70,10 +70,7 @@ public class ChatHub : Hub
         
         // Vérifier si l'utilisateur peut accéder à ce canal
         var canAccess = await _channelService.UserCanAccessChannelAsync(channelId, userId);
-        if (!canAccess)
-        {
-            throw new HubException("Vous n'avez pas accès à ce canal");
-        }
+        if (!canAccess) throw new HubException("Vous n'avez pas accès à ce canal");
         
         await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
         
@@ -100,10 +97,7 @@ public class ChatHub : Hub
         
         // Vérifier si l'utilisateur peut accéder à ce canal
         var canAccess = await _channelService.UserCanAccessChannelAsync(messageDto.ChannelId, userId);
-        if (!canAccess)
-        {
-            throw new HubException("Vous n'avez pas accès à ce canal");
-        }
+        if (!canAccess) throw new HubException("Vous n'avez pas accès à ce canal");
         
         var newMessage = new Message
         {
@@ -123,10 +117,10 @@ public class ChatHub : Hub
         }
         
         var sentMessage = await _messageService.SendMessageAsync(newMessage);
-        //messageDto = _mapper.Map<MessageDto>(sentMessage);
+        var messageBack = _mapper.Map<MessageDto>(sentMessage);
         
         // Envoyer le message à tous les utilisateurs du canal
-        await Clients.Group(messageDto.ChannelId.ToString()).SendAsync("ReceiveMessage", messageDto);
+        await Clients.Group(messageDto.ChannelId.ToString()).SendAsync("ReceiveMessage", messageBack);
     }
 
     public async Task AddReaction(Guid messageId, string emoji)
