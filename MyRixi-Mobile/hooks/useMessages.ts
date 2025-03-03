@@ -127,7 +127,7 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
     if (channelId) {
       refreshMessages();
     }
-  }, [channelId, refreshMessages]);
+  }, []);
 
   // Configurer les écouteurs pour les nouveaux messages
   useEffect(() => {
@@ -145,7 +145,7 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
       // Ne peut pas vraiment "désenregistrer" le callback, mais on peut le remplacer par un no-op
       chatService.onMessageReceived(() => {});
     };
-  }, [channelId, chatService]);
+  }, []);
 
   return {
     // États

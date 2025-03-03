@@ -81,12 +81,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 8,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 0,
   },
   input: {
     color: '#424242',
     fontSize: 16,
-    maxHeight: 100,
+    maxHeight: 60,
   },
   sendButton: {
     width: 40,
