@@ -20,7 +20,8 @@ public class ChannelMappingProfile : Profile
             .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()))
             .ForMember(dest => dest.ParticipantCount, opt => opt.MapFrom(src => src.Participants.Count));
 
-        CreateMap<User, UserChannelDto>();
+        CreateMap<User, UserChannelDto>()
+            .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.UserProfile.ProfilePicture.Url));
         
         CreateMap<Message, MessageDto>()
             .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => src.Sender))

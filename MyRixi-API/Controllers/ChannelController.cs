@@ -60,8 +60,10 @@ public class ChannelController : ControllerBase
             
         // Marquer les messages comme lus
         await _messageService.MarkMessagesAsReadAsync(channelId, userId);
+        
+        var channelDto = _mapper.Map<ChannelDetailDto>(channel);
             
-        return Ok(_mapper.Map<ChannelDetailDto>(channel));
+        return Ok(channelDto);
     }
 
     [HttpPost("community/{communityId}")]

@@ -173,7 +173,9 @@ public class ChannelRepository : GenericRepository<Channel>, IChannelRepository
                 .OrderByDescending(m => m.SentAt)
                 .Skip((pageNumber - 1) * messagePageSize)
                 .Take(messagePageSize))
-            .ThenInclude(m => m.Sender)
+                .ThenInclude(m => m.Sender)
+                .ThenInclude(u => u.UserProfile)
+                .ThenInclude(u => u.ProfilePicture)
             .Include(c => c.Participants)
             .FirstOrDefaultAsync(c => c.Id == channelId);
     }

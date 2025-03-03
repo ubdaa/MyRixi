@@ -73,12 +73,21 @@ public class MessageRepository : GenericRepository<Message>, IMessageRepository
 
     public async Task<Message> SendMessageAsync(Message message)
     {
-        return await CreateAsync(message);
+        var newMessage = await CreateAsync(message);
+        return await GetByIdAsync(newMessage.Id) ?? newMessage;
     }
 
-    public Task<Message?> GetMessageAsync(Guid messageId)
+    public async Task<Message?> GetMessageAsync(Guid messageId)
     {
-        throw new NotImplementedException();
+        return await _context.Messages
+            .Include(m => m.Sender)
+                .ThenInclude(r => r.UserProfile)
+                .ThenInclude(r => r.ProfilePicture)
+            .Include(m => m.Channel)
+            .Include(m => m.Attachments)
+            .Include(m => m.Reactions)
+                .ThenInclude(r => r.Users)
+            .FirstOrDefaultAsync(m => m.Id == messageId);
     }
 
     public Task DeleteMessageAsync(Guid messageId)
