@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Keyboard, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 type MessageInputProps = {
@@ -23,7 +23,7 @@ export function MessageInput({ channelId, onSend }: MessageInputProps) {
         setMessage('');
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('Erreur lors de l\'envoi du message:', error);
     } finally {
       setSending(false);
     }
@@ -31,31 +31,33 @@ export function MessageInput({ channelId, onSend }: MessageInputProps) {
 
   return (
     <View style={styles.container}>
+      {/* Bouton pour les emojis */}
       <TouchableOpacity style={styles.iconButton}>
-        <Ionicons name="add-circle-outline" size={24} color="#b9bbbe" />
+        <Ionicons name="ellipsis-horizontal-circle-outline" size={28} color="#72767d" />
       </TouchableOpacity>
-      
+
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
           value={message}
           onChangeText={setMessage}
           placeholder="Envoyer un message..."
-          placeholderTextColor="#72767d"
+          placeholderTextColor="#99aab5"
           multiline
           maxLength={2000}
+          underlineColorAndroid="transparent"
         />
       </View>
       
       <TouchableOpacity 
-        style={[styles.sendButton, message.trim() === '' && styles.sendButtonDisabled]}
+        style={[styles.sendButton, (message.trim() === '' || sending) && styles.sendButtonDisabled]}
         onPress={handleSend}
         disabled={message.trim() === '' || sending}
       >
         <Ionicons 
           name="send" 
           size={20} 
-          color={message.trim() === '' ? "#72767d" : "#fff"} 
+          color="#fff" 
         />
       </TouchableOpacity>
     </View>
@@ -65,15 +67,13 @@ export function MessageInput({ channelId, onSend }: MessageInputProps) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
     paddingVertical: 10,
     backgroundColor: '#fafafa',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
   },
   iconButton: {
-    padding: 8,
+    padding: 6,
   },
   inputContainer: {
     flex: 1,
@@ -81,18 +81,21 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 8,
     paddingHorizontal: 12,
-    paddingVertical: 0,
+    paddingVertical: 10,
+    maxHeight: 120,
   },
   input: {
     color: '#424242',
     fontSize: 16,
-    maxHeight: 60,
+    lineHeight: 20,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#5865f2',
+    backgroundColor: '#7289da',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -100,3 +103,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#cfd8dc',
   },
 });
+

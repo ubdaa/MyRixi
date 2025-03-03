@@ -5,7 +5,7 @@ import useChannel from "@/hooks/useChannel";
 import useMessages from "@/hooks/useMessages";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChannelScreen() {
@@ -69,22 +69,10 @@ export default function ChannelScreen() {
 
     initializeChannel();
 
-    // Nettoyage lors du départ de la page
-    const listener = navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
-      leaveChannel(id)
-        .then(() => navigation.dispatch(e.data.action))
-        .catch(err => {
-          console.error("Error leaving channel:", err);
-          navigation.dispatch(e.data.action);
-        });
-    });
-
     return () => {
       if (id) {
         leaveChannel(id).catch(err => console.error("Error leaving channel:", err));
       }
-      navigation.removeListener("beforeRemove", listener);
     };
   }, []);
 
@@ -111,7 +99,7 @@ export default function ChannelScreen() {
 
   // Affichage principal du canal
   return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <ChannelHeader
         channel={currentChannel}
         onBackPress={() => router.back()}
@@ -127,7 +115,7 @@ export default function ChannelScreen() {
         channelId={id}
         onSend={content => sendMessage(content)}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

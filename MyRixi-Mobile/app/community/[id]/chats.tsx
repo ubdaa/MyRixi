@@ -1,12 +1,13 @@
 import CommunityChannels from '@/components/community/channels/channels-list';
 import { useLocalSearchParams } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CommunityChatsScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'right', 'left']}>
       <CommunityChannels />
-    </View>
+    </SafeAreaView>
   );
 }
 

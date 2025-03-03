@@ -11,6 +11,7 @@ export default function RootLayout() {
         <Stack.Screen name="community/create" options={{ presentation: 'modal', headerTitle: 'Création communauté' }} />
         <Stack.Screen name="community/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="channel/[channelId]" options={{ headerShown: false }} />
+        <Stack.Screen name="channel/create" options={{ presentation: 'modal', headerTitle: 'Création communauté' }} />
       </Stack>
     </Providers>
   );
