@@ -5,7 +5,7 @@ import useChannel from "@/hooks/useChannel";
 import useMessages from "@/hooks/useMessages";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, KeyboardAvoidingView } from "react-native";
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChannelScreen() {
@@ -75,7 +75,7 @@ export default function ChannelScreen() {
       }
     };
   }, []);
-
+  
   // Gestion des états de chargement et d'erreur
   if (isInitializing || channelLoading) {
     return (
@@ -97,24 +97,29 @@ export default function ChannelScreen() {
     );
   }
 
-  // Affichage principal du canal
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-      <ChannelHeader
-        channel={currentChannel}
-        onBackPress={() => router.back()}
-      />
-      
-      <MessageList
-        messages={messages}
-        loading={messagesLoading}
-        onLoadMore={loadMoreMessages}
-      />
-      
-      <MessageInput
-        channelId={id}
-        onSend={content => sendMessage(content)}
-      />
+    <KeyboardAvoidingView 
+      style={[styles.container]} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={-insets.bottom}
+    >
+      <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+        <ChannelHeader
+          channel={currentChannel}
+          onBackPress={() => router.back()}
+        />
+        
+        <MessageList
+          messages={messages}
+          loading={messagesLoading}
+          onLoadMore={loadMoreMessages}
+        />
+        
+        <MessageInput
+          channelId={id}
+          onSend={content => sendMessage(content)}
+        />
+      </View>
     </KeyboardAvoidingView>
   );
 }
