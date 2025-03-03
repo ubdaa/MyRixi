@@ -53,7 +53,7 @@ export function MessageList ({
       )}
       onEndReached={onLoadMore}
       onEndReachedThreshold={0.5}
-      inverted={false}
+      inverted={true}
       contentContainerStyle={styles.listContent}
     />
   );

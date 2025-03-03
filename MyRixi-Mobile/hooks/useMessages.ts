@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChannelDetail, ChannelMessagesOptions } from '@/types/channel';
 import { getChannelDetail } from '@/services/channelService';
-import { CreateMessageDto } from '@/types/message';
+import { CreateMessageDto, Message } from '@/types/message';
 import { ChatService } from '@/services/chatService';
 
 interface UseMessagesProps {
@@ -16,7 +16,7 @@ interface UseMessagesReturn {
   hasMoreMessages: boolean;
   
   // Données
-  messages: any[]; // Remplacer par le type Message approprié
+  messages: Message[]; // Type Message approprié
   channelDetail: ChannelDetail | null;
   
   // Actions
@@ -26,7 +26,7 @@ interface UseMessagesReturn {
   sendMessage: (content: string) => Promise<boolean>;
   
   // Événements
-  onMessageReceived: (callback: (messageDto: any) => void) => void;
+  onMessageReceived: (callback: (messageDto: Message) => void) => void;
 }
 
 const pageSize = 25;
@@ -39,7 +39,7 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
   const [page, setPage] = useState(1);
   
   // Données
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [channelDetail, setChannelDetail] = useState<ChannelDetail | null>(null);
   const [currentOptions, setCurrentOptions] = useState<ChannelMessagesOptions>({
     pageSize: pageSize,
@@ -118,11 +118,11 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
   }, [channelId, chatService]);
 
   // S'abonner aux nouveaux messages
-  const onMessageReceived = useCallback((callback: (messageDto: any) => void) => {
+  const onMessageReceived = useCallback((callback: (messageDto: Message) => void) => {
     chatService.onMessageReceived(callback);
   }, [chatService]);
 
-  // Charger les messages au chargement du hook
+  // Charger les messages au chargement du hook ou quand le channelId change
   useEffect(() => {
     if (channelId) {
       refreshMessages();
@@ -134,15 +134,28 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
     if (!channelId) return;
 
     const handleNewMessage = (messageDto: any) => {
-      if (messageDto.channelId === channelId) {
-        setMessages(prev => [messageDto, ...prev]);
+      const normalizedMessage = {
+        id: messageDto.Id || messageDto.id,
+        content: messageDto.Content || messageDto.content,
+        sentAt: messageDto.SentAt || messageDto.sentAt,
+        isRead: messageDto.IsRead || messageDto.isRead,
+        channelId: messageDto.ChannelId || messageDto.channelId,
+        channel: messageDto.Channel || messageDto.channel,
+        sender: messageDto.Sender || messageDto.sender,
+        attachments: messageDto.Attachments || messageDto.attachments || [],
+        reactions: messageDto.Reactions || messageDto.reactions || []
+      };
+      
+      if (normalizedMessage.channelId === channelId) {
+        console.log('Message reçu dans le hook:', normalizedMessage);
+        setMessages(prev => [normalizedMessage, ...prev]);
       }
     };
 
     chatService.onMessageReceived(handleNewMessage);
-
+    
+    // Nettoyer l'écouteur lors du démontage ou changement de channelId
     return () => {
-      // Ne peut pas vraiment "désenregistrer" le callback, mais on peut le remplacer par un no-op
       chatService.onMessageReceived(() => {});
     };
   }, []);

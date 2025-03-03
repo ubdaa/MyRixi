@@ -29,22 +29,25 @@ export class ChatService {
       .withUrl(url, {
         accessTokenFactory: async () => await AsyncStorage.getItem('token') || '',
         transport: signalR.HttpTransportType.WebSockets,
-        skipNegotiation: true  // Try this if you're having connection issues
+        skipNegotiation: true
       })
       .configureLogging(signalR.LogLevel.Information)
-      .withAutomaticReconnect([0, 2000, 5000, 10000, 15000, 30000]) // Retry with increasing delays
+      .withAutomaticReconnect([0, 2000, 5000, 10000, 15000, 30000])
       .build();
 
-    // Setup event handlers
+    // Setup event handlers avec plus de logs de debug
     this.connection.on('ReceiveMessage', (messageDto: any) => {
+      console.log('SignalR ReceiveMessage event triggered with data:', messageDto);
       this.callbacks.messageReceived(messageDto);
     });
 
     this.connection.on('UserJoinedChannel', (data: { UserId: string, ChannelId: string }) => {
+      console.log('SignalR UserJoinedChannel event triggered:', data);
       this.callbacks.userJoinedChannel(data);
     });
 
     this.connection.on('UserLeftChannel', (data: { UserId: string, ChannelId: string }) => {
+      console.log('SignalR UserLeftChannel event triggered:', data);
       this.callbacks.userLeftChannel(data);
     });
 
@@ -77,6 +80,7 @@ export class ChatService {
   }
 
   onMessageReceived(callback: (messageDto: any) => void) {
+    console.log('Setting up new message received callback');
     this.callbacks.messageReceived = callback;
   }
 
@@ -99,7 +103,6 @@ export class ChatService {
     }
 
     try {
-      // Make sure to convert string to GUID format if needed
       await this.connection.invoke('JoinChannel', channelId);
       console.log(`Joined channel: ${channelId}`);
       return true;
@@ -125,6 +128,7 @@ export class ChatService {
 
   async sendMessage(messageDto: CreateMessageDto) {
     if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) {
+      console.error('Cannot send message: SignalR not connected');
       return false;
     }
 
@@ -132,6 +136,7 @@ export class ChatService {
 
     try {
       await this.connection.invoke('SendMessage', messageDto);
+      console.log('Message sent successfully');
       return true;
     } catch (err) {
       console.error('Error sending message: ', err);
