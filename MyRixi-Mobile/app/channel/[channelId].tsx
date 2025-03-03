@@ -86,7 +86,7 @@ export default function ChannelScreen() {
       }
       navigation.removeListener("beforeRemove", listener);
     };
-  }, [id, loadChannel, joinChannel, leaveChannel, navigation]);
+  }, []);
 
   // Gestion des états de chargement et d'erreur
   if (isInitializing || channelLoading) {
@@ -134,21 +134,21 @@ export default function ChannelScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#36393f',
+    backgroundColor: '#f5f5f5', 
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#36393f',
+    backgroundColor: '#f5f5f5',
   },
   loadingText: {
-    color: '#ffffff',
+    color: '#424242',
     fontSize: 16,
   },
   errorContainer: {
     flex: 1,
-    backgroundColor: '#36393f',
+    backgroundColor: '#f5f5f5',
   },
   centerContent: {
     flex: 1,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#f04747',
+    color: '#e57373',
     fontSize: 16,
     textAlign: 'center',
   },
