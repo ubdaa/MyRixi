@@ -38,6 +38,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
 
         modelBuilder.HasPostgresExtension("uuid-ossp");
 
+        // Profiles
         modelBuilder.Entity<MainProfile>()
             .HasDiscriminator<string>("ProfileType")
             .HasValue<UserProfile>("UserProfile")
@@ -79,6 +80,21 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .HasForeignKey(cp => cp.CommunityId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        // roles
+        modelBuilder.Entity<RolePermission>(entity =>
+            {
+                entity.HasKey(rp => new { rp.RoleId, rp.PermissionId });
+                
+                entity.HasOne(rp => rp.Role)
+                    .WithMany(r => r.RolePermissions)
+                    .HasForeignKey(rp => rp.RoleId);
+                    
+                entity.HasOne(rp => rp.Permission)
+                    .WithMany()
+                    .HasForeignKey(rp => rp.PermissionId);
+            }
+        );
         
         modelBuilder.Entity<CommunityProfileRole>(entity =>
         {
@@ -87,6 +103,11 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             entity.HasOne(cpr => cpr.CommunityProfile)
                 .WithMany(cp => cp.ProfileRoles)
                 .HasForeignKey(cpr => cpr.CommunityProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(cpr => cpr.CommunityRole)
+                .WithMany(cmr => cmr.ProfileRoles)
+                .HasForeignKey(cpr => cpr.CommunityRoleId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -101,6 +122,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // commentaires
         modelBuilder.Entity<Comment>(entity =>
         {
             entity.HasOne(c => c.ParentComment)

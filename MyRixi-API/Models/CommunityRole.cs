@@ -18,6 +18,9 @@ public class CommunityRole
     
     // Collection des profils ayant ce rôle
     public ICollection<CommunityProfile> AssignedProfiles { get; set; } = new List<CommunityProfile>();
+    
+    // Collection des profils ayant ce rôle
+    public ICollection<CommunityProfileRole> ProfileRoles { get; set; } = new List<CommunityProfileRole>();
 }
 
 public class RolePermission
