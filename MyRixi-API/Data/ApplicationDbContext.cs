@@ -32,16 +32,13 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configuration globale
         modelBuilder.HasPostgresExtension("uuid-ossp");
 
-        // Configuration des tables héritées
         modelBuilder.Entity<MainProfile>()
             .HasDiscriminator<string>("ProfileType")
             .HasValue<UserProfile>("UserProfile")
             .HasValue<CommunityProfile>("CommunityProfile");
 
-        // Configuration de Profile
         modelBuilder.Entity<MainProfile>(entity =>
         {
             entity.HasKey(p => p.Id);
@@ -58,7 +55,6 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Configuration de UserProfile
         modelBuilder.Entity<UserProfile>(entity =>
         {
             entity.HasOne(up => up.User)
@@ -67,7 +63,6 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Configuration de CommunityProfile
         modelBuilder.Entity<CommunityProfile>(entity =>
         {
             entity.HasOne(cp => cp.User)
@@ -86,7 +81,6 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        // Configuration de CommunityRole
         modelBuilder.Entity<CommunityRole>(entity =>
         {
             entity.HasKey(cr => cr.Id);
@@ -98,7 +92,6 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Configuration des Commentaires
         modelBuilder.Entity<Comment>(entity =>
         {
             entity.HasOne(c => c.ParentComment)
