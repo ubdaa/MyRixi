@@ -100,6 +100,21 @@ public class AuthController : ControllerBase
         return Unauthorized();
     }
     
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return BadRequest("Utilisateur invalide");
+    
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if (result.Succeeded)
+        {
+            return Ok(new { Message = "Email confirmé avec succès" });
+        }
+    
+        return BadRequest(result.Errors);
+    }
+    
     private string GenerateJwtToken(User user)
     {
         var claims = new List<Claim>
