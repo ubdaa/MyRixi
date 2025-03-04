@@ -9,9 +9,7 @@ public class Comment
     public Comment? ParentComment { get; set; }
     public Guid? PostId { get; set; }
     public Post? Post { get; set; }
-    public Guid? CommunityProfileId { get; set; }
-    public CommunityProfile? CommunityProfile { get; set; }
-    public Guid? UserProfileId { get; set; }
-    public UserProfile? UserProfile { get; set; }
+    public Guid? ProfileId { get; set; }
+    public MainProfile? Profile { get; set; }
     public ICollection<Comment> Replies { get; set; } = new List<Comment>();
 }

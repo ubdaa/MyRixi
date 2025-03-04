@@ -1,18 +1,18 @@
-﻿namespace MyRixiApi.Models;
+﻿using System.ComponentModel.DataAnnotations;
 
-public class UserProfile
+namespace MyRixiApi.Models;
+
+public class UserProfile : MainProfile
 {
-    public Guid Id { get; set; }
-    public string DisplayName { get; set; } = string.Empty;
-    public string Bio { get; set; } = string.Empty;
-    public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
-    
-    public Guid ProfilePictureId { get; set; }
-    public Media ProfilePicture { get; set; } = null!;
-    
-    public Guid CoverPictureId { get; set; }
-    public Media CoverPicture { get; set; } = null!;
-    
-    public Guid UserId { get; set; }  // Doit être de type Guid
+    public Guid UserId { get; set; }
     public User User { get; set; } = null!;
+    
+    // Champs spécifiques à l'utilisateur global
+    
+    [StringLength(2048)]
+    public string? PersonalWebsite { get; set; }
+    [StringLength(2048)]
+    public string? TwitterHandle { get; set; }
+    [StringLength(2048)]
+    public string? LinkedInProfile { get; set; }
 }

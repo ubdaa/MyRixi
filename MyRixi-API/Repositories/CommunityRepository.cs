@@ -89,7 +89,7 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateMemberRoleAsync(Guid communityId, Guid userId, string newRole)
+    public async Task UpdateMemberRoleAsync(Guid communityId, Guid userId, CommunityRole newRole)
     {
         var profile = await _context.CommunityProfiles
             .FirstOrDefaultAsync(cp => cp.CommunityId == communityId && cp.UserId == userId);

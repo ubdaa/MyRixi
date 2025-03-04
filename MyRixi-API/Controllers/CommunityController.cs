@@ -70,7 +70,7 @@ public class CommunityController : Controller
 
             var profile = _mapper.Map<CommunityProfile>(user);
             profile.CommunityId = community.Id;
-            profile.Role = "Member";
+            profile.Role = new CommunityRole { Id = Guid.NewGuid(), Name = "Member" };
             profile.JoinStatus = community.IsInviteOnly ? JoinStatus.Pending : JoinStatus.Accepted;
 
             await _communityRepository.AddMemberAsync(profile);
@@ -195,8 +195,7 @@ public class CommunityController : Controller
             profile.Id = Guid.NewGuid();
             profile.CommunityId = community.Id;
             profile.JoinStatus = JoinStatus.Accepted;
-            profile.Role = "Owner";
-            profile.IsOwner = true;
+            profile.Role = new CommunityRole { Id = Guid.NewGuid(), Name = "Owner", IsAdministrator = true };
         
             // Lier le propriétaire à la communauté
             community.Members.Add(profile);

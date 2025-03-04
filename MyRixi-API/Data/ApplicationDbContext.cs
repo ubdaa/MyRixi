@@ -11,75 +11,111 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
         : base(options)
     {
     }
-
+    
+    public DbSet<MainProfile> Profiles { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<CommunityProfile> CommunityProfiles { get; set; }
-    public DbSet<CommunityRule> CommunityRules { get; set; }
+    public DbSet<CommunityRole> CommunityRoles { get; set; }
     public DbSet<Community> Communities { get; set; }
-    public DbSet<Media> Medias { get; set; }
-    public DbSet<Post> Posts { get; set; }
-    public DbSet<Comment> Comments { get; set; }
-    public DbSet<Attachment> Attachments { get; set; }
-    public DbSet<Conversation> Conversations { get; set; }
     public DbSet<Channel> Channels { get; set; }
     public DbSet<Message> Messages { get; set; }
-    public DbSet<MessageReaction> MessageReactions { get; set; }
-    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Post> Posts { get; set; }
+    public DbSet<Comment> Comments { get; set; }
+    public DbSet<Media> Medias { get; set; }
+    public DbSet<Attachment> Attachments { get; set; }
     public DbSet<Tag> Tags { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<MessageReaction> MessageReactions { get; set; }
+    public DbSet<CommunityRule> CommunityRules { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Configuration globale
+        modelBuilder.HasPostgresExtension("uuid-ossp");
+
+        // Configuration des tables héritées
+        modelBuilder.Entity<MainProfile>()
+            .HasDiscriminator<string>("ProfileType")
+            .HasValue<UserProfile>("UserProfile")
+            .HasValue<CommunityProfile>("CommunityProfile");
+
+        // Configuration de Profile
+        modelBuilder.Entity<MainProfile>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Id).HasDefaultValueSql("uuid_generate_v4()");
             
-        modelBuilder.Entity<UserProfile>()
-            .HasOne(up => up.User)
-            .WithOne(u => u.UserProfile)
-            .HasForeignKey<UserProfile>(up => up.UserId);
-        
-        modelBuilder.Entity<CommunityProfile>()
-            .HasOne(cp => cp.User)
-            .WithMany(u => u.CommunityProfiles)
-            .HasForeignKey(cp => cp.UserId);
+            entity.HasOne(p => p.ProfilePicture)
+                .WithMany()
+                .HasForeignKey(p => p.ProfilePictureId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<CommunityProfile>()
-            .HasOne(cp => cp.Community)
-            .WithMany(c => c.Members)
-            .HasForeignKey(cp => cp.CommunityId);
+            entity.HasOne(p => p.CoverPicture)
+                .WithMany()
+                .HasForeignKey(p => p.CoverPictureId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
-        modelBuilder.Entity<Comment>()
-            .HasOne(c => c.ParentComment)
-            .WithMany(c => c.Replies)
-            .HasForeignKey(c => c.ParentCommentId);
+        // Configuration de UserProfile
+        modelBuilder.Entity<UserProfile>(entity =>
+        {
+            entity.HasOne(up => up.User)
+                .WithOne(u => u.UserProfile)
+                .HasForeignKey<UserProfile>(up => up.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
-        modelBuilder.Entity<Message>()
-            .HasOne(m => m.Sender)
-            .WithMany(u => u.Messages)
-            .HasForeignKey(m => m.SenderId);
+        // Configuration de CommunityProfile
+        modelBuilder.Entity<CommunityProfile>(entity =>
+        {
+            entity.HasOne(cp => cp.User)
+                .WithMany(u => u.CommunityProfiles)
+                .HasForeignKey(cp => cp.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Conversation>()
-            .HasMany(c => c.Participants)
-            .WithMany();
-        
-        modelBuilder.Entity<Tag>()
-            .HasOne(t => t.Community)
-            .WithMany(c => c.Tags)
-            .HasForeignKey(t => t.CommunityId);
-        
-        modelBuilder.Entity<Tag>()
-            .HasOne(t => t.Post)
-            .WithMany(p => p.Tags)
-            .HasForeignKey(t => t.PostId);
-        
-        // Ajout des clés étrangères pour les channels
-        modelBuilder.Entity<Channel>()
-            .HasOne(c => c.Community)
-            .WithMany(c => c.Channels)
-            .HasForeignKey(c => c.CommunityId);
+            entity.HasOne(cp => cp.Community)
+                .WithMany(c => c.Members)
+                .HasForeignKey(cp => cp.CommunityId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<MessageReaction>()
-            .HasOne(c => c.Message)
-            .WithMany(m => m.Reactions)
-            .HasForeignKey(c => c.MessageId);
+            entity.HasOne(cp => cp.Role)
+                .WithMany(r => r.AssignedProfiles)
+                .HasForeignKey(cp => cp.RoleId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configuration de CommunityRole
+        modelBuilder.Entity<CommunityRole>(entity =>
+        {
+            entity.HasKey(cr => cr.Id);
+            entity.Property(cr => cr.Id).HasDefaultValueSql("uuid_generate_v4()");
+
+            entity.HasOne(cr => cr.Community)
+                .WithMany()
+                .HasForeignKey(cr => cr.CommunityId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuration des Commentaires
+        modelBuilder.Entity<Comment>(entity =>
+        {
+            entity.HasOne(c => c.ParentComment)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(c => c.ParentCommentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(c => c.Post)
+                .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(c => c.Profile)
+                .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.ProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

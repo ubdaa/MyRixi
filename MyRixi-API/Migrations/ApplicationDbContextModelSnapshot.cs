@@ -20,22 +20,8 @@ namespace MyRixiApi.Migrations
                 .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "uuid-ossp");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("ConversationUser", b =>
-                {
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ParticipantsId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ConversationId", "ParticipantsId");
-
-                    b.HasIndex("ParticipantsId");
-
-                    b.ToTable("ConversationUser");
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
@@ -229,9 +215,6 @@ namespace MyRixiApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("CommunityProfileId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");
@@ -245,18 +228,16 @@ namespace MyRixiApi.Migrations
                     b.Property<DateTime>("PostedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("UserProfileId")
+                    b.Property<Guid?>("ProfileId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CommunityProfileId");
 
                     b.HasIndex("ParentCommentId");
 
                     b.HasIndex("PostId");
 
-                    b.HasIndex("UserProfileId");
+                    b.HasIndex("ProfileId");
 
                     b.ToTable("Comments");
                 });
@@ -296,71 +277,56 @@ namespace MyRixiApi.Migrations
                     b.ToTable("Communities");
                 });
 
-            modelBuilder.Entity("MyRixiApi.Models.CommunityProfile", b =>
+            modelBuilder.Entity("MyRixiApi.Models.CommunityRole", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("uuid_generate_v4()");
 
-                    b.Property<Guid?>("ChannelId")
-                        .HasColumnType("uuid");
+                    b.Property<bool>("CanBanMembers")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanCreateEvents")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanEditCommunitySettings")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanKickMembers")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanManageChannels")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanManageRoles")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanModerateChat")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanPinMessages")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("CommunityId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CoverPictureId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsBanned")
+                    b.Property<bool>("IsAdministrator")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsOwner")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSuspended")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("JoinStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("JoinedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Preferences")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<Guid>("ProfilePictureId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Pseudonym")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChannelId");
-
                     b.HasIndex("CommunityId");
 
-                    b.HasIndex("CoverPictureId");
-
-                    b.HasIndex("ProfilePictureId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CommunityProfiles");
+                    b.ToTable("CommunityRoles");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.CommunityRule", b =>
@@ -390,22 +356,60 @@ namespace MyRixiApi.Migrations
                     b.ToTable("CommunityRules");
                 });
 
-            modelBuilder.Entity("MyRixiApi.Models.Conversation", b =>
+            modelBuilder.Entity("MyRixiApi.Models.MainProfile", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("uuid_generate_v4()");
+
+                    b.Property<string>("AccentColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("AllowDirectMessages")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("BackgroundColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CoverPictureId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Type")
+                    b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("ProfilePictureId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProfileType")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("character varying(21)");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Conversations");
+                    b.HasIndex("CoverPictureId");
+
+                    b.HasIndex("ProfilePictureId");
+
+                    b.ToTable("Profiles");
+
+                    b.HasDiscriminator<string>("ProfileType").HasValue("MainProfile");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.Media", b =>
@@ -449,9 +453,6 @@ namespace MyRixiApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ConversationId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
@@ -464,8 +465,6 @@ namespace MyRixiApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChannelId");
-
-                    b.HasIndex("ConversationId");
 
                     b.HasIndex("SenderId");
 
@@ -669,57 +668,79 @@ namespace MyRixiApi.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("MyRixiApi.Models.UserProfile", b =>
+            modelBuilder.Entity("MyRixiApi.Models.CommunityProfile", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.HasBaseType("MyRixiApi.Models.MainProfile");
+
+                    b.Property<Guid?>("ChannelId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Bio")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CoverPictureId")
+                    b.Property<Guid>("CommunityId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<bool>("IsSuspended")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("JoinStatus")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("JoinedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("ProfilePictureId")
+                    b.Property<string>("Pseudonym")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("SuspendedUntil")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.HasIndex("ChannelId");
 
-                    b.HasIndex("CoverPictureId");
+                    b.HasIndex("CommunityId");
 
-                    b.HasIndex("ProfilePictureId");
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasDiscriminator().HasValue("CommunityProfile");
+                });
+
+            modelBuilder.Entity("MyRixiApi.Models.UserProfile", b =>
+                {
+                    b.HasBaseType("MyRixiApi.Models.MainProfile");
+
+                    b.Property<string>("LinkedInProfile")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("PersonalWebsite")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("TwitterHandle")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserProfiles");
-                });
+                    b.ToTable("Profiles", t =>
+                        {
+                            t.Property("UserId")
+                                .HasColumnName("UserProfile_UserId");
+                        });
 
-            modelBuilder.Entity("ConversationUser", b =>
-                {
-                    b.HasOne("MyRixiApi.Models.Conversation", null)
-                        .WithMany()
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyRixiApi.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("ParticipantsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasDiscriminator().HasValue("UserProfile");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -807,29 +828,26 @@ namespace MyRixiApi.Migrations
 
             modelBuilder.Entity("MyRixiApi.Models.Comment", b =>
                 {
-                    b.HasOne("MyRixiApi.Models.CommunityProfile", "CommunityProfile")
-                        .WithMany("Comments")
-                        .HasForeignKey("CommunityProfileId");
-
                     b.HasOne("MyRixiApi.Models.Comment", "ParentComment")
                         .WithMany("Replies")
-                        .HasForeignKey("ParentCommentId");
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("MyRixiApi.Models.Post", "Post")
                         .WithMany("Comments")
-                        .HasForeignKey("PostId");
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("MyRixiApi.Models.UserProfile", "UserProfile")
-                        .WithMany()
-                        .HasForeignKey("UserProfileId");
-
-                    b.Navigation("CommunityProfile");
+                    b.HasOne("MyRixiApi.Models.MainProfile", "Profile")
+                        .WithMany("Comments")
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ParentComment");
 
                     b.Navigation("Post");
 
-                    b.Navigation("UserProfile");
+                    b.Navigation("Profile");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.Community", b =>
@@ -851,43 +869,15 @@ namespace MyRixiApi.Migrations
                     b.Navigation("Icon");
                 });
 
-            modelBuilder.Entity("MyRixiApi.Models.CommunityProfile", b =>
+            modelBuilder.Entity("MyRixiApi.Models.CommunityRole", b =>
                 {
-                    b.HasOne("MyRixiApi.Models.Channel", null)
-                        .WithMany("AllowedMembers")
-                        .HasForeignKey("ChannelId");
-
                     b.HasOne("MyRixiApi.Models.Community", "Community")
-                        .WithMany("Members")
+                        .WithMany()
                         .HasForeignKey("CommunityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyRixiApi.Models.Media", "CoverPicture")
-                        .WithMany()
-                        .HasForeignKey("CoverPictureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyRixiApi.Models.Media", "ProfilePicture")
-                        .WithMany()
-                        .HasForeignKey("ProfilePictureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyRixiApi.Models.User", "User")
-                        .WithMany("CommunityProfiles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Community");
-
-                    b.Navigation("CoverPicture");
-
-                    b.Navigation("ProfilePicture");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.CommunityRule", b =>
@@ -899,6 +889,25 @@ namespace MyRixiApi.Migrations
                         .IsRequired();
 
                     b.Navigation("Community");
+                });
+
+            modelBuilder.Entity("MyRixiApi.Models.MainProfile", b =>
+                {
+                    b.HasOne("MyRixiApi.Models.Media", "CoverPicture")
+                        .WithMany()
+                        .HasForeignKey("CoverPictureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MyRixiApi.Models.Media", "ProfilePicture")
+                        .WithMany()
+                        .HasForeignKey("ProfilePictureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CoverPicture");
+
+                    b.Navigation("ProfilePicture");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.Media", b =>
@@ -915,10 +924,6 @@ namespace MyRixiApi.Migrations
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("MyRixiApi.Models.Conversation", null)
-                        .WithMany("Messages")
-                        .HasForeignKey("ConversationId");
 
                     b.HasOne("MyRixiApi.Models.User", "Sender")
                         .WithMany("Messages")
@@ -998,29 +1003,44 @@ namespace MyRixiApi.Migrations
                         .HasForeignKey("MessageReactionId");
                 });
 
+            modelBuilder.Entity("MyRixiApi.Models.CommunityProfile", b =>
+                {
+                    b.HasOne("MyRixiApi.Models.Channel", null)
+                        .WithMany("AllowedMembers")
+                        .HasForeignKey("ChannelId");
+
+                    b.HasOne("MyRixiApi.Models.Community", "Community")
+                        .WithMany("Members")
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyRixiApi.Models.CommunityRole", "Role")
+                        .WithMany("AssignedProfiles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.HasOne("MyRixiApi.Models.User", "User")
+                        .WithMany("CommunityProfiles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Community");
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MyRixiApi.Models.UserProfile", b =>
                 {
-                    b.HasOne("MyRixiApi.Models.Media", "CoverPicture")
-                        .WithMany()
-                        .HasForeignKey("CoverPictureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyRixiApi.Models.Media", "ProfilePicture")
-                        .WithMany()
-                        .HasForeignKey("ProfilePictureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MyRixiApi.Models.User", "User")
                         .WithOne("UserProfile")
                         .HasForeignKey("MyRixiApi.Models.UserProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CoverPicture");
-
-                    b.Navigation("ProfilePicture");
 
                     b.Navigation("User");
                 });
@@ -1052,14 +1072,14 @@ namespace MyRixiApi.Migrations
                     b.Navigation("Tags");
                 });
 
-            modelBuilder.Entity("MyRixiApi.Models.CommunityProfile", b =>
+            modelBuilder.Entity("MyRixiApi.Models.CommunityRole", b =>
                 {
-                    b.Navigation("Comments");
+                    b.Navigation("AssignedProfiles");
                 });
 
-            modelBuilder.Entity("MyRixiApi.Models.Conversation", b =>
+            modelBuilder.Entity("MyRixiApi.Models.MainProfile", b =>
                 {
-                    b.Navigation("Messages");
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.Message", b =>
