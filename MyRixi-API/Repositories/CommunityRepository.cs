@@ -96,7 +96,6 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
         
         if (profile != null)
         {
-            profile.Role = newRole;
             await _context.SaveChangesAsync();
         }
     }

@@ -27,6 +27,10 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<MessageReaction> MessageReactions { get; set; }
     public DbSet<CommunityRule> CommunityRules { get; set; }
+    public DbSet<Permission> Permissions { get; set; }
+    public DbSet<RolePermission> RolePermissions { get; set; }
+    public DbSet<CommunityProfileRole> CommunityProfileRoles { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -74,11 +78,16 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .WithMany(c => c.Members)
                 .HasForeignKey(cp => cp.CommunityId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        modelBuilder.Entity<CommunityProfileRole>(entity =>
+        {
+            entity.HasKey(cpr => new { cpr.CommunityProfileId, cpr.CommunityRoleId });
 
-            entity.HasOne(cp => cp.Role)
-                .WithMany(r => r.AssignedProfiles)
-                .HasForeignKey(cp => cp.RoleId)
-                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(cpr => cpr.CommunityProfile)
+                .WithMany(cp => cp.ProfileRoles)
+                .HasForeignKey(cpr => cpr.CommunityProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<CommunityRole>(entity =>
