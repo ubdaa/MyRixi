@@ -41,6 +41,17 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Community>> GetCommunitiesAsync(int page, int size)
+    {
+        return await _context.Communities
+            .Include(c => c.Icon)
+            .Include(c => c.Cover)
+            .Include(c => c.Rules)
+            .Skip((page - 1) * size)
+            .Take(size)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<CommunityProfile>> GetMembersAsync(Guid communityId)
     {
         return await _context.CommunityProfiles
