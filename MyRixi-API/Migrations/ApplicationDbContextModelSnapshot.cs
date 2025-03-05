@@ -396,9 +396,6 @@ namespace MyRixiApi.Migrations
                         .HasMaxLength(21)
                         .HasColumnType("character varying(21)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CoverPictureId");
@@ -728,6 +725,9 @@ namespace MyRixiApi.Migrations
                     b.Property<DateTime?>("SuspendedUntil")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasIndex("ChannelId");
 
                     b.HasIndex("CommunityId");
@@ -753,9 +753,17 @@ namespace MyRixiApi.Migrations
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasIndex("UserId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Profiles_UserId1");
+                        .IsUnique();
+
+                    b.ToTable("Profiles", t =>
+                        {
+                            t.Property("UserId")
+                                .HasColumnName("UserProfile_UserId");
+                        });
 
                     b.HasDiscriminator().HasValue("UserProfile");
                 });
@@ -1087,8 +1095,7 @@ namespace MyRixiApi.Migrations
                         .WithOne("UserProfile")
                         .HasForeignKey("MyRixiApi.Models.UserProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Profiles_AspNetUsers_UserId1");
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

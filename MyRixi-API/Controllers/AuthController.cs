@@ -20,17 +20,20 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _configuration;
     
     private readonly IStorageService _storageService;
+    private readonly IUserProfileRepository _userProfileRepository;
 
     public AuthController(
         UserManager<User> userManager,
         SignInManager<User> signInManager,
         IConfiguration configuration,
-        IStorageService storageService)
+        IStorageService storageService,
+        IUserProfileRepository userProfileRepository)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
         _storageService = storageService;
+        _userProfileRepository = userProfileRepository;
     }
     
     [HttpPost("register")]
@@ -39,14 +42,19 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        var userId = Guid.NewGuid();
+
         var user = new User
         {
+            Id = userId,
             UserName = model.Username,
             Email = model.Email,
-            UserProfile = new UserProfile
+            UserProfile =  new UserProfile
             {
+                Id = Guid.NewGuid(),
+                UserId = userId,
                 DisplayName = model.Username,
-                Bio = string.Empty,
+                Bio = "Salut, je suis nouveau sur MyRixi !",
                 ProfilePicture = new Media(),
                 CoverPicture = new Media()
             }
@@ -56,10 +64,8 @@ public class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
-            // Générer une image de profil
+            // Générer et uploader les images (profile picture, cover picture, etc.)
             var profileUrl = await ProfilePictureGenerator.GenerateRandomProfilePictureAsync(_storageService, user.Id);
-
-            // Uploader l'image
             user.UserProfile.ProfilePicture.Url = profileUrl;
             user.UserProfile.ProfilePicture.Type = "image";
 
@@ -67,9 +73,9 @@ public class AuthController : ControllerBase
             user.UserProfile.CoverPicture.Url = coverUrl;
             user.UserProfile.CoverPicture.Type = "image";
 
-            // Enregistrer l'utilisateur avec son image
+            // Mettre à jour l'utilisateur avec son profil
             await _userManager.UpdateAsync(user);
-
+            
             await _signInManager.SignInAsync(user, isPersistent: false);
             return Ok(new { Token = GenerateJwtToken(user) });
         }
