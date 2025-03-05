@@ -7,8 +7,22 @@ namespace MyRixiApi.Repositories;
 
 public class CommunityRepository : GenericRepository<Community>, ICommunityRepository
 {
-    public CommunityRepository(ApplicationDbContext context) : base(context)
+    private readonly ICommunityRoleRepository _roleRepository;
+    
+    public CommunityRepository(ApplicationDbContext context, ICommunityRoleRepository roleRepository) : base(context)
     {
+        _roleRepository = roleRepository;
+    }
+    
+    public override async Task<Community> CreateAsync(Community entity)
+    {
+        await _context.Communities.AddAsync(entity);
+        await _context.SaveChangesAsync();
+        
+        // Créer les rôles de base
+        await _roleRepository.AddCommunityBaseRolesAsync(entity.Id);
+        
+        return entity;
     }
 
     public override async Task<IEnumerable<Community>> GetAllAsync()
@@ -29,6 +43,11 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
                 .ThenInclude(m => m.User)
             .Include(c => c.Posts)
             .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public Task<Community?> GetCommunityAsync(Guid id)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<IEnumerable<Community>> SearchAsync(string searchTerm)

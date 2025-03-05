@@ -108,10 +108,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // repositories
-builder.Services.AddScoped<ICommunityRepository, CommunityRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChannelRepository, ChannelRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<ICommunityRoleRepository, CommunityRoleRepository>(); 
+builder.Services.AddScoped<ICommunityRepository, CommunityRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<ICommunityProfileRepository, CommunityProfileRepository>();
 
@@ -125,6 +126,7 @@ builder.Services.AddAutoMapper(typeof(CommunityMappingProfile));
 builder.Services.AddAutoMapper(typeof(ChannelMappingProfile));
 builder.Services.AddAutoMapper(typeof(MessageMappingProfile));
 builder.Services.AddAutoMapper(typeof(ProfileMappingProfile));
+builder.Services.AddAutoMapper(typeof(CommunityRoleMappingProfile));
 
 var app = builder.Build();
 

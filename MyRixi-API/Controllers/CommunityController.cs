@@ -14,6 +14,7 @@ public class CommunityController : Controller
 {
     private readonly IMapper _mapper;
     
+    private readonly ICommunityRoleRepository _roleRepository;
     private readonly ICommunityRepository _communityRepository;
     private readonly IUserRepository _userRepository;
     
@@ -23,6 +24,7 @@ public class CommunityController : Controller
 
     public CommunityController(
         IMapper mapper,
+        ICommunityRoleRepository roleRepository,
         ICommunityRepository communityRepository,
         IUserRepository userRepository,
         IMediaService mediaService,
@@ -30,6 +32,7 @@ public class CommunityController : Controller
         UserManager<User> userManager)
     {
         _mapper = mapper;
+        _roleRepository = roleRepository;
         _communityRepository = communityRepository;
         _userRepository = userRepository;
         _mediaService = mediaService;
@@ -196,12 +199,22 @@ public class CommunityController : Controller
             profile.Id = Guid.NewGuid();
             profile.CommunityId = community.Id;
             profile.JoinStatus = JoinStatus.Accepted;
-            //profile.Role = new CommunityRole { Id = Guid.NewGuid(), Name = "Owner", IsAdministrator = true, CommunityId = community.Id };
-        
+
+            var ownerRole = await _roleRepository.GetOwnerRoleAsync(community.Id);
+            
+            profile.ProfileRoles.Add(new CommunityProfileRole
+            {
+                CommunityProfileId = profile.Id,
+                CommunityRoleId = ownerRole.Id,
+                Priority = 0
+            });
+
             // Lier le propriétaire à la communauté
             community.Members.Add(profile);
             
             await _communityRepository.CreateAsync(community);
+            
+            community.Roles = (await _roleRepository.GetRolesAsync(community.Id)).ToList();
         
             return Ok(_mapper.Map<CommunityResponseDto>(community));
         }
