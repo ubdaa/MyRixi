@@ -115,7 +115,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             entity.Property(cr => cr.Id).HasDefaultValueSql("uuid_generate_v4()");
 
             entity.HasOne(cr => cr.Community)
-                .WithMany()
+                .WithMany(c => c.Roles)
                 .HasForeignKey(cr => cr.CommunityId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

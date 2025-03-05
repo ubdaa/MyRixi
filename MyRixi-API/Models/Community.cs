@@ -16,6 +16,7 @@ public class Community
     
     public ICollection<CommunityRule> Rules { get; set; } = new List<CommunityRule>();
     public ICollection<CommunityProfile> Members { get; set; } = new List<CommunityProfile>();
+    public ICollection<CommunityRole> Roles { get; set; } = new List<CommunityRole>();
     
     // Ajout des canaux
     public ICollection<Channel> Channels { get; set; } = new List<Channel>();
