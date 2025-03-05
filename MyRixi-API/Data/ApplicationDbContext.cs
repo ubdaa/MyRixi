@@ -58,15 +58,23 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .WithMany()
                 .HasForeignKey(p => p.CoverPictureId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+        });
+
+        modelBuilder.Entity<UserProfile>(entity =>
+        {
             entity.HasOne(up => up.User)
                 .WithOne(u => u.UserProfile)
                 .HasForeignKey<UserProfile>(up => up.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-        
+
         modelBuilder.Entity<CommunityProfile>(entity =>
         {
+            entity.HasOne(cp => cp.User)
+                .WithMany(u => u.CommunityProfiles)
+                .HasForeignKey(cp => cp.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasOne(cp => cp.Community)
                 .WithMany(c => c.Members)
                 .HasForeignKey(cp => cp.CommunityId)
