@@ -102,13 +102,11 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
 
             entity.HasOne(cpr => cpr.CommunityProfile)
                 .WithMany(cp => cp.ProfileRoles)
-                .HasForeignKey(cpr => cpr.CommunityProfileId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(cpr => cpr.CommunityProfileId);
 
             entity.HasOne(cpr => cpr.CommunityRole)
                 .WithMany(cmr => cmr.ProfileRoles)
-                .HasForeignKey(cpr => cpr.CommunityRoleId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(cpr => cpr.CommunityRoleId);
         });
 
         modelBuilder.Entity<CommunityRole>(entity =>

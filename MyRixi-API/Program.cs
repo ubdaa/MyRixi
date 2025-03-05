@@ -149,6 +149,13 @@ using (var scope = app.Services.CreateScope())
     await RoleService.SeedRolesAsync(roleManager);
 }
 
+// Ajouter les permissions au démarrage
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await PermissionService.SeedPermissionsAsync(context);
+}
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication(); // Ajoutez cette ligne pour gérer l'authentification
