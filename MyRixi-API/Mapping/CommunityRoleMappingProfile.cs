@@ -8,12 +8,13 @@ public class CommunityRoleMappingProfile : Profile
 {
     public CommunityRoleMappingProfile()
     {
-        CreateMap<Permission, PermissionDto>();
-        
         CreateMap<CommunityRole, CommunityRoleDto>()
-            .ForMember(dest => dest.RolePermissions, opt => opt.MapFrom(src => src.RolePermissions));
-        
-        CreateMap<RolePermission, RolePermissionDto>()
-            .ForMember(dest => dest.Permission, opt => opt.MapFrom(src => src.Permission));
+            .ForMember(dest => dest.RolePermissions, opt => opt.MapFrom(src => 
+                src.RolePermissions.Select(rp => new RolePermissionLightDto 
+                {
+                    PermissionId = rp.PermissionId,
+                    PermissionKey = rp.Permission.Key,
+                    PermissionType = rp.Permission.Type.ToString()
+                })));
     }
 }

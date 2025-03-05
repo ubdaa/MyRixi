@@ -708,9 +708,6 @@ namespace MyRixiApi.Migrations
                     b.Property<Guid>("CommunityId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("CommunityRoleId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsSuspended")
                         .HasColumnType("boolean");
 
@@ -734,8 +731,6 @@ namespace MyRixiApi.Migrations
                     b.HasIndex("ChannelId");
 
                     b.HasIndex("CommunityId");
-
-                    b.HasIndex("CommunityRoleId");
 
                     b.HasIndex("UserId");
 
@@ -921,7 +916,7 @@ namespace MyRixiApi.Migrations
             modelBuilder.Entity("MyRixiApi.Models.CommunityRole", b =>
                 {
                     b.HasOne("MyRixiApi.Models.Community", "Community")
-                        .WithMany()
+                        .WithMany("Roles")
                         .HasForeignKey("CommunityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1083,10 +1078,6 @@ namespace MyRixiApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyRixiApi.Models.CommunityRole", null)
-                        .WithMany("AssignedProfiles")
-                        .HasForeignKey("CommunityRoleId");
-
                     b.HasOne("MyRixiApi.Models.User", "User")
                         .WithMany("CommunityProfiles")
                         .HasForeignKey("UserId")
@@ -1131,6 +1122,8 @@ namespace MyRixiApi.Migrations
 
                     b.Navigation("Posts");
 
+                    b.Navigation("Roles");
+
                     b.Navigation("Rules");
 
                     b.Navigation("Tags");
@@ -1138,8 +1131,6 @@ namespace MyRixiApi.Migrations
 
             modelBuilder.Entity("MyRixiApi.Models.CommunityRole", b =>
                 {
-                    b.Navigation("AssignedProfiles");
-
                     b.Navigation("ProfileRoles");
 
                     b.Navigation("RolePermissions");

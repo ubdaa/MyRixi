@@ -192,6 +192,7 @@ public class CommunityController : Controller
                     Order = i
                 }).ToList() ?? new List<CommunityRule>()
             };
+            
             await _communityRepository.CreateAsync(community);
         
             // Créer le profil de propriétaire avec un GUID généré
@@ -208,11 +209,13 @@ public class CommunityController : Controller
                 CommunityRoleId = ownerRole.Id,
                 Priority = 0
             });
+            
 
             // Lier le propriétaire à la communauté
             community.Members.Add(profile);
             
-            await _communityRepository.CreateAsync(community);
+            // Enregistrer la communauté
+            await _communityRepository.AddMemberAsync(profile);
             
             community.Roles = (await _roleRepository.GetRolesAsync(community.Id)).ToList();
         

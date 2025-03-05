@@ -11,20 +11,12 @@ public class CommunityRoleDto
     public bool IsProtected { get; set; } = false;
     public bool IsDefault { get; set; } = false;
     
-    public ICollection<RolePermissionDto> RolePermissions { get; set; } = new List<RolePermissionDto>();
+    public ICollection<RolePermissionLightDto> RolePermissions { get; set; } = new List<RolePermissionLightDto>();
 }
 
-public class RolePermissionDto
+public class RolePermissionLightDto
 {
-    public Guid RoleId { get; set; }
-    public CommunityRole Role { get; set; } = null!;
-    
     public Guid PermissionId { get; set; }
-    public PermissionDto Permission { get; set; } = null!;
-}
-
-public class PermissionDto
-{
-    public string Key { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;
+    public string PermissionKey { get; set; } = string.Empty;
+    public string PermissionType { get; set; } = string.Empty;
 }
