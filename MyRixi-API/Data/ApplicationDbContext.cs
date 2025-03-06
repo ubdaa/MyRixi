@@ -37,7 +37,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasPostgresExtension("uuid-ossp");
-
+        
         // Profiles
         modelBuilder.Entity<MainProfile>()
             .HasDiscriminator<string>("ProfileType")
@@ -137,6 +137,23 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .WithMany(p => p.Comments)
                 .HasForeignKey(c => c.ProfileId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // intérêts utilisateur
+        modelBuilder.Entity<UserInterest>(entity =>
+        {
+            entity.HasKey(ui => ui.Id);
+            entity.Property(ui => ui.Id).HasDefaultValueSql("uuid_generate_v4()");
+            
+            entity.HasOne(ui => ui.User)
+                .WithMany(u => u.UserInterests)
+                .HasForeignKey(ui => ui.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(ui => ui.Category)
+                .WithMany(c => c.UserInterests)
+                .HasForeignKey(ui => ui.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
     
