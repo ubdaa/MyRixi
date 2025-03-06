@@ -39,6 +39,7 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .Include(c => c.Icon)
             .Include(c => c.Cover)
             .Include(c => c.Rules)
+            .Include(c => c.Roles)
             .Include(c => c.Members)
                 .ThenInclude(m => m.User)
             .Include(c => c.Posts)
@@ -57,6 +58,7 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .Include(c => c.Icon)
             .Include(c => c.Cover)
             .Include(c => c.Rules)
+            .Include(c => c.Roles)
             .ToListAsync();
     }
 
@@ -66,6 +68,7 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .Include(c => c.Icon)
             .Include(c => c.Cover)
             .Include(c => c.Rules)
+            .Include(c => c.Roles)
             .Skip((page - 1) * size)
             .Take(size)
             .ToListAsync();
@@ -88,6 +91,7 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .Include(c => c.Icon)
             .Include(c => c.Cover)
             .Include(c => c.Rules)
+            .Include(c => c.Roles)
             .Include(c => c.Members)
                 .ThenInclude(m => m.User)
             .ToListAsync();

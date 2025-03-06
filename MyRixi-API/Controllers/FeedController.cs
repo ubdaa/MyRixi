@@ -34,30 +34,12 @@ public class FeedController : Controller
         _userManager = userManager;
     }
     
-    // méthode pour récupérer les communités rejoint de l'utilisateur connecté
-    [Authorize]
+    // méthode pour récupérer une liste de communautés
     [HttpGet("communities")]
-    public async Task<IActionResult> GetJoinedCommunities()
+    public async Task<IActionResult> GetCommunities([FromQuery] int page = 1, [FromQuery] int size = 10)
     {
-        try
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
-            user = await _userRepository.GetByIdAsync(user.Id);
-            if (user == null) return NotFound();
-        
-            var communities = await _communityRepository.GetJoinedCommunitiesAsync(user.Id);
-            // Pour chaque communauté, on passe le CurrentUserId dans le mapping
-            var communityDtos = communities.Select(c => 
-                    _mapper.Map<JoinedCommunityResponseDto>(c, opts => opts.Items["CurrentUserId"] = user.Id))
-                .ToList();
-        
-            return Ok(communityDtos);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while fetching joined communities");
-            return StatusCode(500, "An error occurred while processing your request");
-        }
+        var communities = await _communityRepository.GetCommunitiesAsync(page, size);
+        return Ok(_mapper.Map<IEnumerable<CommunityResponseDto>>(communities));
     }
+    
 }
