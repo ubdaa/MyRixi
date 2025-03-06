@@ -29,14 +29,3 @@ public class CommunityProfile : MainProfile
     public bool IsSuspended { get; set; } = false;
     public DateTime? SuspendedUntil { get; set; }
 }
-
-public class CommunityProfileRole
-{
-    public Guid CommunityProfileId { get; set; }
-    public CommunityProfile CommunityProfile { get; set; } = null!;
-    
-    public Guid CommunityRoleId { get; set; }
-    public CommunityRole CommunityRole { get; set; } = null!;
-    
-    public int Priority { get; set; } // Pour gérer l'ordre des rôles
-}

@@ -19,12 +19,3 @@ public class CommunityRole
     // Collection des profils ayant ce rôle
     public ICollection<CommunityProfileRole> ProfileRoles { get; set; } = new List<CommunityProfileRole>();
 }
-
-public class RolePermission
-{
-    public Guid RoleId { get; set; }
-    public CommunityRole Role { get; set; } = null!;
-    
-    public Guid PermissionId { get; set; }
-    public Permission Permission { get; set; } = null!;
-}
