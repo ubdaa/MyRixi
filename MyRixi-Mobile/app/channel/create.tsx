@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Switch, KeyboardAvoidingView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -68,72 +68,74 @@ export default function CreateChannelScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Create Channel</Text>
-      </View>
-
-      <View style={styles.content}>
-        <TouchableOpacity
-          style={styles.bannerPicker}
-          onPress={() => pickImage('banner')}
-        >
-          {bannerUrl ? (
-            <Image source={bannerUrl} style={styles.banner} contentFit="cover" />
-          ) : (
-            <View style={styles.bannerPlaceholder}>
-              <Ionicons name="image-outline" size={32} color="#666" />
-              <Text style={styles.pickerText}>Add Banner Image</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.form}>
-        <View style={styles.inputGroup}>
-            <Text style={styles.label}>Channel Name</Text>
-            <TextInput
-              style={styles.input}
-              value={name}
-              onChangeText={setName}
-              placeholder="Enter channel name"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="What's your channel about?"
-              multiline
-              numberOfLines={4}
-            />
-          </View>
-
-          <View style={styles.switchContainer}>
-            <Text style={styles.label}>Private Channel</Text>
-            <Switch
-              value={isPrivate}
-              onValueChange={setIsPrivate}
-              trackColor={{ false: '#767577', true: '#4c669f' }}
-              thumbColor={isPrivate ? '#fff' : '#f4f3f4'}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[styles.createButton, !name && styles.createButtonDisabled]}
-            onPress={handleCreate}
-            disabled={(!name && !description && !bannerUrl) || isLoading}
-          >
-            <Text style={styles.createButtonText}>Create channel</Text>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
+          <Text style={styles.title}>Create Channel</Text>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.content}>
+          <TouchableOpacity
+            style={styles.bannerPicker}
+            onPress={() => pickImage('banner')}
+          >
+            {bannerUrl ? (
+              <Image source={bannerUrl} style={styles.banner} contentFit="cover" />
+            ) : (
+              <View style={styles.bannerPlaceholder}>
+                <Ionicons name="image-outline" size={32} color="#666" />
+                <Text style={styles.pickerText}>Add Banner Image</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.form}>
+          <View style={styles.inputGroup}>
+              <Text style={styles.label}>Channel Name</Text>
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="Enter channel name"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={description}
+                onChangeText={setDescription}
+                placeholder="What's your channel about?"
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+
+            <View style={styles.switchContainer}>
+              <Text style={styles.label}>Private Channel</Text>
+              <Switch
+                value={isPrivate}
+                onValueChange={setIsPrivate}
+                trackColor={{ false: '#767577', true: '#4c669f' }}
+                thumbColor={isPrivate ? '#fff' : '#f4f3f4'}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.createButton, !name && styles.createButtonDisabled]}
+              onPress={handleCreate}
+              disabled={(!name && !description && !bannerUrl) || isLoading}
+            >
+              <Text style={styles.createButtonText}>Create channel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -1,64 +1,69 @@
 import { Tabs } from "expo-router";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabsLayout() {
   return (
     <Tabs
-    screenOptions={{
-      tabBarStyle: {
-        backgroundColor: '#fff',
-        borderTopWidth: 1,
-        borderTopColor: '#e5e5e5',
-      },
-      tabBarActiveTintColor: '#4c669f',
-      tabBarInactiveTintColor: '#666',
-    }}>
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: "#fff",
+          borderTopWidth: 1,
+          borderTopColor: "#e5e5e5",
+        },
+        tabBarActiveTintColor: "#4c669f",
+        tabBarInactiveTintColor: "#666",
+      }}
+    >
       <Tabs.Screen
         name="debug"
         options={{
-          title: 'Debug',
+          title: "Debug",
           headerShown: false,
           tabBarIcon: ({ size, color }) => (
             <Ionicons name="dice" size={size} color={color} />
           ),
-        }}/>
+        }}
+      />
       <Tabs.Screen
         name="discovery"
         options={{
-          title: 'Discovery',
+          title: "Discovery",
           headerShown: false,
           tabBarIcon: ({ size, color }) => (
             <Ionicons name="balloon" size={size} color={color} />
           ),
-        }}/>
+        }}
+      />
       <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          headerShown: false,
-          tabBarIcon: ({ size, color }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
-        }}/>
-      <Tabs.Screen 
         name="home"
         options={{
-          title: 'Home',
+          title: "Home",
           headerShown: false,
           tabBarIcon: ({ size, color }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
-        }}/>
-        <Tabs.Screen
-          name="communities"
-          options={{
-            title: 'Communities',
-            headerShown: false,
-            tabBarIcon: ({ size, color }) => (
-              <Ionicons name="people" size={size} color={color} />
-            ),
-          }}
-        />
+        }}
+      />
+      <Tabs.Screen
+        name="communities"
+        options={{
+          title: "Communities",
+          headerShown: false,
+          tabBarIcon: ({ size, color }) => (
+            <Ionicons name="people" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          headerShown: false,
+          tabBarIcon: ({ size, color }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
