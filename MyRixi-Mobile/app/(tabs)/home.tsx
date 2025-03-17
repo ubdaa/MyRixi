@@ -215,6 +215,7 @@ const CommunityCard = ({ community, index }) => {
             intensity={60}
             tint="dark"
             style={styles.communityOverlay}
+            experimentalBlurMethod='dimezisBlurView'
           >
             <Text style={styles.communityName}>{community.name}</Text>
             <Text style={styles.communityMembers}>
@@ -333,7 +334,7 @@ export default function HomePage() {
                 styles.headerName,
                 { color: theme.colors.textPrimary }
               ]}>
-                Kenzō
+                Ubda
               </Text>
             </View>
             
@@ -345,6 +346,7 @@ export default function HomePage() {
                 intensity={30}
                 tint={colorMode === 'dark' ? 'dark' : 'light'}
                 style={styles.profileBlur}
+                experimentalBlurMethod='dimezisBlurView'
               >
                 <Image 
                   source={{ uri: 'https://i.pravatar.cc/150?img=1' }} 
@@ -463,6 +465,7 @@ export default function HomePage() {
                   styles.createCommunityContent,
                   { borderRadius: theme.roundness }
                 ]}
+                experimentalBlurMethod='dimezisBlurView'
               >
                 <View style={[
                   styles.addIconContainer,
@@ -518,6 +521,7 @@ export default function HomePage() {
                 : 'rgba(248, 248, 250, 0.5)',
             }
           ]}
+          experimentalBlurMethod='dimezisBlurView'
         >
           <TouchableOpacity 
             style={[styles.fab, { backgroundColor: theme.colors.cyberPink }]}
@@ -571,7 +575,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 50, // Pour compenser la StatusBar
+    paddingTop: 60, // Pour compenser la StatusBar
     paddingBottom: 15,
     paddingHorizontal: 20,
   },
@@ -586,7 +590,6 @@ const styles = StyleSheet.create({
   profileButton: {
     height: 42,
     width: 42,
-    borderRadius: 21,
     overflow: 'hidden',
   },
   profileBlur: {
@@ -614,7 +617,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingTop: 100, // Pour compenser le header
+    paddingTop: 120, // Pour compenser le header
     paddingBottom: 20,
   },
   searchContainer: {

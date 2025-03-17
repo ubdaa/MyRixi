@@ -19,9 +19,20 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   
   // Déterminer l'intensité du flou et la couleur de fond en fonction du thème
   const blurIntensity = intensity || theme.glassmorphism.blur;
+  
+  // Couleurs ajustées pour meilleur contraste avec les backgrounds
   const backgroundColor = colorMode === 'dark' 
-    ? `rgba(26, 27, 31, ${theme.glassmorphism.opacity})` 
+    ? `rgba(36, 37, 42, ${theme.glassmorphism.opacity})` 
     : `rgba(255, 255, 255, ${theme.glassmorphism.opacity})`;
+    
+  // Couleurs pour les bordures du glassmorphisme
+  const borderTopColor = colorMode === 'dark' 
+    ? 'rgba(255, 255, 255, 0.12)' 
+    : 'rgba(255, 255, 255, 0.8)';
+  
+  const borderBottomColor = colorMode === 'dark' 
+    ? 'rgba(0, 0, 0, 0.4)' 
+    : 'rgba(0, 0, 0, 0.08)';
   
   // Type de flou basé sur le mode couleur
   const defaultBlurTint = colorMode === 'dark' ? 'dark' : 'light';
@@ -31,16 +42,27 @@ export const GlassCard: React.FC<GlassCardProps> = ({
       borderRadius: theme.roundness,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: colorMode === 'dark' ? 0.25 : 0.08,
-      shadowRadius: 8,
-      elevation: 8,
+      shadowOpacity: colorMode === 'dark' ? 0.3 : 0.12,
+      shadowRadius: 12,
+      elevation: 10,
     }, style]} {...props}>
       <BlurView
         style={styles.blurView}
         intensity={blurIntensity}
         tint={blurTint || defaultBlurTint}
+        experimentalBlurMethod='dimezisBlurView'
       >
-        <View style={[styles.content, { backgroundColor }]}>
+        <View 
+          style={[
+            styles.content, 
+            { 
+              backgroundColor,
+              borderWidth: 1,
+              borderColor: borderBottomColor,
+              borderRadius: theme.roundness - 1,
+            }
+          ]}
+        >
           {children}
         </View>
       </BlurView>

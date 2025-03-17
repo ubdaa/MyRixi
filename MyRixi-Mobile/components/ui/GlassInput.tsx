@@ -117,6 +117,7 @@ export const GlassInput: React.FC<GlassInputProps> = ({
           intensity={isFocused ? 20 : 10}
           tint={colorMode === 'dark' ? 'dark' : 'light'}
           style={[styles.blurContainer, { borderRadius: theme.roundness }]}
+          experimentalBlurMethod='dimezisBlurView'
         >
           <Animated.View
             style={[
