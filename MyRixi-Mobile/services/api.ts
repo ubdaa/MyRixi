@@ -6,7 +6,7 @@ import { BASE_URL } from '@/hooks/useChannel';
 // Définissez une URL de base cohérente
 const API_URL = Platform.OS === "android" 
   ? 'http://10.0.2.2:5000/v1' 
-  : BASE_URL;
+  : 'http://172.20.10.2:5000/v1';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -35,6 +35,7 @@ export const apiPostRequest = async <T>(url: string, formData: FormData, config:
 
 export const apiGetRequest = async <T>(url: string, config: AxiosRequestConfig): Promise<T> => {
   try {
+    console.log('API_URL', `${API_URL}${url}`);
     const response = await api.get(`${API_URL}${url}`, config);
     return response.data;
   } catch (error) {

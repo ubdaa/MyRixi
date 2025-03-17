@@ -18,8 +18,9 @@ import {
 import { ChatService } from '@/services/chatService';
 import { Platform } from 'react-native';
 
-export const PC_PRINCIPAL = true;
-export const BASE_URL = PC_PRINCIPAL ? 'http://192.168.1.168:5000/v1' : 'http://172.20.10.2:5000/v1';
+export const PC_PRINCIPAL = false;
+//export const BASE_URL = PC_PRINCIPAL ? 'http://192.168.1.168:5000/v1' : 'http://172.20.10.2:5000/v1';
+export const BASE_URL = 'http://172.20.10.2:5000/v1';
 
 export const API_URL = Platform.OS === "android" 
   ? 'http://10.0.2.2:5000/v1' 
