@@ -30,7 +30,7 @@ function AppLayout() {
           }}
         />
         <Stack.Screen name="community/[id]" options={{ headerShown: false }} />
-        <Stack.Screen
+        {/* <Stack.Screen
           name="community/discover"
           options={{
             presentation: 'modal',
@@ -40,7 +40,7 @@ function AppLayout() {
             headerTransparent: true,
             headerBlurEffect: colorMode === 'dark' ? 'dark' : 'light',
           }}
-        />
+        /> */}
         <Stack.Screen name="channel/[channelId]" options={{ headerShown: false }} />
         <Stack.Screen
           name="channel/create"
