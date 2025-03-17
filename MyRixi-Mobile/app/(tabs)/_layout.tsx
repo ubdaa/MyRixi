@@ -1,69 +1,130 @@
+import React from "react";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { View, StyleSheet } from "react-native";
+import { BlurView } from "expo-blur";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 
-export default function TabsLayout() {
+function TabBarIcon({ name, color, size }: { name: keyof typeof Ionicons.glyphMap; color: string; size: number }) {
+  return (
+    <View style={styles.iconContainer}>
+      <Ionicons name={name} size={size} color={color} />
+    </View>
+  );
+}
+
+function MyTabs() {
+  const { theme, colorMode } = useTheme();
+  
+  // Fonction pour créer le fond en verre
+  const screenOptions = {
+    headerShown: false,
+    tabBarStyle: {
+      position: 'absolute' as const,
+      left: 24,
+      right: 24,
+      elevation: 0,
+      backgroundColor: 'transparent',
+      borderTopWidth: 0,
+      borderRadius: 30,
+    },
+    tabBarBackground: () => (
+      <BlurView
+        intensity={theme.glassmorphism.blur}
+        tint={colorMode === 'dark' ? 'dark' : 'light'}
+        style={{ 
+          ...StyleSheet.absoluteFillObject,
+          borderRadius: 30,
+          overflow: 'hidden',
+        }}
+      />
+    ),
+    tabBarActiveTintColor: theme.colors.cyberPink,
+    tabBarInactiveTintColor: theme.colors.textSecondary,
+  };
+
+  // Options pour les animations
+  const getTabAnimation = (isFocused: boolean) => {
+    return {
+      tabBarIconStyle: {
+        transform: [{ scale: isFocused ? 1.1 : 1 }],
+      },
+      tabBarLabelStyle: {
+        fontWeight: isFocused ? "700" as const : "500" as const,
+        fontSize: 12,
+      },
+    };
+  };
+
   return (
     <Tabs
-      screenOptions={{
-        tabBarStyle: {
-          backgroundColor: "#fff",
-          borderTopWidth: 1,
-          borderTopColor: "#e5e5e5",
-        },
-        tabBarActiveTintColor: "#4c669f",
-        tabBarInactiveTintColor: "#666",
-      }}
+      screenOptions={screenOptions}
     >
       <Tabs.Screen
         name="debug"
-        options={{
+        options={({ navigation }) => ({
           title: "Debug",
-          headerShown: false,
+          ...getTabAnimation(navigation.isFocused()),
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="dice" size={size} color={color} />
+            <TabBarIcon name="dice" size={size} color={color} />
           ),
-        }}
+        })}
       />
       <Tabs.Screen
         name="discovery"
-        options={{
+        options={({ navigation }) => ({
           title: "Discovery",
-          headerShown: false,
+          ...getTabAnimation(navigation.isFocused()),
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="balloon" size={size} color={color} />
+            <TabBarIcon name="compass" size={size} color={color} />
           ),
-        }}
+        })}
       />
       <Tabs.Screen
         name="home"
-        options={{
+        options={({ navigation }) => ({
           title: "Home",
-          headerShown: false,
+          ...getTabAnimation(navigation.isFocused()),
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <TabBarIcon name="home" size={size} color={color} />
           ),
-        }}
+        })}
       />
       <Tabs.Screen
         name="communities"
-        options={{
+        options={({ navigation }) => ({
           title: "Communities",
-          headerShown: false,
+          ...getTabAnimation(navigation.isFocused()),
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="people" size={size} color={color} />
+            <TabBarIcon name="people" size={size} color={color} />
           ),
-        }}
+        })}
       />
       <Tabs.Screen
         name="profile"
-        options={{
+        options={({ navigation }) => ({
           title: "Profile",
-          headerShown: false,
+          ...getTabAnimation(navigation.isFocused()),
           tabBarIcon: ({ size, color }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <TabBarIcon name="person" size={size} color={color} />
           ),
-        }}
+        })}
       />
     </Tabs>
   );
 }
+
+export default function TabsLayout() {
+  return (
+    <ThemeProvider>
+      <MyTabs />
+    </ThemeProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
