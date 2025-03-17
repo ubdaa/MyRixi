@@ -9,6 +9,7 @@ import {
   View,
   ActivityIndicator 
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface NeoButtonProps {
@@ -60,6 +61,14 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
     ).start();
   }, [glowAnim]);
 
+  // Fonction pour gérer le retour haptique
+  const handlePress = () => {
+    if (!disabled && !loading) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      onPress();
+    }
+  };
+
   // Styles en fonction du mode et de la variante
   const getButtonStyles = () => {
     const sizeStyles = {
@@ -71,7 +80,6 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
     let backgroundColor;
     let textColor;
     let borderColor;
-    let shadowStyle = {};
 
     switch (variant) {
       case 'primary':
@@ -91,11 +99,6 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
         break;
     }
 
-    // Shadow style for neomorphic effect
-    shadowStyle = isPressed 
-      ? theme.shadows.neoInsetShadow
-      : theme.shadows.neoShadow;
-
     return {
       container: {
         ...sizeStyles[size],
@@ -104,7 +107,6 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
         borderWidth: variant === 'outline' ? 1 : 0,
         borderRadius: theme.roundness,
         opacity: disabled ? 0.6 : 1,
-        ...shadowStyle,
       },
       text: {
         color: textColor,
@@ -139,10 +141,14 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
       
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={disabled || loading ? undefined : onPress}
+        onPress={handlePress}
         onPressIn={() => setIsPressed(true)}
         onPressOut={() => setIsPressed(false)}
-        style={[styles.button, buttonStyles.container]}
+        style={[
+          styles.button,
+          buttonStyles.container,
+          isPressed && styles.buttonPressed
+        ]}
       >
         {loading ? (
           <ActivityIndicator color={buttonStyles.text.color} />
@@ -163,6 +169,9 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  buttonPressed: {
+    transform: [{ scale: 0.98 }],
   },
   glow: {
     position: 'absolute',

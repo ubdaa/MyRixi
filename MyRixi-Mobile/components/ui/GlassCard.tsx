@@ -1,16 +1,18 @@
 import React from 'react';
 import { StyleSheet, View, ViewProps } from 'react-native';
-import { BlurView } from '@react-native-community/blur';
+import { BlurView } from 'expo-blur';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface GlassCardProps extends ViewProps {
   intensity?: number;
+  blurTint?: 'dark' | 'light' | 'default';
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
   children,
   style,
   intensity,
+  blurTint,
   ...props
 }) => {
   const { theme, colorMode } = useTheme();
@@ -22,7 +24,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     : `rgba(255, 255, 255, ${theme.glassmorphism.opacity})`;
   
   // Type de flou basé sur le mode couleur
-  const blurType = colorMode === 'dark' ? 'dark' : 'light';
+  const defaultBlurTint = colorMode === 'dark' ? 'dark' : 'light';
 
   return (
     <View style={[styles.container, { 
@@ -35,9 +37,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     }, style]} {...props}>
       <BlurView
         style={styles.blurView}
-        blurType={blurType}
-        blurAmount={blurIntensity}
-        reducedTransparencyFallbackColor={backgroundColor}
+        intensity={blurIntensity}
+        tint={blurTint || defaultBlurTint}
       >
         <View style={[styles.content, { backgroundColor }]}>
           {children}

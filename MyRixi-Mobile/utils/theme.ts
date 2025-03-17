@@ -69,21 +69,13 @@ const lightColors: ThemeColors = {
   holoTurquoise: '#42FFD6',
 };
 
-const darkShadows: ThemeShadows = {
-  glassShadow: '0px 4px 24px rgba(0, 0, 0, 0.25)',
-  neoShadow: '4px 4px 8px rgba(0, 0, 0, 0.3), -4px -4px 8px rgba(255, 255, 255, 0.05)',
-  neoInsetShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.4), inset -2px -2px 4px rgba(255, 255, 255, 0.05)',
-};
-
-const lightShadows: ThemeShadows = {
-  glassShadow: '0px 4px 24px rgba(0, 0, 0, 0.08)',
-  neoShadow: '4px 4px 8px rgba(0, 0, 0, 0.08), -4px -4px 8px rgba(255, 255, 255, 0.6)',
-  neoInsetShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.08), inset -2px -2px 4px rgba(255, 255, 255, 0.6)',
-};
-
 export const darkTheme: Theme = {
   colors: darkColors,
-  shadows: darkShadows,
+  shadows: {
+    glassShadow: '0px 4px 24px rgba(0, 0, 0, 0.25)',
+    neoShadow: '4px 4px 8px rgba(0, 0, 0, 0.3), -4px -4px 8px rgba(255, 255, 255, 0.05)',
+    neoInsetShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.4), inset -2px -2px 4px rgba(255, 255, 255, 0.05)',
+  },
   roundness: 16,
   glassmorphism: {
     opacity: 0.15,
@@ -93,7 +85,11 @@ export const darkTheme: Theme = {
 
 export const lightTheme: Theme = {
   colors: lightColors,
-  shadows: lightShadows,
+  shadows: {
+    glassShadow: '0px 4px 24px rgba(0, 0, 0, 0.08)',
+    neoShadow: '4px 4px 8px rgba(0, 0, 0, 0.08), -4px -4px 8px rgba(255, 255, 255, 0.6)',
+    neoInsetShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.08), inset -2px -2px 4px rgba(255, 255, 255, 0.6)',
+  },
   roundness: 16,
   glassmorphism: {
     opacity: 0.7,
