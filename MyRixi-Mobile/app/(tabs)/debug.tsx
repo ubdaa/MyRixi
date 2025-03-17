@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/Button";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { View, Text, StyleSheet, Touchable, TouchableOpacity } from "react-native";
@@ -36,8 +37,6 @@ export default function Home() {
           <Text>Fetch communities</Text>
         </View>
       </TouchableOpacity>
-
-      <Button title="Create Community" onPress={() => router.push({ pathname: `/community/create`})} />
     </View>
   );
 }
