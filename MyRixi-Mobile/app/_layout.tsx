@@ -23,7 +23,6 @@ function AppLayout() {
           options={{
             presentation: 'modal',
             headerTitle: 'Création communauté',
-            // Options pour un effet glassmorphique dans la modal
             headerStyle: { backgroundColor: 'transparent' },
             headerTransparent: true,
             headerBlurEffect: colorMode === 'dark' ? 'dark' : 'light',
@@ -35,7 +34,6 @@ function AppLayout() {
           options={{
             presentation: 'modal',
             headerTitle: 'Découvrir',
-            // Options pour un effet glassmorphique dans la modal
             headerStyle: { backgroundColor: 'transparent' },
             headerTransparent: true,
             headerBlurEffect: colorMode === 'dark' ? 'dark' : 'light',
@@ -47,7 +45,6 @@ function AppLayout() {
           options={{
             presentation: 'modal',
             headerTitle: 'Nouveau canal',
-            // Options pour un effet glassmorphique dans la modal
             headerStyle: { backgroundColor: 'transparent' },
             headerTransparent: true,
             headerBlurEffect: colorMode === 'dark' ? 'dark' : 'light',

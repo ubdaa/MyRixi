@@ -1,5 +1,20 @@
-import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Switch, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
+import { useState, useRef } from 'react';
+import { 
+  StyleSheet, 
+  View,
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  ScrollView, 
+  Switch, 
+  KeyboardAvoidingView, 
+  Platform, 
+  SafeAreaView, 
+  Animated,
+  Keyboard,
+  StatusBar,
+  Dimensions
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -7,13 +22,30 @@ import * as ImagePicker from 'expo-image-picker';
 import { apiPostRequest } from '@/services/api';
 import { AxiosError } from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import { useTheme } from '@/contexts/ThemeContext';
+import { BlurView } from 'expo-blur';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { GlassInput } from '@/components/ui/GlassInput';
+import { NeoButton } from '@/components/ui/NeoButton';
+import { GlassCard } from '@/components/ui/GlassCard';
 
 interface CommunityRule {
   title: string;
   description: string;
 }
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const MAX_TRANSLATE_Y = -SCREEN_HEIGHT + 64;
+
 export default function CreateCommunityScreen() {
+  const scrollViewRef = useRef<ScrollView>(null);
+  const { theme, colorMode } = useTheme();
+  const translateY = useRef(new Animated.Value(0)).current;
+  const insets = useSafeAreaInsets();
+
+  // état du formulaire
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -26,7 +58,13 @@ export default function CreateCommunityScreen() {
   const router = useRouter();
 
   const addRule = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRules([...rules, { title: '', description: '' }]);
+
+    // Scroll vers le bas après ajout d'une règle
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   };
 
   const updateRule = (index: number, field: 'title' | 'description', value: string) => {
@@ -36,10 +74,13 @@ export default function CreateCommunityScreen() {
   };
 
   const removeRule = (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setRules(rules.filter((_, i) => i !== index));
   };
 
   const pickImage = async (type: 'avatar' | 'banner') => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
       allowsEditing: true,
@@ -55,6 +96,16 @@ export default function CreateCommunityScreen() {
         setBannerUrl(result.assets[0].uri);
       }
     }
+  };
+
+  // Gestion de fermeture
+  const handleClose = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true
+    }).start(() => router.back());
   };
 
   const handleCreate = async () => {
@@ -92,29 +143,56 @@ export default function CreateCommunityScreen() {
           'Content-Type': 'multipart/form-data',
         },
       });
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace("/communities");
     } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       if (error instanceof AxiosError) {
         console.error(error.response?.data);
       }
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Create Community</Text>
-      </View>
-
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardAvoidView}
+    <View style={styles.container}>
+      <StatusBar translucent backgroundColor="transparent" barStyle={colorMode === 'dark' ? 'light-content' : 'dark-content'} />
+      
+      {/* Arrière-plan flou */}
+      <BlurView
+        intensity={20}
+        tint={colorMode === 'dark' ? 'dark' : 'light'}
+        style={StyleSheet.absoluteFillObject}
       >
+        <TouchableOpacity 
+          style={StyleSheet.absoluteFillObject}
+          activeOpacity={1}
+          onPress={handleClose}
+        />
+      </BlurView>
+
+      {/* Tiroir modal avec glassmorphisme */}
+      <Animated.View
+        style={[
+          styles.sheetContainer,
+          {
+            transform: [{ translateY }],
+            paddingBottom: insets.bottom,
+            backgroundColor: colorMode === 'dark' 
+              ? 'rgba(26, 27, 31, 0.85)'
+              : 'rgba(255, 255, 255, 0.85)',
+          }
+        ]}
+      >
+        {/* Poignée du tiroir */}
+        <View style={styles.sheetHandle}>
+          <View style={[
+            styles.handle, 
+            { backgroundColor: colorMode === 'dark' ? '#ffffff50' : '#00000040' }
+          ]} />
+        </View>
         <ScrollView 
           style={styles.container}
           contentContainerStyle={styles.contentContainer}
@@ -254,7 +332,7 @@ export default function CreateCommunityScreen() {
             </View>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </Animated.View>
 
       <View style={styles.footer}>
         <TouchableOpacity
@@ -275,7 +353,7 @@ export default function CreateCommunityScreen() {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -286,6 +364,29 @@ const styles = StyleSheet.create({
   },
   keyboardAvoidView: {
     flex: 1,
+  },
+  sheetContainer: {
+    height: SCREEN_HEIGHT,
+    width: '100%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    overflow: 'hidden',
+  },
+  sheetHandle: {
+    width: '100%',
+    paddingVertical: 16,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  handle: {
+    width: 40,
+    height: 5,
+    borderRadius: 5,
+  },
+  closeButton: {
+    position: 'absolute',
+    right: 20,
+    top: 12,
   },
   container: {
     flex: 1,

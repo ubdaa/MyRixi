@@ -79,7 +79,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   };
   
   const getIconName = (routeName: string, isFocused: boolean): keyof typeof AntDesign.glyphMap => {
-    switch (routeName) {
+    switch (routeName) { 
       case 'members':
         return 'addusergroup';
       case 'posts':
