@@ -198,13 +198,11 @@ export default function CreateCommunityScreen() {
         />
       </BlurView>
 
-      {/* Tiroir modal avec glassmorphisme */}
+      {/* Tiroir modal */}
       <Animated.View
         style={[
           styles.sheetContainer,
           {
-            transform: [{ translateY }],
-            paddingBottom: insets.bottom,
             backgroundColor:
               colorMode === "dark"
                 ? "rgba(26, 27, 31, 0.85)"
@@ -212,23 +210,6 @@ export default function CreateCommunityScreen() {
           },
         ]}
       >
-        {/* Poignée du tiroir */}
-        <View style={styles.sheetHandle}>
-          <View
-            style={[
-              styles.handle,
-              {
-                backgroundColor:
-                  colorMode === "dark" ? "#ffffff50" : "#00000040",
-              },
-            ]}
-          />
-        </View>
-
-        <Text style={[styles.title, { color: theme.colors.textPrimary }]}>
-          Créer une communauté
-        </Text>
-
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardAvoidView}
@@ -239,8 +220,7 @@ export default function CreateCommunityScreen() {
             style={styles.scrollView}
             contentContainerStyle={[
               styles.contentContainer,
-              { paddingBottom: insets.bottom + 100 },
-            ]}
+              { paddingTop: insets.top },]}
             showsVerticalScrollIndicator={false}
             bounces={true}
           >
@@ -456,22 +436,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: "hidden",
-  },
-  sheetHandle: {
-    width: "100%",
-    paddingVertical: 16,
-    alignItems: "center",
-    position: "relative",
-  },
-  handle: {
-    width: 40,
-    height: 5,
-    borderRadius: 5,
-  },
-  closeButton: {
-    position: "absolute",
-    right: 20,
-    top: 12,
   },
   title: {
     fontSize: 24,

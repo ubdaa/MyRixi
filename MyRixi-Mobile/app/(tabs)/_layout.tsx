@@ -37,6 +37,7 @@ function MyTabs() {
           borderRadius: 30,
           overflow: 'hidden',
         }}
+        experimentalBlurMethod='dimezisBlurView'
       />
     ),
     tabBarActiveTintColor: theme.colors.cyberPink,
