@@ -11,12 +11,12 @@ public class ChannelMappingProfile : Profile
     {
         CreateMap<Channel, ChannelDetailDto>()
             .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()))
-            // Les propriétés Id, Name, Description, IsPrivate et CommunityId sont mappées automatiquement
+            // Les propriétés Id, Description, Description, IsPrivate et CommunityId sont mappées automatiquement
             .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants))
             .ForMember(dest => dest.Messages, opt => opt.MapFrom(src => src.Messages));
         
         CreateMap<Channel, ChannelDto>()
-            // Mapping automatique pour Id, Name, Description, IsPrivate et CommunityId
+            // Mapping automatique pour Id, Description, Description, IsPrivate et CommunityId
             .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()))
             .ForMember(dest => dest.ParticipantCount, opt => opt.MapFrom(src => src.Participants.Count));
 

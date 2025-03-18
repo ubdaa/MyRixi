@@ -73,7 +73,7 @@ public class CommunityController : Controller
 
             var profile = _mapper.Map<CommunityProfile>(user);
             profile.CommunityId = community.Id;
-            //profile.Role = new CommunityRole { Id = Guid.NewGuid(), Name = "Member" };
+            //profile.Role = new CommunityRole { Id = Guid.NewGuid(), Description = "Member" };
             profile.JoinStatus = community.IsInviteOnly ? JoinStatus.Pending : JoinStatus.Accepted;
 
             await _communityRepository.AddMemberAsync(profile);

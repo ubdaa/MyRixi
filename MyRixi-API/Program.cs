@@ -115,6 +115,8 @@ builder.Services.AddScoped<ICommunityRoleRepository, CommunityRoleRepository>();
 builder.Services.AddScoped<ICommunityRepository, CommunityRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<ICommunityProfileRepository, CommunityProfileRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<ITagRepository, TagRepository>();
 
 // services
 builder.Services.AddScoped<IMediaService, MediaService>();
