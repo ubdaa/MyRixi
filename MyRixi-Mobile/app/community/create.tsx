@@ -58,11 +58,11 @@ export default function CreateCommunityScreen() {
 
   useEffect(() => {
     const keyboardWillShowListener = Keyboard.addListener(
-      'keyboardWillShow',
+      "keyboardWillShow",
       () => setIsKeyboardVisible(true)
     );
     const keyboardWillHideListener = Keyboard.addListener(
-      'keyboardWillHide',
+      "keyboardWillHide",
       () => setIsKeyboardVisible(false)
     );
 
@@ -220,7 +220,8 @@ export default function CreateCommunityScreen() {
             style={styles.scrollView}
             contentContainerStyle={[
               styles.contentContainer,
-              { paddingTop: insets.top },]}
+              { paddingTop: insets.top },
+            ]}
             showsVerticalScrollIndicator={false}
             bounces={true}
           >
@@ -268,29 +269,24 @@ export default function CreateCommunityScreen() {
               </TouchableOpacity>
 
               <View style={styles.form}>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Community Name</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="Enter community name"
-                    placeholderTextColor="#aaa"
-                  />
-                </View>
+                <GlassInput
+                  label="Nom de la communauté"
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Ex: Design Enthusiasts"
+                  accentColor={theme.colors.cyberPink}
+                />
 
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Description</Text>
-                  <TextInput
-                    style={[styles.input, styles.textArea]}
-                    value={description}
-                    onChangeText={setDescription}
-                    placeholder="What's your community about?"
-                    placeholderTextColor="#aaa"
-                    multiline
-                    numberOfLines={4}
-                  />
-                </View>
+                <GlassInput
+                  label="Description"
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder="De quoi parle votre communauté ?"
+                  multiline
+                  numberOfLines={4}
+                  containerStyle={{ marginTop: 16 }}
+                  inputStyle={{ height: 100, textAlignVertical: 'top' }}
+                />
 
                 <View style={styles.divider} />
 
@@ -344,11 +340,11 @@ export default function CreateCommunityScreen() {
                           <Ionicons
                             name="trash-outline"
                             size={22}
-                            color="#ff4444"
+                            color={theme.colors.cyberPink} 
                           />
                         </TouchableOpacity>
                       </View>
-                      <TextInput
+                      <GlassInput
                         style={styles.ruleInput}
                         value={rule.title}
                         onChangeText={(value) =>
@@ -357,7 +353,7 @@ export default function CreateCommunityScreen() {
                         placeholder="Rule title"
                         placeholderTextColor="#aaa"
                       />
-                      <TextInput
+                      <GlassInput
                         style={[styles.ruleInput, styles.textArea]}
                         value={rule.description}
                         onChangeText={(value) =>
@@ -594,14 +590,8 @@ const styles = StyleSheet.create({
     borderColor: "#ececec",
   },
   ruleInput: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 15,
-    borderWidth: 1,
-    borderColor: "#ececec",
-    marginBottom: 10,
   },
   ruleView: {
     flexDirection: "row",
