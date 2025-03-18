@@ -15,4 +15,5 @@ public interface ICommunityRepository : IGenericRepository<Community>
     Task UpdateMemberRoleAsync(Guid communityId, Guid userId, CommunityRole newRole);
     Task UpdateMemberStatusAsync(Guid communityId, Guid userId, JoinStatus status);
     Task RemoveMemberAsync(Guid communityId, Guid userId);
+    Task IsMemberAsync(Guid communityId, Guid userId);
 }

@@ -146,4 +146,12 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             await _context.SaveChangesAsync();
         }
     }
+
+    public Task IsMemberAsync(Guid communityId, Guid userId)
+    {
+        var profile = _context.CommunityProfiles
+            .FirstOrDefault(cp => cp.CommunityId == communityId && cp.UserId == userId);
+        
+        return Task.FromResult(profile != null);
+    }
 }
