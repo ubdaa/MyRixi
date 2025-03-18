@@ -129,6 +129,7 @@ builder.Services.AddAutoMapper(typeof(ChannelMappingProfile));
 builder.Services.AddAutoMapper(typeof(MessageMappingProfile));
 builder.Services.AddAutoMapper(typeof(ProfileMappingProfile));
 builder.Services.AddAutoMapper(typeof(CommunityRoleMappingProfile));
+builder.Services.AddAutoMapper(typeof(PostMappingProfile));
 
 var app = builder.Build();
 
