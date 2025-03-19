@@ -143,28 +143,28 @@ public class PostController : Controller
     }
     
     [HttpGet("search")]
-    public async Task<IActionResult> Search(string searchTerm)
+    public async Task<IActionResult> Search([FromQuery] string q)
     {
-        var posts = await _postRepository.SearchAsync(searchTerm);
+        var posts = await _postRepository.SearchAsync(q);
         return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
     }
     
     [HttpGet("community/{communityId}")]
-    public async Task<IActionResult> GetPosts(Guid communityId, int page = 1, int size = 10)
+    public async Task<IActionResult> GetCommunityPosts(Guid communityId, [FromQuery] int page = 1, [FromQuery] int size = 10)
     {
         var posts = await _postRepository.GetPostsAsync(communityId, page, size);
         return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
     }
     
     [HttpGet("community/{communityId}/user/{userId}")]
-    public async Task<IActionResult> GetPosts(Guid communityId, Guid userId, int page = 1, int size = 10)
+    public async Task<IActionResult> GetUserCommunityPosts(Guid communityId, Guid userId, [FromQuery] int page = 1, [FromQuery] int size = 10)
     {
         var posts = await _postRepository.GetPostsAsync(communityId, userId, page, size);
         return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
     }
     
     [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetPosts(Guid userId)
+    public async Task<IActionResult> GetUserPosts(Guid userId)
     {
         var posts = await _postRepository.GetPostsByUserAsync(userId);
         return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
