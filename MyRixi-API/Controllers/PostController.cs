@@ -90,7 +90,83 @@ public class PostController : Controller
             var tags = await _tagRepository.GetOrCreateTagsAsync(model.Tags.Select(t => t.Name).ToList());
             post.Tags = (ICollection<Tag>)tags;
         }
+
+        await _postRepository.CreateAsync(post);
         
         return Ok(_mapper.Map<PostResponseDto>(post));
+    }
+    
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdatePost(Guid id, [FromBody] CreatePostDto model)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var post = await _postRepository.GetPostAsync(id);
+        if (post == null) return NotFound();
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
+        
+        post.Title = model.Title;
+        post.Content = model.Content;
+        
+        if (model.Tags != null)
+        {
+            var tags = await _tagRepository.GetOrCreateTagsAsync(model.Tags.Select(t => t.Name).ToList());
+            post.Tags = (ICollection<Tag>)tags;
+        }
+
+        await _postRepository.UpdateAsync(post);
+        
+        return Ok(_mapper.Map<PostResponseDto>(post));
+    }
+    
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeletePost(Guid id)
+    {
+        var post = await _postRepository.GetPostAsync(id);
+        if (post == null) return NotFound();
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
+        
+        await _postRepository.DeleteAsync(id);
+        
+        return Ok();
+    }
+    
+    [HttpGet("search")]
+    public async Task<IActionResult> Search(string searchTerm)
+    {
+        var posts = await _postRepository.SearchAsync(searchTerm);
+        return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
+    }
+    
+    [HttpGet("community/{communityId}")]
+    public async Task<IActionResult> GetPosts(Guid communityId, int page = 1, int size = 10)
+    {
+        var posts = await _postRepository.GetPostsAsync(communityId, page, size);
+        return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
+    }
+    
+    [HttpGet("community/{communityId}/user/{userId}")]
+    public async Task<IActionResult> GetPosts(Guid communityId, Guid userId, int page = 1, int size = 10)
+    {
+        var posts = await _postRepository.GetPostsAsync(communityId, userId, page, size);
+        return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
+    }
+    
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetPosts(Guid userId)
+    {
+        var posts = await _postRepository.GetPostsByUserAsync(userId);
+        return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
     }
 }
