@@ -19,7 +19,8 @@ import { Platform } from 'react-native';
 import SignalRManager from '@/services/signalRService';
 
 // Configuration des URLs de l'API
-export const BASE_URL = 'http://172.20.10.2:5000/v1';
+//export const BASE_URL = PC_PRINCIPAL ? 'http://192.168.1.168:5000/v1' : 'http://172.20.10.2:5000/v1';
+export const BASE_URL = 'http://192.168.1.168:5000/v1';
 export const API_URL = Platform.OS === "android" ? 'http://10.0.2.2:5000/v1' : BASE_URL;
 
 // Interface définissant les valeurs de retour du hook
