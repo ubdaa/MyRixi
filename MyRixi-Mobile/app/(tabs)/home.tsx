@@ -21,9 +21,6 @@ import { useCommunity } from '@/contexts/CommunityContext';
 import { useProfile } from '@/contexts/ProfileContext';
 
 export default function HomePage() {
-  const channel = useChannel();
-  channel.connectSignalR();
-
   const { theme, colorMode, toggleColorMode } = useTheme();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [searchQuery, setSearchQuery] = useState('');

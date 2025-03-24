@@ -5,9 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 type MessageInputProps = {
   channelId: string;
   onSend: (content: string, channelId: string) => Promise<boolean>;
+  disabled?: boolean;
 };
 
-export function MessageInput({ channelId, onSend }: MessageInputProps) {
+export function MessageInput({ channelId, onSend, disabled }: MessageInputProps) {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -45,6 +46,7 @@ export function MessageInput({ channelId, onSend }: MessageInputProps) {
           placeholderTextColor="#99aab5"
           multiline
           maxLength={2000}
+          editable={!disabled}
           underlineColorAndroid="transparent"
         />
       </View>

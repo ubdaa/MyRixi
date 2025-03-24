@@ -55,6 +55,11 @@ interface UseChannelReturn {
   onUserJoinedChannel: (callback: (data: { UserId: string, ChannelId: string }) => void) => void;
   onUserLeftChannel: (callback: (data: { UserId: string, ChannelId: string }) => void) => void;
   onConnectionClosed: (callback: (error: Error | undefined) => void) => void;
+  
+  // SignalR connection state
+  isConnected: boolean;
+  isConnecting: boolean;
+  connectionReady: boolean;
 }
 
 export const useChannel = (): UseChannelReturn => {
@@ -67,8 +72,15 @@ export const useChannel = (): UseChannelReturn => {
   const [privateChannels, setPrivateChannels] = useState<Channel[]>([]);
   const [currentChannel, setCurrentChannel] = useState<ChannelDetail | null>(null);
   
-  // Initialisation du service Chat
+  // Initialisation du service Chat et état de connexion
   const [chatService] = useState<ChatService>(() => new ChatService());
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  // Add a flag to indicate when the connection is fully ready to use
+  const [connectionReady, setConnectionReady] = useState<boolean>(false);
+  // Add retries counter
+  const [connectionRetries, setConnectionRetries] = useState<number>(0);
+  const MAX_RETRIES = 3;
 
   // Actions liées aux canaux
   const loadCommunityChannels = useCallback(async (communityId: string) => {
@@ -210,16 +222,91 @@ export const useChannel = (): UseChannelReturn => {
 
   // Actions liées à SignalR
   const connectSignalR = useCallback(async () => {
-    return await chatService.connect(`${API_URL}/hubs/chat`);
-  }, [chatService]);
+    // Prevent multiple connection attempts
+    if (isConnecting) return false;
+    if (isConnected && connectionReady) return true;
+    
+    setIsConnecting(true);
+    setError(null);
+    
+    try {
+      console.log("Trying to connect to SignalR hub...");
+      const result = await chatService.connect(`${API_URL}/hubs/chat`);
+      
+      if (result) {
+        console.log("SignalR connection established");
+        setIsConnected(true);
+        
+        // Give the connection a moment to fully initialize
+        setTimeout(() => {
+          setConnectionReady(true);
+          setConnectionRetries(0);
+          console.log("SignalR connection ready for use");
+        }, 500);
+      } else {
+        throw new Error("Failed to connect to SignalR hub");
+      }
+      
+      return result;
+    } catch (err) {
+      console.error('SignalR connection error:', err);
+      setError(err instanceof Error ? err : new Error('SignalR connection failed'));
+      
+      // Implement retry logic
+      if (connectionRetries < MAX_RETRIES) {
+        console.log(`Retrying SignalR connection (${connectionRetries + 1}/${MAX_RETRIES})...`);
+        setConnectionRetries(prev => prev + 1);
+        
+        // Wait before retry
+        setTimeout(() => {
+          setIsConnecting(false);
+          connectSignalR();
+        }, 2000);
+      }
+      
+      return false;
+    } finally {
+      setIsConnecting(false);
+    }
+  }, [chatService, isConnected, isConnecting, connectionRetries, connectionReady]);
 
   const joinChannel = useCallback(async (channelId: string) => {
-    return await chatService.joinChannel(channelId);
-  }, [chatService]);
+    // Ensure we have an active connection before joining
+    if (!isConnected || !connectionReady) {
+      console.log("SignalR not ready, attempting to connect before joining channel");
+      const connected = await connectSignalR();
+      if (!connected) {
+        console.error("Cannot join channel: SignalR not connected");
+        return false;
+      }
+      
+      // Give a small delay to ensure the connection is fully established
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    try {
+      console.log(`Joining channel ${channelId}...`);
+      return await chatService.joinChannel(channelId);
+    } catch (err) {
+      console.error(`Error joining channel ${channelId}:`, err);
+      return false;
+    }
+  }, [connectionReady, connectSignalR]);
 
   const leaveChannel = useCallback(async (channelId: string) => {
-    return await chatService.leaveChannel(channelId);
-  }, [chatService]);
+    if (!isConnected) {
+      console.log("Not connected, no need to leave channel");
+      return true;
+    }
+    
+    try {
+      console.log(`Leaving channel ${channelId}...`);
+      return await chatService.leaveChannel(channelId);
+    } catch (err) {
+      console.error(`Error leaving channel ${channelId}:`, err);
+      return false;
+    }
+  }, [chatService, isConnected]);
 
   // Callbacks pour notifications utilisateurs
   const onUserJoinedChannel = useCallback((callback: (data: { UserId: string, ChannelId: string }) => void) => {
@@ -236,17 +323,58 @@ export const useChannel = (): UseChannelReturn => {
 
   // Connexion SignalR au chargement du hook
   useEffect(() => {
-    connectSignalR().catch(err => {
-      console.error('Erreur lors de la connexion SignalR:', err);
-      setError(new Error('La connexion au chat a échoué. Veuillez réessayer.'));
-    });
+    let mounted = true;
+    
+    const setupConnection = async () => {
+      try {
+        if (mounted) {
+          const success = await connectSignalR();
+          if (mounted && success) {
+            setIsConnected(true);
+          }
+        }
+      } catch (err) {
+        if (mounted) {
+          console.error('Erreur lors de la connexion SignalR:', err);
+          setError(new Error('La connexion au chat a échoué. Veuillez réessayer.'));
+        }
+      }
+    };
+    
+    setupConnection();
 
     return () => {
+      mounted = false;
       chatService.disconnect().catch(err => {
         console.error('Erreur lors de la déconnexion SignalR:', err);
       });
     };
-  }, [connectSignalR, chatService]);
+  }, []);
+
+  // Update connection status when connection is closed
+  useEffect(() => {
+    const handleConnectionClosed = (error?: Error) => {
+      console.log("SignalR connection closed", error);
+      setIsConnected(false);
+      setConnectionReady(false);
+      
+      // Auto reconnect on unexpected disconnection
+      if (error) {
+        setTimeout(() => {
+          connectSignalR().catch(err => {
+            console.error("Auto reconnect failed:", err);
+          });
+        }, 3000);
+      }
+    };
+    
+    chatService.onConnectionClosed(handleConnectionClosed);
+    
+    return () => {
+      // Clean up by removing the handler
+      chatService.onConnectionClosed(() => {});
+    };
+  }, [chatService, connectSignalR]);
 
   return {
     // États
@@ -276,7 +404,12 @@ export const useChannel = (): UseChannelReturn => {
     // Callbacks pour notifications utilisateurs
     onUserJoinedChannel,
     onUserLeftChannel,
-    onConnectionClosed
+    onConnectionClosed,
+    
+    // SignalR connection state
+    isConnected,
+    isConnecting,
+    connectionReady
   };
 };
 

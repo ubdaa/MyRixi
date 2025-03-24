@@ -5,7 +5,7 @@ import useChannel from "@/hooks/useChannel";
 import useMessages from "@/hooks/useMessages";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Keyboard } from "react-native";
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, Keyboard, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChannelScreen() {
@@ -18,6 +18,7 @@ export default function ChannelScreen() {
   // États locaux pour gérer l'affichage
   const [isInitializing, setIsInitializing] = useState(true);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [retryAttempts, setRetryAttempts] = useState(0);
 
   // Hooks personnalisés pour la gestion des canaux et messages
   const { 
@@ -27,7 +28,10 @@ export default function ChannelScreen() {
     loadChannel, 
     joinChannel, 
     leaveChannel,
-    chatService
+    chatService,
+    connectSignalR,
+    isConnected,
+    connectionReady
   } = useChannel();
 
   const { 
@@ -54,10 +58,43 @@ export default function ChannelScreen() {
         // Chargement des détails du canal
         await loadChannel(id);
         
-        // Rejoindre le canal pour la connexion en temps réel
-        const success = await joinChannel(id);
-        if (!success) {
-          setConnectionError("Failed to connect to channel");
+        // Ensure we have a SignalR connection first
+        console.log("Ensuring SignalR connection before joining channel...");
+        const connected = await connectSignalR();
+        
+        if (connected) {
+          console.log("SignalR connected, waiting for connection to stabilize...");
+          // Give the connection a moment to fully establish
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Rejoindre le canal pour la connexion en temps réel
+          const joinSuccess = await joinChannel(id);
+          if (!joinSuccess) {
+            console.error("Failed to join channel after connection");
+            setConnectionError("Failed to connect to channel");
+            
+            // Try once more if joining failed
+            if (retryAttempts < 2) {
+              setRetryAttempts(prev => prev + 1);
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              initializeChannel();
+              return;
+            }
+          } else {
+            console.log(`Successfully joined channel ${id}`);
+            setConnectionError(null);
+          }
+        } else {
+          console.error("Failed to establish SignalR connection");
+          setConnectionError("Failed to connect to chat service");
+          
+          // Try once more if connection failed
+          if (retryAttempts < 2) {
+            setRetryAttempts(prev => prev + 1);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            initializeChannel();
+            return;
+          }
         }
       } catch (err) {
         console.error("Error initializing channel:", err);
@@ -76,10 +113,30 @@ export default function ChannelScreen() {
     };
   }, []);
   
+  // Add a retry button in case of connection errors
+  const retryConnection = async () => {
+    setIsInitializing(true);
+    setConnectionError(null);
+    try {
+      await connectSignalR();
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const success = await joinChannel(id);
+      if (!success) {
+        setConnectionError("Failed to join channel after retrying");
+      }
+    } catch (err) {
+      console.error("Error during retry:", err);
+      setConnectionError("Connection retry failed");
+    } finally {
+      setIsInitializing(false);
+    }
+  };
+  
   // Gestion des états de chargement et d'erreur
   if (isInitializing || channelLoading) {
     return (
       <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
         <Text style={styles.loadingText}>Loading channel...</Text>
       </View>
     );
@@ -92,6 +149,9 @@ export default function ChannelScreen() {
       <View style={styles.errorContainer}>
         <View style={styles.centerContent}>
           <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={retryConnection}>
+            <Text style={styles.retryButtonText}>Retry Connection</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -118,6 +178,7 @@ export default function ChannelScreen() {
         <MessageInput
           channelId={id}
           onSend={content => sendMessage(content)}
+          disabled={!isConnected}
         />
       </View>
     </KeyboardAvoidingView>
@@ -138,6 +199,7 @@ const styles = StyleSheet.create({
   loadingText: {
     color: '#424242',
     fontSize: 16,
+    marginTop: 16,
   },
   errorContainer: {
     flex: 1,
@@ -153,5 +215,18 @@ const styles = StyleSheet.create({
     color: '#e57373',
     fontSize: 16,
     textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#2196F3',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
