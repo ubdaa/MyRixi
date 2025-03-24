@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { NeoButton } from '@/components/ui/NeoButton';
-import { GlassmorphicHeader } from '@/components/ui/GlassmorphicHeader';
+import { Header } from '@/components/ui/Header';
 import { CommunityCard } from '@/components/community/main/community-card';
 import { EmptyStateView } from '@/components/ui/EmptyStateView';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
@@ -86,7 +86,7 @@ export default function CommunitiesScreen() {
       />
       
       {/* Header fixe */}
-      <GlassmorphicHeader
+      <Header
         title="Communautés"
         scrollY={scrollY}
       />

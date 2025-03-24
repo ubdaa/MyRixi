@@ -12,7 +12,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 
-interface GlassmorphicHeaderProps {
+interface HeaderProps {
   title: string;
   scrollY: Animated.Value;
   onActionPress?: () => void;
@@ -21,14 +21,14 @@ interface GlassmorphicHeaderProps {
   style?: ViewStyle;
 }
 
-export function GlassmorphicHeader ({
+export function Header ({
   title,
   scrollY,
   onActionPress,
   actionIcon = 'add',
   actionColor,
   style
-}: GlassmorphicHeaderProps) {
+}: HeaderProps) {
   const { theme, colorMode } = useTheme();
 
   // Animations basées sur le scroll
