@@ -40,10 +40,6 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   return (
     <View style={[styles.container, { 
       borderRadius: theme.roundness,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: colorMode === 'dark' ? 0.3 : 0.12,
-      shadowRadius: 12,
       elevation: 10,
     }, style]} {...props}>
       <BlurView

@@ -1,113 +1,152 @@
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
-import { Link } from 'expo-router';
+import { 
+  StyleSheet, 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  ViewStyle,
+  Image
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Community } from '@/types/community';
-import { CommunityAvatar } from './community-avatar';
-import { CommunityCover } from './community-cover';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { useTheme } from '@/contexts/ThemeContext';
 
-type CommunityCardProps = {
-  community: Community;
-};
+interface CommunityCardProps {
+  community: {
+    id: string | number;
+    name: string;
+    description?: string;
+    icon?: string;
+    memberCount?: number;
+    isPrivate?: boolean;
+  };
+  onPress: (id: string | number) => void;
+  style?: ViewStyle;
+}
 
-export function CommunityCard ({ community }: CommunityCardProps) {
+export const CommunityCard: React.FC<CommunityCardProps> = ({
+  community,
+  onPress,
+  style
+}) => {
+  const { theme } = useTheme();
+  
   return (
-    <Link push href={`/community/${community.id}/feed`} asChild>
-      <TouchableOpacity style={styles.card}>
-        <CommunityCover coverUrl={community.coverUrl} />
-        
-        <View style={styles.cardContent}>
-          <CommunityAvatar 
-            iconUrl={community.iconUrl} 
-            style={styles.avatarPosition}
-          />
-          
-          <View style={styles.cardInfo}>
-            <Text style={styles.communityName}>{community.name}</Text>
-            <Text style={styles.description} numberOfLines={2}>
-              {community.description}
-            </Text>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => onPress(community.id)}
+      >
+        <GlassCard style={styles.card}>
+          <View style={styles.content}>
+            <Image 
+              source={{ uri: community.icon || 'https://via.placeholder.com/60' }}
+              style={styles.icon} 
+            />
             
-            <View style={styles.metaInfo}>
-              {community.isPrivate && (
-                <View style={styles.privateTag}>
-                  <Ionicons name="lock-closed" size={12} color="#FFF" />
-                  <Text style={styles.privateText}>Private</Text>
-                </View>
-              )}
-              
-              <Text style={styles.roleTag}>
-                {community.profile.role}
+            <View style={styles.info}>
+              <Text 
+                style={[styles.name, { color: theme.colors.textPrimary }]}
+                numberOfLines={1}
+              >
+                {community.name}
               </Text>
+              
+              <Text 
+                style={[styles.description, { color: theme.colors.textSecondary }]}
+                numberOfLines={2}
+              >
+                {community.description || "Pas de description"}
+              </Text>
+              
+              <View style={styles.metaContainer}>
+                <View style={styles.metaItem}>
+                  <Ionicons 
+                    name="people-outline" 
+                    size={14} 
+                    color={theme.colors.textSecondary} 
+                  />
+                  <Text 
+                    style={[styles.metaText, { color: theme.colors.textSecondary }]}
+                  >
+                    {community.memberCount || 0} membres
+                  </Text>
+                </View>
+                
+                {community.isPrivate && (
+                  <View style={styles.metaItem}>
+                    <Ionicons 
+                      name="lock-closed-outline" 
+                      size={14} 
+                      color={theme.colors.technoBlue} 
+                    />
+                    <Text 
+                      style={[styles.metaText, { color: theme.colors.technoBlue }]}
+                    >
+                      Privé
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
+            
+            <Ionicons 
+              name="chevron-forward" 
+              size={20} 
+              color={theme.colors.textSecondary} 
+              style={styles.arrow}
+            />
           </View>
-        </View>
+        </GlassCard>
       </TouchableOpacity>
-    </Link>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 16,
+  },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    marginBottom: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    padding: 12,
   },
-  cardContent: {
+  content: {
     flexDirection: 'row',
-    padding: 16,
+    alignItems: 'center',
   },
-  avatarPosition: {
-    marginTop: -30,
-    marginRight: 16,
+  icon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
   },
-  cardInfo: {
+  info: {
     flex: 1,
+    marginRight: 8,
   },
-  communityName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  name: {
+    fontSize: 16,
+    fontWeight: '700',
     marginBottom: 4,
   },
   description: {
-    color: '#666',
-    marginBottom: 8,
+    fontSize: 13,
+    marginBottom: 6,
   },
-  metaInfo: {
+  metaContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  privateTag: {
+  metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ff6b6b',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    marginRight: 8,
+    marginRight: 12,
   },
-  privateText: {
-    color: '#FFF',
+  metaText: {
     fontSize: 12,
     marginLeft: 4,
-    fontWeight: '500',
   },
-  roleTag: {
-    backgroundColor: '#4c669f',
-    color: 'white',
-    fontSize: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    overflow: 'hidden',
+  arrow: {
+    marginLeft: 'auto',
   },
 });
