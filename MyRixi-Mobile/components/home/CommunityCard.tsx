@@ -10,18 +10,14 @@ import { router } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Community } from '@/types/community';
 
 interface CommunityCardProps {
-  community: {
-    id: string;
-    name: string;
-    members: number;
-    image: string;
-  };
+  community: Community;
   index: number;
 }
 
-export const CommunityCard: React.FC<CommunityCardProps> = ({ community, index }) => {
+export function CommunityCard ({ community, index }: CommunityCardProps) {
   const { theme } = useTheme();
   const animatedValue = useRef(new Animated.Value(0)).current;
   
@@ -57,7 +53,7 @@ export const CommunityCard: React.FC<CommunityCardProps> = ({ community, index }
     ]}>
       <TouchableOpacity onPress={handlePress} activeOpacity={0.9}>
         <ImageBackground
-          source={{ uri: community.image }}
+          source={{ uri: community.coverUrl }}
           style={styles.communityImage}
           imageStyle={{ borderRadius: theme.roundness }}
         >
@@ -69,7 +65,7 @@ export const CommunityCard: React.FC<CommunityCardProps> = ({ community, index }
           >
             <Text style={styles.communityName}>{community.name}</Text>
             <Text style={styles.communityMembers}>
-              {community.members} membres
+              0 membres
             </Text>
           </BlurView>
         </ImageBackground>

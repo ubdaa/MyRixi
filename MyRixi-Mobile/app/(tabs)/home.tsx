@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import useChannel from '@/hooks/useChannel';
-import { DEMO_POSTS, DEMO_COMMUNITIES } from '@/data/demo';
+import { DEMO_POSTS } from '@/data/demo';
 
 // Components
 import { AnimatedBackground } from '@/components/home/AnimatedBackground';
@@ -17,6 +17,8 @@ import { WelcomeCard } from '@/components/home/WelcomeCard';
 import { CommunitiesSection } from '@/components/home/CommunitiesSection';
 import { PostsSection } from '@/components/home/PostsSection';
 import { FloatingActionButton } from '@/components/home/FloatingActionButton';
+import { useCommunity } from '@/contexts/CommunityContext';
+import { useProfile } from '@/contexts/ProfileContext';
 
 export default function HomePage() {
   const channel = useChannel();
@@ -26,6 +28,18 @@ export default function HomePage() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const [searchQuery, setSearchQuery] = useState('');
   
+  const { communities, loading, fetchCommunities } = useCommunity();
+
+  useEffect(() => {
+    fetchCommunities();
+  }, [fetchCommunities]);
+  
+  const { fetchProfile, profile } = useProfile();
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
   return (
     <View style={[
       styles.container,
@@ -43,8 +57,8 @@ export default function HomePage() {
       {/* Header flottant avec effet parallaxe */}
       <Header 
         scrollY={scrollY} 
-        username="Ubda"
-        avatarUrl="https://i.pravatar.cc/150?img=1"
+        username={profile?.displayName ?? "John Doe"}
+        avatarUrl={profile?.profilePicture.url ?? "https://i.pravatar.cc/150?img=1"}
         onProfilePress={toggleColorMode}
       />
       
@@ -66,7 +80,7 @@ export default function HomePage() {
         <WelcomeCard />
         
         {/* Section Communautés */}
-        <CommunitiesSection communities={DEMO_COMMUNITIES} />
+        <CommunitiesSection communities={communities} />
         
         {/* Section Posts */}
         <PostsSection posts={DEMO_POSTS} />

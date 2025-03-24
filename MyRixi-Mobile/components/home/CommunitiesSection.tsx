@@ -8,17 +8,13 @@ import { router } from 'expo-router';
 import { SectionHeader } from './SectionHeader';
 import { CommunityCard } from './CommunityCard';
 import { CreateCommunityCard } from './CreateCommunityCard';
+import { Community } from '@/types/community';
 
 interface CommunitiesSectionProps {
-  communities: Array<{
-    id: string;
-    name: string;
-    members: number;
-    image: string;
-  }>;
+  communities: Array<Community>;
 }
 
-export const CommunitiesSection: React.FC<CommunitiesSectionProps> = ({ communities }) => {
+export function CommunitiesSection ({ communities }: CommunitiesSectionProps) {
   return (
     <View style={styles.sectionContainer}>
       <SectionHeader 
