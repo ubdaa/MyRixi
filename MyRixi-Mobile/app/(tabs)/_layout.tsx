@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { View, StyleSheet } from "react-native";
 import { BlurView } from "expo-blur";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
+import Providers from "@/components/providers";
 
 function TabBarIcon({ name, color, size }: { name: keyof typeof Ionicons.glyphMap; color: string; size: number }) {
   return (
@@ -117,9 +118,9 @@ function MyTabs() {
 
 export default function TabsLayout() {
   return (
-    <ThemeProvider>
+    <Providers>
       <MyTabs />
-    </ThemeProvider>
+    </Providers>
   );
 }
 

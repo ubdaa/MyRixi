@@ -30,28 +30,9 @@ export default function CommunitiesScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
   
-  // Animation des cartes lors de leur apparition
-  const itemAnimations = useRef(new Map()).current;
-  
   useEffect(() => {
     fetchCommunities();
   }, [fetchCommunities]);
-  
-  // Récupère ou crée une animation pour un item spécifique
-  const getItemAnimation = (index: number) => {
-    if (!itemAnimations.has(index)) {
-      itemAnimations.set(index, new Animated.Value(0));
-      
-      // Démarre l'animation avec un délai basé sur l'index
-      Animated.timing(itemAnimations.get(index), {
-        toValue: 1,
-        duration: 400,
-        delay: index * 120,
-        useNativeDriver: true
-      }).start();
-    }
-    return itemAnimations.get(index);
-  };
   
   // Gestionnaires d'événements
   const handleRefresh = async () => {
@@ -108,9 +89,6 @@ export default function CommunitiesScreen() {
       <GlassmorphicHeader
         title="Communautés"
         scrollY={scrollY}
-        onActionPress={handleCreateCommunity}
-        actionIcon="add"
-        actionColor={theme.colors.cyberPink}
       />
       
       {/* Liste des communautés */}

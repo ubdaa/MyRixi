@@ -34,19 +34,19 @@ export function GlassmorphicHeader ({
   // Animations basées sur le scroll
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 100],
-    outputRange: [1, 0.9],
+    outputRange: [1, 1],
     extrapolate: 'clamp'
   });
   
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 100],
-    outputRange: [130, 80],
+    outputRange: [120, 60],
     extrapolate: 'clamp'
   });
   
   const titleSize = scrollY.interpolate({
     inputRange: [0, 100],
-    outputRange: [34, 24],
+    outputRange: [32, 24],
     extrapolate: 'clamp'
   });
 
@@ -63,7 +63,7 @@ export function GlassmorphicHeader ({
       style
     ]}>
       <BlurView 
-        intensity={20} 
+        intensity={theme.glassmorphism.blur} 
         tint={colorMode === "dark" ? "dark" : "light"}
         style={[
           StyleSheet.absoluteFill,
@@ -73,6 +73,7 @@ export function GlassmorphicHeader ({
               : "rgba(248, 248, 250, 0.7)"
           }
         ]}
+        experimentalBlurMethod='dimezisBlurView'
       />
       
       <SafeAreaView edges={["top"]} style={styles.headerContent}>
@@ -93,7 +94,7 @@ export function GlassmorphicHeader ({
             activeOpacity={0.8}
           >
             <BlurView 
-              intensity={15}
+              intensity={theme.glassmorphism.blur}
               tint={colorMode === "dark" ? "dark" : "light"}
               style={[
                 styles.actionButtonBlur,
@@ -101,6 +102,7 @@ export function GlassmorphicHeader ({
                   backgroundColor: buttonColor + "30",
                 }
               ]}
+              experimentalBlurMethod='dimezisBlurView'
             >
               <Ionicons name={actionIcon} size={24} color={buttonColor} />
             </BlurView>
