@@ -8,29 +8,31 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { NeoButton } from '@/components/ui/NeoButton';
+import { Badge } from '../ui/Badge';
+import { useRouter } from 'expo-router';
 
 export const WelcomeCard: React.FC = () => {
   const { theme } = useTheme();
+  const router = useRouter();
   
   return (
     <GlassCard style={styles.welcomeCard}>
       <View style={styles.welcomeContent}>
         <View style={styles.welcomeHeader}>
           <Text style={[styles.welcomeTitle, { color: theme.colors.textPrimary }]}>
-            Nouveau design MyRixi
+            Bienvenue sur MyRixi
           </Text>
-          <View style={[styles.badge, { backgroundColor: theme.colors.holoTurquoise }]}>
-            <Text style={styles.badgeText}>NOUVEAU</Text>
-          </View>
+          <Badge text="Nouveau" color="primary" />
         </View>
         <Text style={[styles.welcomeText, { color: theme.colors.textSecondary }]}>
-          Découvrez notre nouvelle interface glassmorphique avec des effets néomorphiques et cybernétiques.
+          Découvrez les dernières actualités de vos communautés et restez connecté avec vos amis.
         </Text>
         <View style={styles.cardButtons}>
           <NeoButton 
             title="Explorer" 
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push('/discovery');
             }}
             accentColor={theme.colors.neoPurple}
             size="small"

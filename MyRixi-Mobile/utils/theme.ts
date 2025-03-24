@@ -19,6 +19,7 @@ export interface ThemeColors {
   synthGreen: string;
   solarGold: string;
   holoTurquoise: string;
+  neoRed: string;
 }
 
 export interface ThemeShadows {
@@ -51,6 +52,7 @@ const darkColors: ThemeColors = {
   synthGreen: '#00D67D',
   solarGold: '#FBC02D',
   holoTurquoise: '#42FFD6',
+  neoRed: '#FF4F4F',
 };
 
 const lightColors: ThemeColors = {
@@ -67,6 +69,7 @@ const lightColors: ThemeColors = {
   synthGreen: '#00D67D',
   solarGold: '#FBC02D',
   holoTurquoise: '#42FFD6',
+  neoRed: '#FF4F4F',
 };
 
 export const darkTheme: Theme = {
