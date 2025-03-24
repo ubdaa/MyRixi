@@ -1,189 +1,211 @@
 import { CreateMessageDto } from '@/types/message';
-import * as signalR from '@microsoft/signalr';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import SignalRManager, { SignalREvents } from './signalRService';
 
 export class ChatService {
-  connection: signalR.HubConnection | null;
-  callbacks: {
+  private callbacks: {
     messageReceived: (messageDto: any) => void,
     userJoinedChannel: (data: { UserId: string, ChannelId: string }) => void,
     userLeftChannel: (data: { UserId: string, ChannelId: string }) => void,
-    connectionClosed: (error: Error | undefined) => void
+    connectionClosed: (error: Error | undefined) => void,
+    connectionReconnected: () => void
   };
-  isConnecting: boolean;
-  isDisconnecting: boolean;
+  
+  private registeredEvents: boolean = false;
+  private cleanupFunctions: (() => void)[] = [];
 
   constructor() {
-    this.connection = null;
     this.callbacks = {
       messageReceived: () => {},
       userJoinedChannel: () => {},
       userLeftChannel: () => {},
-      connectionClosed: () => {}
+      connectionClosed: () => {},
+      connectionReconnected: () => {}
     };
-    this.isConnecting = false;
-    this.isDisconnecting = false;
   }
 
-  async connect(url: string) {
-    // Prevent concurrent connection attempts
-    if (this.isConnecting) {
-      console.log('Connection attempt already in progress');
-      return false;
-    }
-    
-    // If already connected, don't reconnect
-    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
-      console.log('SignalR already connected');
-      return true;
-    }
-
-    this.isConnecting = true;
-    
+  /**
+   * Établit la connexion au hub SignalR et enregistre les gestionnaires d'événements
+   */
+  async connect(url: string): Promise<boolean> {
     try {
-      // Make sure any existing connection is properly closed first
-      await this.disconnect();
+      // Nettoie les écouteurs précédents
+      this.unregisterEventHandlers();
       
-      // Add a small delay to ensure disconnect completes
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const success = await SignalRManager.connect(url);
       
-      // Build a new connection
-      this.connection = new signalR.HubConnectionBuilder()
-        .withUrl(url, {
-          accessTokenFactory: async () => await AsyncStorage.getItem('token') || '',
-          transport: signalR.HttpTransportType.WebSockets,
-          skipNegotiation: true
-        })
-        .configureLogging(signalR.LogLevel.Information)
-        .withAutomaticReconnect([0, 2000, 5000, 10000, 15000, 30000])
-        .build();
-
-      // Setup event handlers avec plus de logs de debug
-      this.connection.on('ReceiveMessage', (messageDto: any) => {
-        console.log('SignalR ReceiveMessage event triggered with data:', messageDto);
-        this.callbacks.messageReceived(messageDto);
-      });
-
-      this.connection.on('UserJoinedChannel', (data: { UserId: string, ChannelId: string }) => {
-        console.log('SignalR UserJoinedChannel event triggered:', data);
-        this.callbacks.userJoinedChannel(data);
-      });
-
-      this.connection.on('UserLeftChannel', (data: { UserId: string, ChannelId: string }) => {
-        console.log('SignalR UserLeftChannel event triggered:', data);
-        this.callbacks.userLeftChannel(data);
-      });
-
-      // Setup connection closed handler
-      this.connection.onclose((error) => {
-        console.log('SignalR connection closed', error);
-        this.callbacks.connectionClosed(error);
-      });
-
-      await this.connection.start();
-      console.log('SignalR Connected');
-      return true;
-    } catch (err) {
-      console.error('SignalR Connection Error: ', err);
-      return false;
-    } finally {
-      this.isConnecting = false;
-    }
-  }
-
-  async disconnect() {
-    // Prevent concurrent disconnection attempts
-    if (this.isDisconnecting) {
-      console.log('Disconnection already in progress');
-      return;
-    }
-    
-    if (!this.connection) {
-      console.log('No active connection to disconnect');
-      return;
-    }
-    
-    this.isDisconnecting = true;
-    
-    try {
-      // Only try to stop if the connection is in a state that can be stopped
-      if (this.connection.state !== signalR.HubConnectionState.Disconnected &&
-          this.connection.state !== signalR.HubConnectionState.Disconnecting) {
-        await this.connection.stop();
-        console.log('SignalR Disconnected');
-      } else {
-        console.log('SignalR already disconnected or disconnecting');
+      if (success) {
+        this.registerEventHandlers();
       }
-    } catch (err) {
-      console.error('SignalR Disconnection Error: ', err);
-    } finally {
-      this.connection = null;
-      this.isDisconnecting = false;
+      
+      return success;
+    } catch (error) {
+      console.error('Erreur lors de la connexion à SignalR:', error);
+      return false;
     }
   }
 
-  onMessageReceived(callback: (messageDto: any) => void) {
-    console.log('Setting up new message received callback');
+  /**
+   * Enregistre les gestionnaires d'événements pour SignalR
+   */
+  private registerEventHandlers(): void {
+    if (this.registeredEvents) {
+      return;
+    }
+    
+    // Gestion des messages reçus
+    SignalRManager.on('ReceiveMessage', (messageDto: any) => {
+      console.log('SignalR: événement ReceiveMessage déclenché:', messageDto);
+      this.callbacks.messageReceived(messageDto);
+    });
+    
+    // Gestion des utilisateurs rejoignant un canal
+    SignalRManager.on('UserJoinedChannel', (data: { UserId: string, ChannelId: string }) => {
+      console.log('SignalR: événement UserJoinedChannel déclenché:', data);
+      this.callbacks.userJoinedChannel(data);
+    });
+    
+    // Gestion des utilisateurs quittant un canal
+    SignalRManager.on('UserLeftChannel', (data: { UserId: string, ChannelId: string }) => {
+      console.log('SignalR: événement UserLeftChannel déclenché:', data);
+      this.callbacks.userLeftChannel(data);
+    });
+    
+    // Gestion des événements de connexion/déconnexion
+    const disconnectedCleaner = SignalRManager.addEventListener(SignalREvents.DISCONNECTED, 
+      (error: Error | undefined) => {
+        console.log('SignalR: événement DISCONNECTED déclenché');
+        this.callbacks.connectionClosed(error);
+      }
+    );
+    
+    const reconnectedCleaner = SignalRManager.addEventListener(SignalREvents.RECONNECTED, 
+      () => {
+        console.log('SignalR: événement RECONNECTED déclenché');
+        this.callbacks.connectionReconnected();
+      }
+    );
+    
+    // Sauvegarde des fonctions de nettoyage
+    this.cleanupFunctions.push(disconnectedCleaner, reconnectedCleaner);
+    
+    this.registeredEvents = true;
+  }
+
+  /**
+   * Supprime les gestionnaires d'événements
+   */
+  private unregisterEventHandlers(): void {
+    if (!this.registeredEvents) {
+      return;
+    }
+    
+    // Suppression des gestionnaires d'événements hub
+    SignalRManager.off('ReceiveMessage');
+    SignalRManager.off('UserJoinedChannel');
+    SignalRManager.off('UserLeftChannel');
+    
+    // Suppression des écouteurs d'événements
+    this.cleanupFunctions.forEach(cleanup => cleanup());
+    this.cleanupFunctions = [];
+    
+    this.registeredEvents = false;
+  }
+
+  /**
+   * Ferme la connexion
+   */
+  async disconnect(): Promise<void> {
+    this.unregisterEventHandlers();
+    // Pas besoin de fermer la connexion SignalR ici
+    // car SignalRManager gère cela au niveau global
+  }
+
+  /**
+   * Définit le callback pour les messages reçus
+   */
+  onMessageReceived(callback: (messageDto: any) => void): void {
+    console.log('Configuration du callback pour les nouveaux messages');
     this.callbacks.messageReceived = callback;
   }
 
-  onUserJoinedChannel(callback: (data: { UserId: string, ChannelId: string }) => void) {
+  /**
+   * Définit le callback pour les utilisateurs rejoignant un canal
+   */
+  onUserJoinedChannel(callback: (data: { UserId: string, ChannelId: string }) => void): void {
     this.callbacks.userJoinedChannel = callback;
   }
 
-  onUserLeftChannel(callback: (data: { UserId: string, ChannelId: string }) => void) {
+  /**
+   * Définit le callback pour les utilisateurs quittant un canal
+   */
+  onUserLeftChannel(callback: (data: { UserId: string, ChannelId: string }) => void): void {
     this.callbacks.userLeftChannel = callback;
   }
 
-  onConnectionClosed(callback: (error: Error | undefined) => void) {
+  /**
+   * Définit le callback pour la fermeture de connexion
+   */
+  onConnectionClosed(callback: (error: Error | undefined) => void): void {
     this.callbacks.connectionClosed = callback;
   }
 
-  async joinChannel(channelId: string) {
-    if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) {
-      console.error('Cannot join channel: SignalR not connected');
-      return false;
-    }
+  /**
+   * Définit le callback pour la reconnexion
+   */
+  onConnectionReconnected(callback: () => void): void {
+    this.callbacks.connectionReconnected = callback;
+  }
 
+  /**
+   * Rejoint un canal
+   */
+  async joinChannel(channelId: string): Promise<boolean> {
+    return await SignalRManager.joinChannel(channelId);
+  }
+
+  /**
+   * Quitte un canal
+   */
+  async leaveChannel(channelId: string): Promise<boolean> {
+    return await SignalRManager.leaveChannel(channelId);
+  }
+
+  /**
+   * Envoie un message
+   */
+  async sendMessage(messageDto: CreateMessageDto): Promise<boolean> {
     try {
-      await this.connection.invoke('JoinChannel', channelId);
-      console.log(`Joined channel: ${channelId}`);
+      console.log('Envoi de message:', messageDto);
+      await SignalRManager.invoke('SendMessage', messageDto);
+      console.log('Message envoyé avec succès');
       return true;
     } catch (err) {
-      console.error('Error joining channel: ', err);
+      console.error('Erreur lors de l\'envoi du message:', err);
+      
+      // Tentative de reconnexion et nouvel essai
+      try {
+        const reconnected = await SignalRManager.ensureConnected();
+        if (reconnected) {
+          await SignalRManager.invoke('SendMessage', messageDto);
+          console.log('Message envoyé après reconnexion');
+          return true;
+        }
+      } catch (retryErr) {
+        console.error('Échec de la tentative de réenvoi:', retryErr);
+      }
+      
       return false;
     }
   }
-
-  async leaveChannel(channelId: string) {
-    if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) {
-      return false;
-    }
-
-    try {
-      await this.connection.invoke('LeaveChannel', channelId);
-      return true;
-    } catch (err) {
-      console.error('Error leaving channel: ', err);
-      return false;
-    }
-  }
-
-  async sendMessage(messageDto: CreateMessageDto) {
-    if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) {
-      console.error('Cannot send message: SignalR not connected');
-      return false;
-    }
-
-    console.log('Sending message: ', messageDto);
-
-    try {
-      await this.connection.invoke('SendMessage', messageDto);
-      console.log('Message sent successfully');
-      return true;
-    } catch (err) {
-      console.error('Error sending message: ', err);
-      return false;
-    }
+  
+  /**
+   * Vérifie si la connexion est établie
+   */
+  isConnected(): boolean {
+    const state = SignalRManager.getConnectionState();
+    return state === 'Connected';
   }
 }
+
+// Exporte une instance par défaut pour faciliter l'utilisation
+export default new ChatService();

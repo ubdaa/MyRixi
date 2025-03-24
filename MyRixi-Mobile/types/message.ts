@@ -13,6 +13,7 @@ export interface Message {
   sender?: UserChannel;
   attachments: Media[];
   reactions: Reaction[];
+  isPending?: boolean;
 }
 
 export interface CreateMessageDto {
