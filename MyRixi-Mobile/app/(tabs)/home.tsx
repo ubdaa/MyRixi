@@ -16,7 +16,7 @@ import { SearchBar } from '@/components/home/SearchBar';
 import { WelcomeCard } from '@/components/home/WelcomeCard';
 import { CommunitiesSection } from '@/components/home/CommunitiesSection';
 import { PostsSection } from '@/components/home/PostsSection';
-import { FloatingActionButton } from '@/components/home/FloatingActionButton';
+import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { useCommunity } from '@/contexts/CommunityContext';
 import { useProfile } from '@/contexts/ProfileContext';
 
@@ -84,7 +84,7 @@ export default function HomePage() {
       </Animated.ScrollView>
       
       {/* Bouton flottant pour nouveau post */}
-      <FloatingActionButton />
+      <FloatingActionButton onPress={() => {}} />
     </View>
   );
 }

@@ -44,9 +44,9 @@ export function FloatingActionButton ({
   const getPositionStyle = () => {
     switch (position) {
       case 'bottomRight':
-        return { bottom: 20, right: 20 };
+        return { bottom: 90, right: 20 };
       case 'bottomLeft':
-        return { bottom: 20, left: 20 };
+        return { bottom: 60, left: 20 };
       case 'topRight':
         return { top: 20, right: 20 };
       case 'topLeft':
