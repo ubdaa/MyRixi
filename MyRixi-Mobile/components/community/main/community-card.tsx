@@ -10,16 +10,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Community } from '@/types/community';
 
 interface CommunityCardProps {
-  community: {
-    id: string | number;
-    name: string;
-    description?: string;
-    icon?: string;
-    memberCount?: number;
-    isPrivate?: boolean;
-  };
+  community: Community;
   onPress: (id: string | number) => void;
   style?: ViewStyle;
 }
@@ -33,13 +27,12 @@ export const CommunityCard: React.FC<CommunityCardProps> = ({
   
   return (
       <TouchableOpacity
-        activeOpacity={0.9}
         onPress={() => onPress(community.id)}
       >
         <GlassCard style={styles.card}>
           <View style={styles.content}>
             <Image 
-              source={{ uri: community.icon || 'https://via.placeholder.com/60' }}
+              source={{ uri: community.coverUrl || 'https://via.placeholder.com/60' }}
               style={styles.icon} 
             />
             
@@ -68,7 +61,7 @@ export const CommunityCard: React.FC<CommunityCardProps> = ({
                   <Text 
                     style={[styles.metaText, { color: theme.colors.textSecondary }]}
                   >
-                    {community.memberCount || 0} membres
+                    0 membres
                   </Text>
                 </View>
                 
@@ -108,7 +101,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   card: {
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   content: {
     flexDirection: 'row',
@@ -117,7 +111,7 @@ const styles = StyleSheet.create({
   icon: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: 10,
     marginRight: 12,
   },
   info: {
