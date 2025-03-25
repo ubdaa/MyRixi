@@ -1,12 +1,27 @@
 ﻿namespace MyRixiApi.Models;
 
+public enum PostState
+{
+    Draft,
+    Published,
+    Archived
+}
+
+public enum PostType
+{
+    Text
+}
+
 public class Post
 {
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public DateTime PublishedAt { get; set; } = DateTime.UtcNow;
-    public string Type { get; set; } = "text"; // text, multimedia
+    public PostState State { get; set; } = PostState.Draft;
+    public PostType Type { get; set; } = PostType.Text;
+    
+    // Relationships
     public Guid CommunityId { get; set; }
     public Community Community { get; set; } = null!;
     public Guid CommunityProfileId { get; set; }

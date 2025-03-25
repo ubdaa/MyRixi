@@ -53,7 +53,7 @@ function MyTabs() {
       },
       tabBarLabelStyle: {
         fontWeight: isFocused ? "700" as const : "500" as const,
-        fontSize: 12,
+        fontSize: 10,
       },
     };
   };
