@@ -11,6 +11,30 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
     {
     }
 
+    public async Task<Post> CreateDraftAsync(Guid communityId, Guid userId)
+    {
+        var post = new Post
+        {
+            CommunityId = communityId,
+            CommunityProfileId = userId,
+            State = PostState.Draft
+        };
+
+        await _context.Posts.AddAsync(post);
+        await _context.SaveChangesAsync();
+
+        return post;
+    }
+
+    public async Task<IEnumerable<Post>> GetUserDrafts(Guid communityId, Guid userId)
+    {
+        return await _context.Posts
+            .Include(p => p.CommunityProfile)
+            .ThenInclude(p => p.User)
+            .Where(p => p.CommunityId == communityId && p.CommunityProfile.UserId == userId && p.State == PostState.Draft)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Post>> GetPostsAsync(Guid communityId, int page, int size)
     {
         var posts = await _context.Posts

@@ -46,6 +46,38 @@ public class PostController : Controller
         _userManager = userManager;
     }
     
+    #region DRAFTS
+    
+    [Authorize]
+    [HttpGet("community/{communityId}/drafts")]
+    public async Task<IActionResult> GetCommunityDrafts(Guid communityId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        var communityProfile = await _communityProfileRepository.GetByUserIdAsync(communityId, Guid.Parse(userId));
+        if (communityProfile == null) return Unauthorized();
+        
+        var posts = await _postRepository.GetUserDrafts(communityId, communityProfile.UserId);
+        return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
+    }
+
+    [Authorize]
+    [HttpPost("community/{communityId}/draft/create")]
+    public async Task<IActionResult> CreateDraft(Guid communityId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        var post = await _postRepository.CreateDraftAsync(communityId, Guid.Parse(userId));
+        
+        return Ok(_mapper.Map<PostResponseDto>(post));
+    }
+    
+    #endregion
+    
+    #region PUBLISHED
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPost(Guid id)
     {
@@ -155,6 +187,7 @@ public class PostController : Controller
         var posts = await _postRepository.GetPostsAsync(communityId, page, size);
         return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
     }
+
     
     [HttpGet("community/{communityId}/user/{userId}")]
     public async Task<IActionResult> GetUserCommunityPosts(Guid communityId, Guid userId, [FromQuery] int page = 1, [FromQuery] int size = 10)
@@ -169,4 +202,6 @@ public class PostController : Controller
         var posts = await _postRepository.GetPostsByUserAsync(userId);
         return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
     }
+    
+    #endregion
 }
