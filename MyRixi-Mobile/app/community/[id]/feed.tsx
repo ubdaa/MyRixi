@@ -9,6 +9,7 @@ import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import * as Haptics from 'expo-haptics';
 
 export default function CommunityScreen() {
   const { id } = useLocalSearchParams();
@@ -98,6 +99,7 @@ export default function CommunityScreen() {
           <Pressable 
             style={[styles.actionButton, { borderColor: theme.colors.divider }]}
             android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
           >
             <Ionicons name="document-text-outline" size={22} color={theme.colors.technoBlue} />
             <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Règles</Text>
@@ -106,6 +108,7 @@ export default function CommunityScreen() {
           <Pressable 
             style={[styles.actionButton, { borderColor: theme.colors.divider }]}
             android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
           >
             <Ionicons name="people-outline" size={22} color={theme.colors.synthGreen} />
             <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Membres</Text>
@@ -114,6 +117,7 @@ export default function CommunityScreen() {
           <Pressable 
             style={[styles.actionButton, { borderRightWidth: 0, borderColor: theme.colors.divider }]}
             android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
           >
             <Ionicons name="bookmark-outline" size={22} color={theme.colors.solarGold} />
             <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Enregistrés</Text>
@@ -153,7 +157,6 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     position: 'relative',
-    marginBottom: 8,
   },
   headerContentContainer: {
     padding: 16,
@@ -184,7 +187,6 @@ const styles = StyleSheet.create({
   nameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
   },
   name: {
     fontSize: 24,
