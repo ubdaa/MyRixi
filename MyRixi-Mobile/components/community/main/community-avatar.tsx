@@ -23,7 +23,7 @@ export function CommunityAvatar({
       source={fullIconUrl}
       style={[
         styles.avatar,
-        { width: size, height: size, borderRadius: size / 3 },
+        { width: size, height: size, borderRadius: size / 2 },
         style,
       ]}
       contentFit="cover"

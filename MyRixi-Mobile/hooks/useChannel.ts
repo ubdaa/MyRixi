@@ -16,7 +16,6 @@ import {
 } from '@/services/channelService';
 import chatService from '@/services/chatService';
 import { Platform } from 'react-native';
-import SignalRManager from '@/services/signalRService';
 
 // Configuration des URLs de l'API
 //export const BASE_URL = PC_PRINCIPAL ? 'http://192.168.1.168:5000/v1' : 'http://172.20.10.2:5000/v1';
