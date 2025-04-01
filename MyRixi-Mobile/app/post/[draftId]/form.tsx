@@ -9,9 +9,10 @@ import {
   Pressable,
   Alert,
   TextInput,
-  SafeAreaView
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -226,179 +227,179 @@ export const PostForm: React.FC<PostFormHandlers> = ({
   };
   
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <ScrollView 
-        style={styles.container} 
-        contentContainerStyle={styles.contentContainer}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={{flex: 1, backgroundColor: theme.colors.background1}}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{flex: 1}}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
-        {/* Titre du formulaire */}
-        <Text style={[styles.formTitle, { color: theme.colors.textPrimary }]}>
-          {draftId ? 'Modifier le post' : 'Créer un nouveau post'}
-        </Text>
-        
-        {/* Champ titre */}
-        <GlassInput
-          label="Titre"
-          placeholder="Donnez un titre à votre post"
-          value={formData.title}
-          onChangeText={handleTitleChange}
-          accentColor={theme.colors.cyberPink}
-          containerStyle={styles.inputContainer}
-        />
-        
-        {/* Champ contenu */}
-        <GlassInput
-          label="Contenu"
-          placeholder="Écrivez le contenu de votre post ici..."
-          value={formData.content}
-          onChangeText={handleContentChange}
-          accentColor={theme.colors.technoBlue}
-          multiline
-          numberOfLines={5}
-        />
-        
-        {/* Section des images */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Images</Text>
-            <TouchableOpacity 
-              style={[styles.addButton, { backgroundColor: theme.colors.technoBlue }]} 
-              onPress={handleAddImages}
-            >
-              <Ionicons name="add" size={20} color="#fff" />
-              <Text style={styles.addButtonText}>Ajouter</Text>
-            </TouchableOpacity>
-          </View>
+        <ScrollView 
+          style={[styles.container, { backgroundColor: theme.colors.background1 }]} 
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Titre du formulaire */}
+          <Text style={[styles.formTitle, { color: theme.colors.textPrimary }]}>
+            {draftId ? 'Modifier le post' : 'Créer un nouveau post'}
+          </Text>
           
-          {formData.images.length > 0 ? (
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false} 
-              style={styles.imagesContainer}
-              contentContainerStyle={styles.imagesContent}
-            >
-              {formData.images.map((image, index) => (
-                <View key={image.id} style={styles.imageWrapper}>
-                  <Image source={{ uri: image.uri }} style={styles.image} />
-                  <TouchableOpacity 
-                    style={styles.removeImageButton} 
-                    onPress={() => handleRemoveImage(image.id)}
-                  >
-                    <Ionicons name="close-circle" size={24} color={theme.colors.neoRed} />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </ScrollView>
-          ) : (
-            <View style={[styles.emptyState, { borderColor: theme.colors.divider }]}>
-              <MaterialCommunityIcons 
-                name="image-outline" 
-                size={36} 
-                color={theme.colors.textSecondary} 
-              />
-              <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-                Aucune image ajoutée
-              </Text>
-            </View>
-          )}
-        </View>
-        
-        {/* Section des tags */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Tags</Text>
-            <View style={styles.tagInputContainer}>
-              <GlassInput
-                placeholder="Ajouter un tag"
-                value={newTag}
-                onChangeText={setNewTag}
-                containerStyle={{ flex: 1, marginRight: 10, marginVertical: 0 }}
-                accentColor={theme.colors.solarGold}
-                onSubmitEditing={handleAddTag}
-                returnKeyType="done"
-              />
+          {/* Champ titre */}
+          <GlassInput
+            label="Titre"
+            placeholder="Donnez un titre à votre post"
+            value={formData.title}
+            onChangeText={handleTitleChange}
+            accentColor={theme.colors.cyberPink}
+            containerStyle={styles.inputContainer}
+          />
+          
+          {/* Champ contenu */}
+          <GlassInput
+            label="Contenu"
+            placeholder="Écrivez le contenu de votre post ici..."
+            value={formData.content}
+            onChangeText={handleContentChange}
+            accentColor={theme.colors.technoBlue}
+            multiline
+            numberOfLines={5}
+          />
+          
+          {/* Section des images */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Images</Text>
               <TouchableOpacity 
-                style={[styles.tagAddButton, { backgroundColor: theme.colors.solarGold }]} 
-                onPress={handleAddTag}
-                disabled={!newTag.trim()}
+                style={[styles.addButton, { backgroundColor: theme.colors.technoBlue }]} 
+                onPress={handleAddImages}
               >
-                <Ionicons name="add" size={24} color="#fff" />
+                <Ionicons name="add" size={20} color="#fff" />
+                <Text style={styles.addButtonText}>Ajouter</Text>
               </TouchableOpacity>
             </View>
-          </View>
-          
-          <View style={styles.tagsContainer}>
-            {formData.tags.length > 0 ? (
-              <View style={styles.tagsList}>
-                {formData.tags.map(tag => (
-                  <View 
-                    key={tag.id} 
-                    style={[styles.tag, { backgroundColor: tag.color + '20', borderColor: tag.color }]}
-                  >
-                    <Text style={[styles.tagText, { color: tag.color }]}>
-                      {tag.name}
-                    </Text>
+            
+            {formData.images.length > 0 ? (
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                style={styles.imagesContainer}
+                contentContainerStyle={styles.imagesContent}
+              >
+                {formData.images.map((image, index) => (
+                  <View key={image.id} style={styles.imageWrapper}>
+                    <Image source={{ uri: image.uri }} style={styles.image} />
                     <TouchableOpacity 
-                      style={styles.removeTagButton} 
-                      onPress={() => handleRemoveTag(tag.id)}
+                      style={styles.removeImageButton} 
+                      onPress={() => handleRemoveImage(image.id)}
                     >
-                      <Ionicons name="close" size={16} color={tag.color} />
+                      <Ionicons name="close-circle" size={24} color={theme.colors.neoRed} />
                     </TouchableOpacity>
                   </View>
                 ))}
-              </View>
+              </ScrollView>
             ) : (
               <View style={[styles.emptyState, { borderColor: theme.colors.divider }]}>
                 <MaterialCommunityIcons 
-                  name="tag-outline" 
+                  name="image-outline" 
                   size={36} 
                   color={theme.colors.textSecondary} 
                 />
                 <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-                  Aucun tag ajouté
+                  Aucune image ajoutée
                 </Text>
               </View>
             )}
           </View>
-        </View>
-        
-        {/* Boutons d'action */}
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: theme.colors.synthGreen }]} 
-            onPress={handleSaveDraft}
-            disabled={isSubmitting}
-          >
-            <Ionicons name="save-outline" size={20} color="#fff" />
-            <Text style={styles.actionButtonText}>Sauvegarder</Text>
-          </TouchableOpacity>
           
-          {draftId && (
+          {/* Section des tags */}
+          <View style={styles.sectionContainer}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Tags</Text>
+              <View style={styles.tagInputContainer}>
+                <GlassInput
+                  placeholder="Ajouter un tag"
+                  value={newTag}
+                  onChangeText={setNewTag}
+                  containerStyle={{ flex: 1, marginRight: 10, marginVertical: 0 }}
+                  accentColor={theme.colors.solarGold}
+                  onSubmitEditing={handleAddTag}
+                  returnKeyType="done"
+                />
+                <TouchableOpacity 
+                  style={[styles.tagAddButton, { backgroundColor: theme.colors.solarGold }]} 
+                  onPress={handleAddTag}
+                  disabled={!newTag.trim()}
+                >
+                  <Ionicons name="add" size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            </View>
+            
+            <View style={styles.tagsContainer}>
+              {formData.tags.length > 0 ? (
+                <View style={styles.tagsList}>
+                  {formData.tags.map(tag => (
+                    <View 
+                      key={tag.id} 
+                      style={[styles.tag, { backgroundColor: tag.color + '20', borderColor: tag.color }]}
+                    >
+                      <Text style={[styles.tagText, { color: tag.color }]}>
+                        {tag.name}
+                      </Text>
+                      <TouchableOpacity 
+                        style={styles.removeTagButton} 
+                        onPress={() => handleRemoveTag(tag.id)}
+                      >
+                        <Ionicons name="close" size={16} color={tag.color} />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={[styles.emptyState, { borderColor: theme.colors.divider }]}>
+                  <MaterialCommunityIcons 
+                    name="tag-outline" 
+                    size={36} 
+                    color={theme.colors.textSecondary} 
+                  />
+                  <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+                    Aucun tag ajouté
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+          
+          {/* Boutons d'action */}
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity 
+              style={[styles.actionButton, { backgroundColor: theme.colors.synthGreen }]} 
+              onPress={handleSaveDraft}
+              disabled={isSubmitting}
+            >
+              <Ionicons name="save-outline" size={20} color="#fff" />
+            </TouchableOpacity>
+          
             <TouchableOpacity 
               style={[styles.actionButton, { backgroundColor: theme.colors.neoRed }]} 
               onPress={handleDeleteDraft}
               disabled={isSubmitting}
             >
               <Ionicons name="trash-outline" size={20} color="#fff" />
-              <Text style={styles.actionButtonText}>Supprimer</Text>
             </TouchableOpacity>
-          )}
           
-          <TouchableOpacity 
-            style={[
-              styles.actionButton, 
-              styles.publishButton, 
-              { backgroundColor: theme.colors.cyberPink }
-            ]} 
-            onPress={handlePublish}
-            disabled={isSubmitting}
-          >
-            <Ionicons name="send" size={20} color="#fff" />
-            <Text style={styles.actionButtonText}>Publier</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+            <TouchableOpacity 
+              style={[
+                styles.actionButton, 
+                { backgroundColor: theme.colors.cyberPink }
+              ]} 
+              onPress={handlePublish}
+              disabled={isSubmitting}
+            >
+              <Ionicons name="send" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -466,6 +467,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   imagesContainer: {
+    paddingVertical: 10,
     maxHeight: 120,
   },
   imagesContent: {
@@ -546,7 +548,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 100,
     flex: 1,
     marginHorizontal: 4,
   },
