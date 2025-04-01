@@ -77,6 +77,35 @@ public class PostController : Controller
         return Ok(_mapper.Map<PostResponseDto>(post));
     }
     
+    [Authorize]
+    [HttpPut("draft/{id}")]
+    public async Task<IActionResult> UpdateDraft(Guid id, [FromBody] UpdatePostDto model)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var post = await _postRepository.GetPostAsync(id);
+        if (post == null) return NotFound();
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
+        
+        post.Title = model.Title;
+        post.Content = model.Content;
+        
+        if (model.Tags != null)
+        {
+            var tags = await _tagRepository.GetOrCreateTagsAsync(model.Tags.Select(t => t.Name).ToList());
+            post.Tags = (ICollection<Tag>)tags;
+        }
+
+        await _postRepository.UpdateAsync(post);
+        
+        return Ok(_mapper.Map<PostResponseDto>(post));
+    }
+    
     #endregion
     
     #region PUBLISHED

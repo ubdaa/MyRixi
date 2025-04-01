@@ -1,7 +1,6 @@
-import useChannel from "@/hooks/useChannel";
 import { Post } from "@/types/post";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { View, StyleSheet, Text, ScrollView, RefreshControl, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,9 +11,14 @@ import { GlassCard } from "@/components/ui/GlassCard";
 
 function DraftCard({ draft }: { draft: Post }) {
   const { theme } = useTheme();
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.push(`/post/${draft.id}/form`);
+  };
   
   return (
-    <Pressable style={styles.cardContainer}>
+    <Pressable style={styles.cardContainer} onPress={handlePress}>
       <GlassCard style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={[styles.cardTitle, { color: theme.colors.textPrimary }]}>
