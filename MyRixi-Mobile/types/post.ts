@@ -7,7 +7,7 @@ export enum PostType {
 }
 
 export interface Post {
-  id: number;
+  id: string;
   title: string;
   content: string;
   publishedAt: string;

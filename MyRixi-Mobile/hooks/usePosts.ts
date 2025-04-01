@@ -1,4 +1,4 @@
-import { getDrafts, createDraft } from "@/services/postService";
+import { getDrafts, createDraft, addAttachmentToDraft, removeAttachmentFromDraft, updateDraft, publishDraft, UpdateDraft } from "@/services/postService";
 import { useEffect, useState } from "react";
 import { Post } from "@/types/post";
 import { useLocalSearchParams } from "expo-router";
@@ -45,6 +45,74 @@ export function usePosts() {
     }
   };
 
+  // Fonction pour ajouter une pièce jointe à un brouillon
+  const handleAddAttachment = async (draftId: string, file: File) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedDraft = await addAttachmentToDraft(draftId, file);
+      setDrafts(prev => prev.map(draft => draft.id === draftId ? updatedDraft : draft));
+      return updatedDraft;
+    } catch (err) {
+      setError('Error adding attachment');
+      console.error(err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour supprimer une pièce jointe d'un brouillon
+  const handleRemoveAttachment = async (draftId: string, attachmentId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedDraft = await removeAttachmentFromDraft(draftId, attachmentId);
+      setDrafts(prev => prev.map(draft => draft.id === draftId ? updatedDraft : draft));
+      return updatedDraft;
+    } catch (err) {
+      setError('Error removing attachment');
+      console.error(err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour mettre à jour un brouillon
+  const handleUpdateDraft = async (draftId: string, draftData: UpdateDraft) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedDraft = await updateDraft(draftId, draftData);
+      setDrafts(prev => prev.map(draft => draft.id === draftId ? updatedDraft : draft));
+      return updatedDraft;
+    } catch (err) {
+      setError('Error updating draft');
+      console.error(err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour publier un brouillon
+  const handlePublishDraft = async (draftId: string, draftData: UpdateDraft) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const publishedDraft = await publishDraft(draftId, draftData);
+      setDrafts(prev => prev.filter(draft => draft.id !== draftId));
+      return publishedDraft;
+    } catch (err) {
+      setError('Error publishing draft');
+      console.error(err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Chargement initial des brouillons
   useEffect(() => {
     if (communityId) {
@@ -57,7 +125,11 @@ export function usePosts() {
     loading,
     error,
     refreshDrafts: loadDrafts,
-    createDraft: handleCreateDraft
+    createDraft: handleCreateDraft,
+    addAttachment: handleAddAttachment,
+    removeAttachment: handleRemoveAttachment,
+    updateDraft: handleUpdateDraft,
+    publishDraft: handlePublishDraft
   };
 }
 

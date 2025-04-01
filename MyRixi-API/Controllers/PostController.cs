@@ -152,8 +152,11 @@ public class PostController : Controller
     
     [Authorize]
     [HttpPost("draft/{id}")]
-    public async Task<IActionResult> PublishDraft(Guid id)
+    public async Task<IActionResult> PublishDraft(Guid id, [FromForm] UpdatePostDto model)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var post = await _postRepository.GetPostAsync(id);
         if (post == null) return NotFound();
         
@@ -162,9 +165,16 @@ public class PostController : Controller
         
         if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
         
+        post.Title = model.Title;
+        post.Content = model.Content;
         post.State = PostState.Published;
-        post.PublishedAt = DateTime.UtcNow;
         
+        if (model.Tags != null)
+        {
+            var tags = await _tagRepository.GetOrCreateTagsAsync(model.Tags.Select(t => t.Name).ToList());
+            post.Tags = (ICollection<Tag>)tags;
+        }
+
         await _postRepository.UpdateAsync(post);
         
         return Ok(_mapper.Map<PostResponseDto>(post));

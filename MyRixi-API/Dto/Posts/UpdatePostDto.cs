@@ -12,6 +12,4 @@ public class UpdatePostDto
     public string Content { get; set; } = string.Empty;
     
     public List<CreateTagDto>? Tags { get; set; } = new();
-    
-    public List<IFormFile>? Attachments { get; set; }
 }
