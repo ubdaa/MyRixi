@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MyRixiApi.Dto;
 using MyRixiApi.Dto.Posts;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
@@ -82,7 +83,7 @@ public class PostController : Controller
     
     [Authorize]
     [HttpPost("draft/{id}/attachment")]
-    public async Task<IActionResult> UploadAttachment(Guid id, [FromForm] IFormFile file)
+    public async Task<IActionResult> UploadAttachment(Guid id, [FromForm] FileDto model)
     {
         var post = await _postRepository.GetPostAsync(id);
         if (post == null) return NotFound();
@@ -92,7 +93,7 @@ public class PostController : Controller
         
         if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
 
-        var media = await _mediaService.UploadMediaAsync(file);
+        var media = await _mediaService.UploadMediaAsync(model.File);
         var attachment = await _attachmentRepository.CreatePostAttachmentAsync(post.Id, media.Id);
         post.Attachments.Add(attachment);
         await _postRepository.UpdateAsync(post);
@@ -187,69 +188,6 @@ public class PostController : Controller
             _logger.LogError(ex, "Error occurred while fetching post {Id}", id);
             return StatusCode(500, "An error occurred while processing your request");
         }
-    }
-
-    [Authorize]
-    [HttpPost("{communityId}")]
-    public async Task<IActionResult> CreatePost(Guid communityId, [FromBody] CreatePostDto model)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var community = await _communityRepository.GetByIdAsync(communityId);
-        if (community == null) return NotFound();
-        
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
-        
-        var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
-        if (user == null) return Unauthorized();
-        
-        var communityProfile = await _communityProfileRepository.GetByUserIdAsync(communityId, user.Id);
-        if (communityProfile == null) return Unauthorized();
-
-        var post = _mapper.Map<Post>(model);
-        post.CommunityId = community.Id;
-        post.CommunityProfileId = communityProfile.Id;
-        
-        if (model.Tags != null)
-        {
-            var tags = await _tagRepository.GetOrCreateTagsAsync(model.Tags.Select(t => t.Name).ToList());
-            post.Tags = (ICollection<Tag>)tags;
-        }
-
-        await _postRepository.CreateAsync(post);
-        
-        return Ok(_mapper.Map<PostResponseDto>(post));
-    }
-    
-    [Authorize]
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdatePost(Guid id, [FromBody] CreatePostDto model)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var post = await _postRepository.GetPostAsync(id);
-        if (post == null) return NotFound();
-        
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
-        
-        if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
-        
-        post.Title = model.Title;
-        post.Content = model.Content;
-        
-        if (model.Tags != null)
-        {
-            var tags = await _tagRepository.GetOrCreateTagsAsync(model.Tags.Select(t => t.Name).ToList());
-            post.Tags = (ICollection<Tag>)tags;
-        }
-
-        await _postRepository.UpdateAsync(post);
-        
-        return Ok(_mapper.Map<PostResponseDto>(post));
     }
     
     [Authorize]
