@@ -9,7 +9,6 @@ import { useTheme } from '@/contexts/ThemeContext';
 import useChannel from '@/hooks/useChannel';
 import { DEMO_POSTS } from '@/data/demo';
 
-// Components
 import { AnimatedBackground } from '@/components/home/AnimatedBackground';
 import { Header } from '@/components/home/Header';
 import { SearchBar } from '@/components/home/SearchBar';
