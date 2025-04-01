@@ -35,13 +35,13 @@ interface PostFormHandlers {
   draftId?: string;
 }
 
-export const PostForm: React.FC<PostFormHandlers> = ({
+export default function PostForm({
   onSaveDraft,
   onDeleteDraft,
   onPublish,
   existingDraft,
   draftId
-}) => {
+}: PostFormHandlers) {
   const { theme, colorMode } = useTheme();
   
   // État du formulaire
@@ -231,10 +231,10 @@ export const PostForm: React.FC<PostFormHandlers> = ({
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{flex: 1}}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         <ScrollView 
-          style={[styles.container, { backgroundColor: theme.colors.background1 }]} 
+          style={[styles.container, { backgroundColor: theme.colors.background1, opacity: 1 }]} 
           contentContainerStyle={styles.contentContainer}
           keyboardShouldPersistTaps="handled"
         >
@@ -561,5 +561,3 @@ const styles = StyleSheet.create({
     flex: 1.5,
   },
 });
-
-export default PostForm;
