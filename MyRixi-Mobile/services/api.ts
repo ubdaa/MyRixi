@@ -27,6 +27,9 @@ api.interceptors.request.use(async (config) => {
 
 export const apiPostRequest = async <T>(url: string, formData: FormData, config: AxiosRequestConfig): Promise<T> => {
   try {
+    console.log('POST API_URL', `${API_URL}${url}`);
+    console.log('POST formData', formData);
+    console.log('POST config', config);
     const response = await api.post(`${API_URL}${url}`, formData, config);
     return response.data;
   } catch (error) {
@@ -36,7 +39,7 @@ export const apiPostRequest = async <T>(url: string, formData: FormData, config:
 
 export const apiGetRequest = async <T>(url: string, config: AxiosRequestConfig): Promise<T> => {
   try {
-    console.log('API_URL', `${API_URL}${url}`);
+    console.log('GET API_URL', `${API_URL}${url}`);
     const response = await api.get(`${API_URL}${url}`, config);
     return response.data;
   } catch (error) {

@@ -22,13 +22,11 @@ export const createDraft = async (communityId: string): Promise<Post> => {
 export const addAttachmentToDraft = async (draftId: string, file: File): Promise<Post> => {
   const formData = new FormData();
   formData.append('file', file);
-  return await apiPostRequest<Post>(`/post/draft/${draftId}/attachment`, formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+  return await apiPostRequest<Post>(`/post/draft/${draftId}/attachment`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
     },
-  );
+  });
 }
 
 export const removeAttachmentFromDraft = async (draftId: string, attachmentId: string): Promise<Post> => {
@@ -43,6 +41,10 @@ export interface UpdateDraft {
   title: string;
   content: string;
   tags?: TagDto[];
+}
+
+export const getDraft = async (draftId: string): Promise<Post> => {
+  return await apiGetRequest<Post>(`/post/draft/${draftId}`, {});
 }
 
 export const updateDraft = async (draftId: string, draft: UpdateDraft): Promise<Post> => {

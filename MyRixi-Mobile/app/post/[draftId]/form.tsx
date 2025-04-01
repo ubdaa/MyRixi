@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -17,6 +17,9 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/contexts/ThemeContext';
 import { GlassInput } from '@/components/ui/GlassInput';
+import { usePosts } from '@/hooks/usePosts';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { addAttachmentToDraft } from '@/services/postService';
 
 // Types pour notre formulaire
 interface PostFormData {
@@ -40,9 +43,22 @@ export default function PostForm({
   onDeleteDraft,
   onPublish,
   existingDraft,
-  draftId
+  draftId: propDraftId
 }: PostFormHandlers) {
   const { theme, colorMode } = useTheme();
+  const { draftId: paramDraftId, communityId } = useLocalSearchParams<{ draftId: string, communityId: string }>();
+  const currentDraftId = propDraftId || paramDraftId;
+  const router = useRouter();
+  
+  // Initialisation du hook usePosts
+  const { 
+    drafts, 
+    loading, 
+    updateDraft, 
+    publishDraft, 
+    addAttachment, 
+    removeAttachment 
+  } = usePosts();
   
   // État du formulaire
   const [formData, setFormData] = useState<PostFormData>(existingDraft || {
@@ -55,6 +71,29 @@ export default function PostForm({
   // État pour gérer l'ajout de nouveaux tags
   const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Charger le brouillon si on a un draftId
+  useEffect(() => {
+    if (currentDraftId && drafts.length > 0 && !existingDraft) {
+      const draft = drafts.find(d => d.id === currentDraftId);
+      if (draft) {
+        // Convertir le format de draft à PostFormData
+        setFormData({
+          title: draft.title || '',
+          content: draft.content || '',
+          images: draft.attachments?.map(att => ({
+            uri: att.url,
+            id: att.id
+          })) || [],
+          tags: draft.tags?.map(tag => ({
+            id: tag.id,
+            name: tag.name,
+            color: tag.color || theme.colors.cyberPink
+          })) || []
+        });
+      }
+    }
+  }, [currentDraftId, drafts, existingDraft]);
   
   // Couleurs disponibles pour les tags basées sur le thème
   const tagColors = [
@@ -93,14 +132,13 @@ export default function PostForm({
       setNewTag('');
     }
   };
-  
-  // Handler pour supprimer un tag
+
   const handleRemoveTag = (tagId: string) => {
     setFormData(prev => ({
       ...prev,
       tags: prev.tags.filter(tag => tag.id !== tagId)
     }));
-  };
+  }
   
   // Handler pour ajouter des images
   const handleAddImages = async () => {
@@ -112,30 +150,71 @@ export default function PostForm({
     }
     
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
+      mediaTypes: "images",
+      allowsMultipleSelection: false,
       quality: 0.8,
     });
     
-    if (!result.canceled) {
-      const newImages = result.assets.map(image => ({
-        uri: image.uri,
-        id: Date.now().toString() + Math.random().toString(36).substring(2)
-      }));
-      
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, ...newImages]
-      }));
+    if (!result.canceled && currentDraftId) {
+      try {
+        setIsSubmitting(true);
+        
+        for (const asset of result.assets) {
+          // Créer un objet File à partir de l'URI (pour API addAttachment)
+          const response = await fetch(asset.uri);
+          const blob = await response.blob();
+          const file = new File(
+            [blob], 
+            `image-${Date.now()}.jpg`, 
+            { type: 'image/jpeg' }
+          );
+          
+          // Ajouter l'attachment via le hook
+          const updatedDraft = await addAttachmentToDraft(currentDraftId, file);
+
+          if (updatedDraft) {
+            // Ajouter localement l'image dans le state formData
+            const newImage = {
+              uri: asset.uri,
+              id: updatedDraft.attachments[updatedDraft.attachments.length - 1].id
+            };
+            
+            setFormData(prev => ({
+              ...prev,
+              images: [...prev.images, newImage]
+            }));
+          }
+        }
+      } catch (error) {
+        Alert.alert('Erreur', 'Impossible d\'ajouter les images');
+        console.error(error);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
   
   // Handler pour supprimer une image
-  const handleRemoveImage = (imageId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter(img => img.id !== imageId)
-    }));
+  const handleRemoveImage = async (imageId: string) => {
+    if (!currentDraftId) return;
+    
+    try {
+      setIsSubmitting(true);
+      const updatedDraft = await removeAttachment(currentDraftId, imageId);
+      
+      if (updatedDraft) {
+        // Mettre à jour localement le state formData
+        setFormData(prev => ({
+          ...prev,
+          images: prev.images.filter(img => img.id !== imageId)
+        }));
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de supprimer l\'image');
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   // Handlers pour les actions principales
@@ -145,12 +224,28 @@ export default function PostForm({
       return;
     }
     
+    if (!currentDraftId) return;
+    
     try {
       setIsSubmitting(true);
+      
+      // Utiliser le handler externe si disponible
       if (onSaveDraft) {
         await onSaveDraft(formData);
-        Alert.alert('Succès', 'Brouillon enregistré avec succès');
+      } else {
+        // Sinon utiliser le hook
+        await updateDraft(currentDraftId, {
+          title: formData.title,
+          content: formData.content,
+          tags: formData.tags.map(tag => ({
+            id: tag.id,
+            name: tag.name,
+            color: tag.color
+          }))
+        });
       }
+      
+      Alert.alert('Succès', 'Brouillon enregistré avec succès');
     } catch (error) {
       Alert.alert('Erreur', 'Impossible d\'enregistrer le brouillon');
       console.error(error);
@@ -160,7 +255,7 @@ export default function PostForm({
   };
   
   const handleDeleteDraft = async () => {
-    if (!draftId) return;
+    if (!currentDraftId) return;
     
     Alert.alert(
       'Supprimer le brouillon',
@@ -174,9 +269,11 @@ export default function PostForm({
             try {
               setIsSubmitting(true);
               if (onDeleteDraft) {
-                await onDeleteDraft(draftId);
+                await onDeleteDraft(currentDraftId);
                 Alert.alert('Succès', 'Brouillon supprimé avec succès');
               }
+              // Rediriger vers la liste des brouillons
+              router.back();
             } catch (error) {
               Alert.alert('Erreur', 'Impossible de supprimer le brouillon');
               console.error(error);
@@ -200,6 +297,8 @@ export default function PostForm({
       return;
     }
     
+    if (!currentDraftId) return;
+    
     Alert.alert(
       'Publier le post',
       'Êtes-vous sûr de vouloir publier ce post? Il sera visible par tous les utilisateurs.',
@@ -210,10 +309,26 @@ export default function PostForm({
           onPress: async () => {
             try {
               setIsSubmitting(true);
+              
+              // Utiliser le handler externe si disponible
               if (onPublish) {
                 await onPublish(formData);
-                Alert.alert('Succès', 'Post publié avec succès');
+              } else {
+                // Sinon utiliser le hook
+                await publishDraft(currentDraftId, {
+                  title: formData.title,
+                  content: formData.content,
+                  tags: formData.tags.map(tag => ({
+                    id: tag.id,
+                    name: tag.name,
+                    color: tag.color
+                  }))
+                });
               }
+              
+              Alert.alert('Succès', 'Post publié avec succès');
+              // Rediriger vers la liste des posts
+              router.back();
             } catch (error) {
               Alert.alert('Erreur', 'Impossible de publier le post');
               console.error(error);
@@ -240,7 +355,7 @@ export default function PostForm({
         >
           {/* Titre du formulaire */}
           <Text style={[styles.formTitle, { color: theme.colors.textPrimary }]}>
-            {draftId ? 'Modifier le post' : 'Créer un nouveau post'}
+            {currentDraftId ? 'Modifier le post' : 'Créer un nouveau post'}
           </Text>
           
           {/* Champ titre */}

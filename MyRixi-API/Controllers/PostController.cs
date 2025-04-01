@@ -122,6 +122,21 @@ public class PostController : Controller
     }
     
     [Authorize]
+    [HttpGet("draft/{id}")]
+    public async Task<IActionResult> GetDraft(Guid id)
+    {
+        var post = await _postRepository.GetPostAsync(id);
+        if (post == null) return NotFound();
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
+        
+        return Ok(_mapper.Map<PostResponseDto>(post));
+    }
+    
+    [Authorize]
     [HttpPut("draft/{id}")]
     public async Task<IActionResult> UpdateDraft(Guid id, [FromForm] UpdatePostDto model)
     {
