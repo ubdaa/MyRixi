@@ -21,6 +21,7 @@ public class PostController : Controller
     private readonly IMediaService _mediaService;
     private readonly ICommunityProfileRepository _communityProfileRepository;
     private readonly ICommunityRepository _communityRepository;
+    private readonly IAttachmentRepository _attachmentRepository;
     private readonly ILogger<PostController> _logger;
     private readonly UserManager<User> _userManager;
 
@@ -32,6 +33,7 @@ public class PostController : Controller
         IMediaService mediaService,
         ICommunityProfileRepository communityProfileRepository,
         ICommunityRepository communityRepository,
+        IAttachmentRepository attachmentRepository,
         ILogger<PostController> logger,
         UserManager<User> userManager)
     {
@@ -42,6 +44,7 @@ public class PostController : Controller
         _mediaService = mediaService;
         _communityProfileRepository = communityProfileRepository;
         _communityRepository = communityRepository;
+        _attachmentRepository = attachmentRepository;
         _logger = logger;
         _userManager = userManager;
     }
@@ -78,8 +81,48 @@ public class PostController : Controller
     }
     
     [Authorize]
+    [HttpPost("draft/{id}/attachment")]
+    public async Task<IActionResult> UploadAttachment(Guid id, [FromForm] IFormFile file)
+    {
+        var post = await _postRepository.GetPostAsync(id);
+        if (post == null) return NotFound();
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
+
+        var media = await _mediaService.UploadMediaAsync(file);
+        var attachment = await _attachmentRepository.CreatePostAttachmentAsync(post.Id, media.Id);
+        post.Attachments.Add(attachment);
+        await _postRepository.UpdateAsync(post);
+        
+        return Ok(_mapper.Map<PostResponseDto>(post));
+    }
+    
+    [Authorize]
+    [HttpDelete("draft/{id}/attachment/{attachmentId}")]
+    public async Task<IActionResult> DeleteAttachment(Guid id, Guid attachmentId)
+    {
+        var post = await _postRepository.GetPostAsync(id);
+        if (post == null) return NotFound();
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        var attachment = post.Attachments.FirstOrDefault(a => a.Id == attachmentId);
+        
+        if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
+        if (attachment == null) return NotFound();
+        
+        await _attachmentRepository.DeleteAsync(attachmentId);
+        
+        return Ok();
+    }
+    
+    [Authorize]
     [HttpPut("draft/{id}")]
-    public async Task<IActionResult> UpdateDraft(Guid id, [FromBody] UpdatePostDto model)
+    public async Task<IActionResult> UpdateDraft(Guid id, [FromForm] UpdatePostDto model)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -101,6 +144,26 @@ public class PostController : Controller
             post.Tags = (ICollection<Tag>)tags;
         }
 
+        await _postRepository.UpdateAsync(post);
+        
+        return Ok(_mapper.Map<PostResponseDto>(post));
+    }
+    
+    [Authorize]
+    [HttpPost("draft/{id}")]
+    public async Task<IActionResult> PublishDraft(Guid id)
+    {
+        var post = await _postRepository.GetPostAsync(id);
+        if (post == null) return NotFound();
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
+        
+        post.State = PostState.Published;
+        post.PublishedAt = DateTime.UtcNow;
+        
         await _postRepository.UpdateAsync(post);
         
         return Ok(_mapper.Map<PostResponseDto>(post));
