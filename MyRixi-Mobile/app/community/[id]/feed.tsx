@@ -1,19 +1,22 @@
 import { useLocalSearchParams, router } from 'expo-router';
-import { View, Text, StyleSheet, Animated, ScrollView } from 'react-native';
-import { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { useEffect, useState } from 'react';
+import { CommunityCover } from '@/components/community/main/community-cover';
 import { fetchCommunityById } from '@/services/communityService';
 import { Community } from '@/types/community';
+import { CommunityAvatar } from '@/components/community/main/community-avatar';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { useTheme } from '@/contexts/ThemeContext';
-import { CommunityHeader } from '@/components/community/community-header';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import * as Haptics from 'expo-haptics';
 
 export default function CommunityScreen() {
   const { id } = useLocalSearchParams();
   const [community, setCommunity] = useState<Community>();
   const [loading, setLoading] = useState(true);
-  const { theme } = useTheme();
-  const scrollY = useRef(new Animated.Value(0)).current;
-  
+  const { theme, colorMode } = useTheme();
+
   useEffect(() => {
     if (id) {
       setLoading(true);
@@ -45,30 +48,88 @@ export default function CommunityScreen() {
   
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background1 }]}>
-      {/* Community Header with animation */}
-      <CommunityHeader community={community} scrollY={scrollY} />
-      
-      {/* Contenu principal - Fix: Move to full screen and add appropriate padding */}
-      <Animated.ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollViewContent, 
-          { paddingTop: 300 } // Increased padding to account for the header + quick actions
-        ]}
-        showsVerticalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false } // Changed to false to support all animation properties
-        )}
-        scrollEventThrottle={16}
-      >
-        {/* Content Placeholder */}
+      <ScrollView>
+        {/* Header Section */}
+        <View style={styles.headerContainer}>
+          <CommunityCover coverUrl={community.coverUrl} height={180} />
+          
+          <View style={styles.avatarContainer}>
+            <CommunityAvatar 
+              iconUrl={community.iconUrl} 
+              size={90} 
+              style={[styles.avatar, { borderRadius: 16, borderColor: theme.colors.background1 }]} 
+            />
+          </View>
+          
+          <BlurView
+            intensity={colorMode === 'dark' ? 15 : 60}
+            tint={colorMode}
+            style={styles.headerContentContainer}
+          >
+            <View style={styles.communityInfoContainer}>
+              <View style={styles.nameContainer}>
+                <Text style={[styles.name, { color: theme.colors.textPrimary }]}>
+                  {community.name}
+                </Text>
+                
+                {community.isPrivate && (
+                  <View style={[styles.privateContainer, { backgroundColor: 'rgba(0, 0, 0, 0.1)' }]}>
+                    <Ionicons name="lock-closed" size={14} color={theme.colors.textSecondary} />
+                    <Text style={[styles.privateText, { color: theme.colors.textSecondary }]}>Privée</Text>
+                  </View>
+                )}
+              </View>
+              
+              <Text style={[styles.description, { color: theme.colors.textSecondary }]}>
+                {community.description}
+              </Text>
+
+              {community.profile && (
+                <View style={styles.profileStats}>
+                  <Text style={[styles.stat, { color: theme.colors.textSecondary }]}>
+                    Votre rôle: <Text style={{ fontWeight: 'bold', color: theme.colors.cyberPink }}>{community.profile.role}</Text>
+                  </Text>
+                </View>
+              )}
+            </View>
+          </BlurView>
+        </View>
+
+        <View style={[styles.quickActions, { backgroundColor: theme.colors.background2 }]}>
+          <Pressable 
+            style={[styles.actionButton, { borderColor: theme.colors.divider }]}
+            android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+          >
+            <Ionicons name="document-text-outline" size={22} color={theme.colors.technoBlue} />
+            <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Règles</Text>
+          </Pressable>
+          
+          <Pressable 
+            style={[styles.actionButton, { borderColor: theme.colors.divider }]}
+            android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+          >
+            <Ionicons name="people-outline" size={22} color={theme.colors.synthGreen} />
+            <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Membres</Text>
+          </Pressable>
+          
+          <Pressable 
+            style={[styles.actionButton, { borderRightWidth: 0, borderColor: theme.colors.divider }]}
+            android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+          >
+            <Ionicons name="bookmark-outline" size={22} color={theme.colors.solarGold} />
+            <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Enregistrés</Text>
+          </Pressable>
+        </View>
+        
         <View style={[styles.feedContent, { backgroundColor: theme.colors.background1 }]}>
           <Text style={{ color: theme.colors.textSecondary, textAlign: 'center', padding: 20 }}>
             Contenu du feed de la communauté
           </Text>
         </View>
-      </Animated.ScrollView>
+      </ScrollView>
       
       {/* Floating Action Button pour les brouillons */}
       <FloatingActionButton
@@ -85,19 +146,6 @@ export default function CommunityScreen() {
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-    position: 'absolute', // Position absolute to allow scrolling behind the header
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1,
-  },
-  scrollViewContent: {
-    paddingBottom: 20,
-    // Top padding will be added dynamically in the component
-  },
   container: {
     flex: 1,
   },
@@ -105,6 +153,90 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  headerContainer: {
+    position: 'relative',
+  },
+  headerContentContainer: {
+    padding: 16,
+    paddingTop: 60, 
+    alignItems: 'center',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
+  },
+  communityInfoContainer: {
+    width: '100%', 
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    position: 'absolute',
+    top: 130,
+    left: 0,
+    width: '100%',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  avatar: {
+    width: 90,
+    height: 90,
+    borderWidth: 3,
+    borderColor: 'white',
+  },
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  privateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  privateText: {
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  description: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 8,
+    marginHorizontal: 16,
+  },
+  profileStats: {
+    flexDirection: 'row',
+    marginTop: 12,
+    padding: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    borderRadius: 16,
+  },
+  stat: {
+    fontSize: 14,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    marginHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderRightWidth: 1,
+  },
+  actionText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '500',
   },
   feedContent: {
     flex: 1,
