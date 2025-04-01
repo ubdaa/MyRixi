@@ -69,7 +69,10 @@ public class PostController : Controller
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
         
-        var post = await _postRepository.CreateDraftAsync(communityId, Guid.Parse(userId));
+        var communityProfile = await _communityProfileRepository.GetByUserIdAsync(communityId, Guid.Parse(userId));
+        if (communityProfile == null) return Unauthorized();
+        
+        var post = await _postRepository.CreateDraftAsync(communityId, communityProfile.Id);
         
         return Ok(_mapper.Map<PostResponseDto>(post));
     }

@@ -11,12 +11,14 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
     {
     }
 
-    public async Task<Post> CreateDraftAsync(Guid communityId, Guid userId)
+    public async Task<Post> CreateDraftAsync(Guid communityId, Guid communityProfileId)
     {
         var post = new Post
         {
             CommunityId = communityId,
-            CommunityProfileId = userId,
+            CommunityProfileId = communityProfileId,
+            Title = "New Post",
+            Content = "Write your content here...",
             State = PostState.Draft
         };
 
