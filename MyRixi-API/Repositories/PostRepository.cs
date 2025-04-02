@@ -69,6 +69,7 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
             .Include(p => p.CommunityProfile)
             .ThenInclude(p => p.User)
             .Include(p => p.Attachments)
+            .ThenInclude(a => a.Media)
             .Include(p => p.Tags)
             .Include(p => p.Comments)
             .FirstOrDefaultAsync(p => p.Id == postId);
