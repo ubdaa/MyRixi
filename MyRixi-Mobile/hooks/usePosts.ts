@@ -1,4 +1,4 @@
-import { getDrafts, createDraft, addAttachmentToDraft, removeAttachmentFromDraft, updateDraft, publishDraft, UpdateDraft, ReactNativeFile } from "@/services/postService";
+import { getDrafts, createDraft, addAttachmentToDraft, removeAttachmentFromDraft, getDraft, updateDraft, publishDraft, UpdateDraft, ReactNativeFile } from "@/services/postService";
 import { useEffect, useState } from "react";
 import { Post } from "@/types/post";
 import { useLocalSearchParams } from "expo-router";
@@ -25,6 +25,21 @@ export function usePosts() {
       setLoading(false);
     }
   };
+
+  const loadDraft = async (draftId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const draftPost = await getDraft(draftId);
+      return draftPost;
+    } catch (err) {
+      setError('Error loading draft');
+      console.error(err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Fonction pour créer un nouveau brouillon
   const handleCreateDraft = async () => {

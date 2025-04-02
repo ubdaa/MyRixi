@@ -82,7 +82,7 @@ export default function PostForm({
           title: draft.title || '',
           content: draft.content || '',
           images: draft.attachments?.map(att => ({
-            uri: att.url,
+            uri: att.media.url, // Correction: access URL from the media object
             id: att.id
           })) || [],
           tags: draft.tags?.map(tag => ({
