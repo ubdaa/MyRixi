@@ -85,6 +85,9 @@ public class PostController : Controller
     [HttpPost("draft/{id}/attachment")]
     public async Task<IActionResult> UploadAttachment(Guid id, [FromForm] FileDto model)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        
         var post = await _postRepository.GetPostAsync(id);
         if (post == null) return NotFound();
         
