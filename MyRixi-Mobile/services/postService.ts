@@ -48,15 +48,12 @@ export const getDraft = async (draftId: string): Promise<Post> => {
 }
 
 export const updateDraft = async (draftId: string, draft: UpdateDraft): Promise<Post> => {
-  // Create a FormData object to send the data as multipart/form-data
   const formData = new FormData();
   formData.append('title', draft.title);
   formData.append('content', draft.content);
-
   if (draft.tags) {
     formData.append('tags', JSON.stringify(draft.tags));
   }
-
   return await apiPutRequest<Post>(`/post/draft/${draftId}`, formData,
     {
       headers: {
