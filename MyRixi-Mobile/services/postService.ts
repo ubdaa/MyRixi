@@ -52,13 +52,15 @@ export const updateDraft = async (draftId: string, draft: UpdateDraft): Promise<
   const formData = new FormData();
   formData.append('title', draft.title);
   formData.append('content', draft.content);
+
   if (draft.tags) {
     formData.append('tags', JSON.stringify(draft.tags));
   }
+
   return await apiPutRequest<Post>(`/post/draft/${draftId}`, formData,
     {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
     },
   );
@@ -74,7 +76,7 @@ export const publishDraft = async (draftId: string, draft: UpdateDraft): Promise
   return await apiPostRequest<Post>(`/post/draft/${draftId}`, formData,
     {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
     },
   );

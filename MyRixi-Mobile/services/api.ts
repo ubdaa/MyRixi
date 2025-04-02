@@ -49,6 +49,8 @@ export const apiGetRequest = async <T>(url: string, config: AxiosRequestConfig):
 
 export const apiPutRequest = async <T>(url: string, formData: FormData, config: AxiosRequestConfig): Promise<T> => {
   try {
+    console.log('PUT API_URL', `${API_URL}${url}`);
+    console.log('PUT formData', formData);
     const response = await api.put(`${API_URL}${url}`, formData, config);
     return response.data;
   } catch (error) {
