@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MyRixiApi.Dto.Attachments;
 using MyRixiApi.Dto.Comments;
+using MyRixiApi.Dto.Media;
 using MyRixiApi.Dto.Posts;
 using MyRixiApi.Dto.Tags;
 using MyRixiApi.Models;
@@ -20,7 +21,13 @@ public class PostMappingProfile : Profile
             .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments.Select(a => new AttachmentResponseDto
             {
                 Id = a.Id,
-                MediaId = a.MediaId
+                MediaId = a.MediaId,
+                Media = new MediaDto
+                {
+                    Id = a.Media.Id,
+                    Type = a.Media.Type,
+                    Url = a.Media.Url
+                }
             })))
             .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => 
                 src.Comments.Select(c => new CommentResponseDto
