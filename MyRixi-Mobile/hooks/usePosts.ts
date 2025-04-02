@@ -1,4 +1,4 @@
-import { getDrafts, createDraft, addAttachmentToDraft, removeAttachmentFromDraft, updateDraft, publishDraft, UpdateDraft } from "@/services/postService";
+import { getDrafts, createDraft, addAttachmentToDraft, removeAttachmentFromDraft, updateDraft, publishDraft, UpdateDraft, ReactNativeFile } from "@/services/postService";
 import { useEffect, useState } from "react";
 import { Post } from "@/types/post";
 import { useLocalSearchParams } from "expo-router";
@@ -46,7 +46,7 @@ export function usePosts() {
   };
 
   // Fonction pour ajouter une pièce jointe à un brouillon
-  const handleAddAttachment = async (draftId: string, file: File) => {
+  const handleAddAttachment = async (draftId: string, file: ReactNativeFile) => {
     try {
       setLoading(true);
       setError(null);

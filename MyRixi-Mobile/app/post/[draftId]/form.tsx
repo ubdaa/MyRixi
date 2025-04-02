@@ -160,17 +160,20 @@ export default function PostForm({
         setIsSubmitting(true);
         
         for (const asset of result.assets) {
-          // Créer un objet File à partir de l'URI (pour API addAttachment)
-          const response = await fetch(asset.uri);
-          const blob = await response.blob();
-          const file = new File(
-            [blob], 
-            `image-${Date.now()}.jpg`, 
-            { type: 'image/jpeg' }
-          );
+          // React Native n'a pas de constructeur File natif, donc on utilise FormData directement
+          // avec l'URI de l'image et les métadonnées nécessaires
+          const fileNameParts = asset.uri.split('/');
+          const fileName = fileNameParts[fileNameParts.length - 1];
           
-          // Ajouter l'attachment via le hook
-          const updatedDraft = await addAttachmentToDraft(currentDraftId, file);
+          // Ajouter l'attachment via le service
+          const updatedDraft = await addAttachmentToDraft(
+            currentDraftId,
+            {
+              uri: asset.uri,
+              name: fileName,
+              type: 'image/jpeg' // ou detecter dynamiquement le type via le nom de fichier
+            }
+          );
 
           if (updatedDraft) {
             // Ajouter localement l'image dans le state formData

@@ -19,8 +19,16 @@ export const createDraft = async (communityId: string): Promise<Post> => {
   });
 }
 
-export const addAttachmentToDraft = async (draftId: string, file: File): Promise<Post> => {
+// Interface pour les fichiers en React Native
+export interface ReactNativeFile {
+  uri: string;
+  name: string;
+  type: string;
+}
+
+export const addAttachmentToDraft = async (draftId: string, file: ReactNativeFile): Promise<Post> => {
   const formData = new FormData();
+  // @ts-ignore - Le typage de FormData dans React Native est différent
   formData.append('file', file);
   return await apiPostRequest<Post>(`/post/draft/${draftId}/attachment`, formData, {
     headers: {
