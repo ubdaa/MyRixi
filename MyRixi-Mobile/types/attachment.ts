@@ -8,5 +8,6 @@ export interface AttachmentResponse {
 
 export interface Attachment {
   id: string;
+  mediaId: string;
   media: Media;
 }

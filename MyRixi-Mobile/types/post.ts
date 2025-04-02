@@ -1,5 +1,5 @@
 import { TagResponse } from './tag';
-import { AttachmentResponse } from './attachment';
+import { Attachment } from './attachment';
 import { CommentResponse } from './comment';
 
 export enum PostType {
@@ -13,6 +13,6 @@ export interface Post {
   publishedAt: string;
   postType: PostType;
   tags: TagResponse[];
-  attachments: AttachmentResponse[];
+  attachments: Attachment[];
   comments: CommentResponse[];
 }
