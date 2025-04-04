@@ -54,6 +54,7 @@ export default function PostForm({
   const { 
     drafts, 
     loading, 
+    loadDraftById,
     updateDraft, 
     publishDraft, 
     addAttachment, 
@@ -74,25 +75,29 @@ export default function PostForm({
   
   // Charger le brouillon si on a un draftId
   useEffect(() => {
-    if (currentDraftId && drafts.length > 0 && !existingDraft) {
-      const draft = drafts.find(d => d.id === currentDraftId);
-      if (draft) {
-        // Convertir le format de draft à PostFormData
-        setFormData({
-          title: draft.title || '',
-          content: draft.content || '',
-          images: draft.attachments?.map(att => ({
-            uri: att.media.url, // Correction: access URL from the media object
-            id: att.id
-          })) || [],
-          tags: draft.tags?.map(tag => ({
-            id: tag.id,
-            name: tag.name,
-            color: tag.color || theme.colors.cyberPink
-          })) || []
-        });
+    const loadDraft = async () => {
+      if (currentDraftId && drafts.length > 0 && !existingDraft) {
+        const draft = await loadDraftById(currentDraftId);
+        if (draft) {
+          // Convertir le format de draft à PostFormData
+          setFormData({
+            title: draft.title || '',
+            content: draft.content || '',
+            images: draft.attachments?.map(att => ({
+              uri: att.media.url, // Correction: access URL from the media object
+              id: att.id
+            })) || [],
+            tags: draft.tags?.map(tag => ({
+              id: tag.id,
+              name: tag.name,
+              color: tag.color || theme.colors.cyberPink
+            })) || []
+          });
+        }
       }
-    }
+    };
+    
+    loadDraft();
   }, [currentDraftId, drafts, existingDraft]);
   
   // Couleurs disponibles pour les tags basées sur le thème

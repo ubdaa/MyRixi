@@ -140,6 +140,7 @@ export function usePosts() {
     loading,
     error,
     refreshDrafts: loadDrafts,
+    loadDraftById: loadDraft,
     createDraft: handleCreateDraft,
     addAttachment: handleAddAttachment,
     removeAttachment: handleRemoveAttachment,
