@@ -24,7 +24,7 @@ interface NeoButtonProps {
   size?: 'small' | 'medium' | 'large';
 }
 
-export const NeoButton: React.FC<NeoButtonProps> = ({
+export function NeoButton ({
   title,
   onPress,
   variant = 'primary',
@@ -34,7 +34,7 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
   style,
   textStyle,
   size = 'medium',
-}) => {
+}: NeoButtonProps) {
   const { theme, colorMode } = useTheme();
   const [isPressed, setIsPressed] = useState(false);
   const glowAnim = React.useRef(new Animated.Value(0)).current;

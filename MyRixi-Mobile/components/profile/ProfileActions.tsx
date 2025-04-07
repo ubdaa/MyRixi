@@ -3,26 +3,24 @@ import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassCard } from '../ui/GlassCard';
+import { NeoButton } from '../ui/NeoButton';
 
 interface ProfileActionsProps {
   isOwner: boolean;
   profileType: 'user' | 'community';
   isFollowing?: boolean;
   isMember?: boolean;
-  onFollow?: () => void;
-  onMessage?: () => void;
-  onJoinCommunity?: () => void;
-  onShare?: () => void;
+  onFollow: () => void;
+  onMessage: () => void;
+  onShare: () => void;
 }
 
 function ProfileActions ({
   isOwner,
   profileType,
   isFollowing = false,
-  isMember = false,
   onFollow,
   onMessage,
-  onJoinCommunity,
   onShare,
 }: ProfileActionsProps) {
   const { theme } = useTheme();
@@ -35,62 +33,19 @@ function ProfileActions ({
   return (
     <GlassCard style={styles.container}>
       <View style={styles.actionsContainer}>
-        {profileType === 'user' ? (
-          // User profile actions
-          <>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                {
-                  backgroundColor: isFollowing ? 'transparent' : theme.colors.technoBlue,
-                  borderColor: theme.colors.technoBlue,
-                  borderWidth: isFollowing ? 1 : 0,
-                },
-              ]}
-              onPress={onFollow}
-            >
-              <Text
-                style={[
-                  styles.actionText,
-                  { color: isFollowing ? theme.colors.technoBlue : 'white' },
-                ]}
-              >
-                {isFollowing ? 'Following' : 'Follow'}
-              </Text>
-            </TouchableOpacity>
+        <NeoButton
+          title={isFollowing ? 'Ne plus suivre' : 'Suivre'}
+          onPress={onFollow}
+          variant={isFollowing ? 'secondary' : 'primary'}
+          size='small'
+        />
 
-            <TouchableOpacity
-              style={[styles.iconButton, { borderColor: theme.colors.divider }]}
-              onPress={onMessage}
-            >
-              <Ionicons name="mail-outline" size={20} color={theme.colors.textPrimary} />
-            </TouchableOpacity>
-          </>
-        ) : (
-          // Community profile actions
-          <>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                {
-                  backgroundColor: isMember ? 'transparent' : theme.colors.neoPurple,
-                  borderColor: theme.colors.neoPurple,
-                  borderWidth: isMember ? 1 : 0,
-                },
-              ]}
-              onPress={onJoinCommunity}
-            >
-              <Text
-                style={[
-                  styles.actionText,
-                  { color: isMember ? theme.colors.neoPurple : 'white' },
-                ]}
-              >
-                {isMember ? 'Joined' : 'Join Community'}
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
+        <TouchableOpacity
+          style={[styles.iconButton, { borderColor: theme.colors.divider }]}
+          onPress={onMessage}
+        >
+          <Ionicons name="mail-outline" size={20} color={theme.colors.textPrimary} />
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.iconButton, { borderColor: theme.colors.divider }]}
@@ -111,12 +66,13 @@ const styles = StyleSheet.create({
   actionsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 10,
   },
   actionButton: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 100,
     alignItems: 'center',
     marginRight: 10,
   },
@@ -124,13 +80,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   iconButton: {
-    padding: 10,
-    borderRadius: 20,
+    padding: 6,
+    borderRadius: 100,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
   },
 });
 
