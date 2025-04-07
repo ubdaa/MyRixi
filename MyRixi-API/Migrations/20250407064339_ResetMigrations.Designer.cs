@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyRixiApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250328114456_ResetMigrations")]
+    [Migration("20250407064339_ResetMigrations")]
     partial class ResetMigrations
     {
         /// <inheritdoc />
@@ -620,7 +620,7 @@ namespace MyRixiApi.Migrations
                     b.Property<Guid?>("CommunityId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 

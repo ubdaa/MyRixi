@@ -578,7 +578,7 @@ namespace MyRixiApi.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
                     CommunityId = table.Column<Guid>(type: "uuid", nullable: true),
                     PostId = table.Column<Guid>(type: "uuid", nullable: true)
                 },

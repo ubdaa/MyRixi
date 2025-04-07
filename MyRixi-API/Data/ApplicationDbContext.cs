@@ -31,7 +31,6 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<CommunityProfileRole> CommunityProfileRoles { get; set; }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
