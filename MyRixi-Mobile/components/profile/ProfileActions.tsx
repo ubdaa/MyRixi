@@ -15,7 +15,7 @@ interface ProfileActionsProps {
   onShare?: () => void;
 }
 
-const ProfileActions: React.FC<ProfileActionsProps> = ({
+function ProfileActions ({
   isOwner,
   profileType,
   isFollowing = false,
@@ -24,7 +24,7 @@ const ProfileActions: React.FC<ProfileActionsProps> = ({
   onMessage,
   onJoinCommunity,
   onShare,
-}) => {
+}: ProfileActionsProps) {
   const { theme } = useTheme();
 
   // Different action buttons based on profile type and ownership

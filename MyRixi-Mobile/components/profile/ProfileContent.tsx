@@ -11,12 +11,12 @@ interface ProfileContentProps {
   photos?: any[];
 }
 
-const ProfileContent: React.FC<ProfileContentProps> = ({ 
+function ProfileContent ({ 
   profileType,
   posts = [],
   events = [], 
   photos = [],
-}) => {
+}: ProfileContentProps) {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('posts');
 
@@ -46,38 +46,36 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
 
   return (
     <View style={styles.container}>
-      <GlassCard style={styles.tabContainer}>
-        <View style={styles.tabsRow}>
-          {tabs.map(tab => (
-            <TouchableOpacity
-              key={tab.id}
+      <View style={styles.tabsRow}>
+        {tabs.map(tab => (
+          <TouchableOpacity
+            key={tab.id}
+            style={[
+              styles.tab,
+              activeTab === tab.id && {
+                borderBottomWidth: 2,
+                borderBottomColor: theme.colors.cyberPink,
+              },
+            ]}
+            onPress={() => setActiveTab(tab.id)}
+          >
+            <Text
               style={[
-                styles.tab,
-                activeTab === tab.id && {
-                  borderBottomWidth: 2,
-                  borderBottomColor: theme.colors.cyberPink,
+                styles.tabText,
+                {
+                  color:
+                    activeTab === tab.id
+                      ? theme.colors.textPrimary
+                      : theme.colors.textSecondary,
+                  fontWeight: activeTab === tab.id ? '600' : 'normal',
                 },
               ]}
-              onPress={() => setActiveTab(tab.id)}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  {
-                    color:
-                      activeTab === tab.id
-                        ? theme.colors.textPrimary
-                        : theme.colors.textSecondary,
-                    fontWeight: activeTab === tab.id ? '600' : 'normal',
-                  },
-                ]}
-              >
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </GlassCard>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       <View style={styles.contentContainer}>
         {/* This is a placeholder. In a real app, you would render different content based on the activeTab */}

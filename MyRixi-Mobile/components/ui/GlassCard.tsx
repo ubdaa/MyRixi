@@ -8,13 +8,13 @@ interface GlassCardProps extends ViewProps {
   blurTint?: 'dark' | 'light' | 'default';
 }
 
-export const GlassCard: React.FC<GlassCardProps> = ({
+export function GlassCard ({
   children,
   style,
   intensity,
   blurTint,
   ...props
-}) => {
+}: GlassCardProps) {
   const { theme, colorMode } = useTheme();
   
   // Déterminer l'intensité du flou et la couleur de fond en fonction du thème

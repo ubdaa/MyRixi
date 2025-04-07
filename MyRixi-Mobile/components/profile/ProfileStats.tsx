@@ -9,7 +9,7 @@ interface ProfileStatsProps {
   profileType: 'user' | 'community';
 }
 
-const ProfileStats: React.FC<ProfileStatsProps> = ({ profile, profileType }) => {
+function ProfileStats ({ profile, profileType }: ProfileStatsProps) {
   const { theme } = useTheme();
   
   const stats = profileType === 'user' 
@@ -54,6 +54,7 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ profile, profileType }) => 
 const styles = StyleSheet.create({
   container: {
     marginBottom: 15,
+    borderRadius: 0,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -62,7 +63,6 @@ const styles = StyleSheet.create({
   statItem: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
   },
   statValue: {
     fontSize: 18,

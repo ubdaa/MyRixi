@@ -12,12 +12,12 @@ interface ProfileHeaderProps {
   onEditProfile?: () => void;
 }
 
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+function ProfileHeader ({
   profile,
   isOwner,
   profileType,
   onEditProfile,
-}) => {
+}: ProfileHeaderProps) {
   const { theme } = useTheme();
 
   return (
