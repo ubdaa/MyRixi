@@ -100,7 +100,7 @@ export default function PostForm({
             })) || [],
             tags: draft.tags?.map(tag => ({
               id: tag.id,
-              name: tag.name,
+              name: tag.description,
               color: tagColors[Math.floor(Math.random() * tagColors.length)]
             })) || []
           });
