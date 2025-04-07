@@ -1,5 +1,5 @@
 import { useLocalSearchParams, router } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useEffect, useState } from 'react';
 import { CommunityCover } from '@/components/community/main/community-cover';
 import { fetchCommunityById } from '@/services/communityService';
@@ -10,27 +10,89 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
+import { Post } from '@/types/post';
+import { fetchCommunityPosts } from '@/services/postService';
+import { PostsSection } from '@/components/home/PostsSection';
 
 export default function CommunityScreen() {
   const { id } = useLocalSearchParams();
+  const communityId = Array.isArray(id) ? id[0] : id;
   const [community, setCommunity] = useState<Community>();
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const pageSize = 10;
   const { theme, colorMode } = useTheme();
 
   useEffect(() => {
-    if (id) {
-      setLoading(true);
-      fetchCommunityById(Array.isArray(id) ? id[0] : id)
-        .then((community) => setCommunity(community))
-        .finally(() => setLoading(false));
+    if (communityId) {
+      loadCommunity();
+      loadPosts();
     }
-  }, [id]);
+  }, [communityId]);
+  
+  const loadCommunity = async () => {
+    try {
+      setLoading(true);
+      const communityData = await fetchCommunityById(communityId);
+      setCommunity(communityData);
+    } catch (error) {
+      console.error('Error loading community:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const loadPosts = async (refresh = false) => {
+    try {
+      const currentPage = refresh ? 1 : page;
+      if (refresh) {
+        setRefreshing(true);
+      } else if (posts.length === 0) {
+        setPostsLoading(true);
+      }
+      
+      const fetchedPosts = await fetchCommunityPosts(communityId, currentPage, pageSize);
+      
+      if (refresh) {
+        setPosts(fetchedPosts);
+      } else {
+        setPosts(prev => [...prev, ...fetchedPosts]);
+      }
+      
+      setHasMore(fetchedPosts.length === pageSize);
+      
+      if (refresh) {
+        setPage(2);
+      } else {
+        setPage(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error loading posts:', error);
+    } finally {
+      setRefreshing(false);
+      setPostsLoading(false);
+    }
+  };
+  
+  const handleRefresh = () => {
+    loadPosts(true);
+  };
+  
+  const loadMorePosts = () => {
+    if (hasMore && !postsLoading && !refreshing) {
+      loadPosts();
+    }
+  };
   
   const navigateToDrafts = () => {
-    router.push(`/post/${id}/drafts`);
+    router.push(`/post/${communityId}/drafts`);
   };
 
-  if (loading) {
+  if (loading && !community) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background1 }]}>
         <Text style={{ color: theme.colors.textPrimary }}>Chargement...</Text>
@@ -48,7 +110,17 @@ export default function CommunityScreen() {
   
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background1 }]}>
-      <ScrollView>
+      <ScrollView
+        stickyHeaderIndices={[2]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[theme.colors.cyberPink]}
+            tintColor={theme.colors.cyberPink}
+          />
+        }
+      >
         {/* Header Section */}
         <View style={styles.headerContainer}>
           <CommunityCover coverUrl={community.coverUrl} height={180} />
@@ -124,10 +196,16 @@ export default function CommunityScreen() {
           </Pressable>
         </View>
         
-        <View style={[styles.feedContent, { backgroundColor: theme.colors.background1 }]}>
-          <Text style={{ color: theme.colors.textSecondary, textAlign: 'center', padding: 20 }}>
-            Contenu du feed de la communauté
-          </Text>
+        <View style={styles.feedContent}>
+          <PostsSection 
+            posts={posts} 
+            loading={postsLoading} 
+            loadMore={loadMorePosts}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            title="Publications"
+            emptyMessage="Aucun post dans cette communauté"
+          />
         </View>
       </ScrollView>
       
@@ -240,9 +318,6 @@ const styles = StyleSheet.create({
   },
   feedContent: {
     flex: 1,
-    minHeight: 300,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
     marginTop: 8,
   },
 });

@@ -246,14 +246,22 @@ public class PostController : Controller
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPost(Guid id)
     {
-        try
-        {
+        try {
             var post = await _postRepository.GetByIdAsync(id);
             if (post == null) return NotFound();
-            return Ok(_mapper.Map<PostResponseDto>(post));
+        
+            var dto = _mapper.Map<PostResponseDto>(post);
+        
+            // Vérifier si l'utilisateur courant a liké le post
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId != null)
+            {
+                dto.IsLiked = post.Likes.Any(l => l.UserId.ToString() == userId);
+            }
+        
+            return Ok(dto);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.LogError(ex, "Error occurred while fetching post {Id}", id);
             return StatusCode(500, "An error occurred while processing your request");
         }
@@ -287,7 +295,19 @@ public class PostController : Controller
     public async Task<IActionResult> GetCommunityPosts(Guid communityId, [FromQuery] int page = 1, [FromQuery] int size = 10)
     {
         var posts = await _postRepository.GetPostsAsync(communityId, page, size);
-        return Ok(_mapper.Map<IEnumerable<PostResponseDto>>(posts));
+        var dtos = _mapper.Map<IEnumerable<PostResponseDto>>(posts);
+    
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId != null)
+        {
+            foreach (var dto in dtos)
+            {
+                var post = posts.First(p => p.Id == dto.Id);
+                dto.IsLiked = post.Likes.Any(l => l.UserId.ToString() == userId);
+            }
+        }
+    
+        return Ok(dtos);
     }
 
     
