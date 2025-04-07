@@ -123,6 +123,7 @@ builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IStorageService, MinioStorageService>();
 builder.Services.AddScoped<IUserConnectionManager, UserConnectionManager>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 // ajout des mapper
 builder.Services.AddAutoMapper(typeof(CommunityMappingProfile));

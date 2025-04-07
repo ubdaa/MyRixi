@@ -15,18 +15,41 @@ public class ProfileController : Controller
     private readonly IMapper _mapper;
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ICommunityProfileRepository _communityProfileRepository;
+    private readonly IProfileService _profileService;
     private readonly ILogger _logger;
 
 
     public ProfileController(IMapper mapper,
         IUserProfileRepository userProfileRepository,
         ICommunityProfileRepository communityProfileRepository,
+        IProfileService profileService,
         ILogger<ProfileController> logger)
     {
         _mapper = mapper;
         _userProfileRepository = userProfileRepository;
         _communityProfileRepository = communityProfileRepository;
+        _profileService = profileService;
         _logger = logger;
+    }
+    
+    [HttpGet("{profileId}")]
+    public async Task<IActionResult> GetProfile(Guid profileId)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var profile = await _profileService.GetProfileByIdAsync(profileId, userId);
+            if (profile == null)
+            {
+                return NotFound();
+            }
+            return Ok(profile);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while getting profile");
+            return StatusCode(500, "An error occurred while processing your request");
+        }
     }
     
     [Authorize]
