@@ -11,31 +11,30 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { Post } from '@/types/post';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { router } from 'expo-router';
 
 interface PostCardProps {
-  post: {
-    id: string;
-    author: string;
-    avatar: string;
-    time: string;
-    content: string;
-    likes: number;
-    comments: number;
-  };
+  post: Post;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ post }) => {
-  const { theme, colorMode } = useTheme();
-  const [liked, setLiked] = useState(false);
+  const { theme } = useTheme();
+  const [liked, setLiked] = useState(post.isLiked);
+  const [likesCount, setLikesCount] = useState(post.likesCount);
   
   // Animation pour le cœur
   const heartScale = useRef(new Animated.Value(1)).current;
   
   const handleLike = () => {
-    setLiked(!liked);
+    const newLikedState = !liked;
+    setLiked(newLikedState);
+    setLikesCount(likesCount + (newLikedState ? 1 : -1));
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
-    if (!liked) {
+    if (newLikedState) {
       Animated.sequence([
         Animated.timing(heartScale, {
           toValue: 1.3,
@@ -51,33 +50,62 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
     }
   };
 
+  const navigateToPost = () => {
+    router.push(`/post/${post.id}/page`);
+  };
+  
+  const navigateToProfile = () => {
+    router.push(`/profile/${post.author.id}/page`);
+  };
+
+  const formatPublishedDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return format(date, 'dd MMM · HH:mm', { locale: fr });
+    } catch (error) {
+      return "Date inconnue";
+    }
+  };
+
   return (
     <GlassCard style={styles.postCard}>
-      <View style={styles.postHeader}>
-        <View style={styles.postAuthor}>
-          <Image source={{ uri: post.avatar }} style={styles.avatar} />
-          <View>
-            <Text style={[styles.authorName, { color: theme.colors.textPrimary }]}>
-              {post.author}
-            </Text>
-            <Text style={[styles.postTime, { color: theme.colors.textSecondary }]}>
-              {post.time}
-            </Text>
-          </View>
+      <TouchableOpacity activeOpacity={0.9} onPress={navigateToPost}>
+        <View style={styles.postHeader}>
+          <TouchableOpacity style={styles.postAuthor} onPress={navigateToProfile}>
+            <Image 
+              source={{ uri: post.author.profileImageUrl }} 
+              style={styles.avatar}
+              defaultSource={require('@/assets/images/default-avatar.png')}
+            />
+            <View>
+              <Text style={[styles.authorName, { color: theme.colors.textPrimary }]}>
+                {post.author.displayName}
+              </Text>
+              <Text style={[styles.postTime, { color: theme.colors.textSecondary }]}>
+                {formatPublishedDate(post.publishedAt)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          
+          <TouchableOpacity>
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={20}
+              color={theme.colors.textSecondary}
+            />
+          </TouchableOpacity>
         </View>
         
-        <TouchableOpacity>
-          <Ionicons
-            name="ellipsis-horizontal"
-            size={20}
-            color={theme.colors.textSecondary}
-          />
-        </TouchableOpacity>
-      </View>
-      
-      <Text style={[styles.postContent, { color: theme.colors.textPrimary }]}>
-        {post.content}
-      </Text>
+        {post.title && (
+          <Text style={[styles.postTitle, { color: theme.colors.textPrimary }]}>
+            {post.title}
+          </Text>
+        )}
+        
+        <Text style={[styles.postContent, { color: theme.colors.textPrimary }]}>
+          {post.content}
+        </Text>
+      </TouchableOpacity>
       
       <View style={[styles.postActions, { borderTopColor: theme.colors.divider }]}>
         <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
@@ -91,18 +119,18 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
           <Text style={[styles.actionText, { 
             color: liked ? theme.colors.cyberPink : theme.colors.textSecondary
           }]}>
-            {post.likes + (liked ? 1 : 0)}
+            {likesCount}
           </Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} onPress={navigateToPost}>
           <Ionicons
             name="chatbubble-outline"
             size={20}
             color={theme.colors.textSecondary}
           />
           <Text style={[styles.actionText, { color: theme.colors.textSecondary }]}>
-            {post.comments}
+            {post.commentsCount}
           </Text>
         </TouchableOpacity>
         
@@ -144,6 +172,11 @@ const styles = StyleSheet.create({
   },
   postTime: {
     fontSize: 12,
+  },
+  postTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 8,
   },
   postContent: {
     fontSize: 15,

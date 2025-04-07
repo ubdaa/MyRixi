@@ -77,9 +77,6 @@ export default function HomePage() {
         
         {/* Section Communautés */}
         <CommunitiesSection communities={communities} />
-        
-        {/* Section Posts */}
-        <PostsSection posts={DEMO_POSTS} />
       </Animated.ScrollView>
       
       {/* Bouton flottant pour nouveau post */}
