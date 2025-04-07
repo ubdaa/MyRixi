@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
   infoContainer: {
     marginTop: -10,
     paddingTop: 60,
+    marginHorizontal: 10,
   },
   nameContainer: {
     flexDirection: 'row',

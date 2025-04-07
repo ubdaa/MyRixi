@@ -106,6 +106,7 @@ function ProfileActions ({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 15,
+    marginHorizontal: 10,
   },
   actionsContainer: {
     flexDirection: 'row',

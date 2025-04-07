@@ -54,7 +54,7 @@ function ProfileStats ({ profile, profileType }: ProfileStatsProps) {
 const styles = StyleSheet.create({
   container: {
     marginBottom: 15,
-    borderRadius: 0,
+    marginHorizontal: 10,
   },
   statsContainer: {
     flexDirection: 'row',
