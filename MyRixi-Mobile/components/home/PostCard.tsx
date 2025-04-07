@@ -18,9 +18,10 @@ import { router } from 'expo-router';
 
 interface PostCardProps {
   post: Post;
+  showCommunityText?: boolean; // Optionnel, pour afficher le nom de la communauté
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post }) => {
+export function PostCard({ post, showCommunityText = false }: PostCardProps) {
   const { theme } = useTheme();
   const [liked, setLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likesCount);
@@ -70,6 +71,15 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
   return (
     <GlassCard style={styles.postCard}>
       <TouchableOpacity activeOpacity={0.9} onPress={navigateToPost}>
+
+        {showCommunityText && (
+          <TouchableOpacity onPress={() => router.push(`/community/${post.communityId}/feed`)}>
+            <Text style={[styles.communityTitle, { color: theme.colors.textSecondary }]}>
+              <Ionicons name="chevron-forward" size={10} color={theme.colors.textSecondary} /> Posté dans {post.communityName}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.postHeader}>
           <TouchableOpacity style={styles.postAuthor} onPress={navigateToProfile}>
             <Image 
@@ -95,7 +105,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
             />
           </TouchableOpacity>
         </View>
-        
+
         {post.title && (
           <Text style={[styles.postTitle, { color: theme.colors.textPrimary }]}>
             {post.title}
@@ -172,6 +182,11 @@ const styles = StyleSheet.create({
   },
   postTime: {
     fontSize: 12,
+  },
+  communityTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
   },
   postTitle: {
     fontSize: 17,

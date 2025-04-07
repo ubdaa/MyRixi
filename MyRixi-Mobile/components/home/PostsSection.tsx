@@ -52,7 +52,7 @@ export function PostsSection ({
         // For nested scroll scenarios, don't use FlatList
         <View>
           {posts.map(post => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} showCommunityText={showCommunity} />
           ))}
         </View>
       ) : (
@@ -60,7 +60,7 @@ export function PostsSection ({
         <FlatList
           data={posts}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <PostCard post={item} />}
+          renderItem={({ item }) => <PostCard post={item} showCommunityText={showCommunity} />}
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           refreshing={refreshing}
