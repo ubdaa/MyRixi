@@ -45,7 +45,7 @@ function ProfileHeader ({
       <GlassCard style={styles.infoContainer}>
         <View style={styles.nameContainer}>
           <Text style={[styles.name, { color: theme.colors.textPrimary }]}>
-            {profile.displayName}
+            {profileType === 'user' ? profile.displayName : profile.pseudonym}
           </Text>
           
           {profileType === 'user' && profile.isVerified && (
@@ -65,7 +65,7 @@ function ProfileHeader ({
         
         {isOwner && (
           <TouchableOpacity 
-            style={[styles.editButton, { backgroundColor: theme.colors.technoBlue }]} 
+            style={[styles.editButton, { backgroundColor: theme.colors.solarGold }]} 
             onPress={onEditProfile}
           >
             <Text style={styles.editButtonText}>Edit Profile</Text>
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     alignSelf: 'flex-start',
-    marginTop: 16,
+    marginTop: 6,
   },
   editButtonText: {
     color: 'white',

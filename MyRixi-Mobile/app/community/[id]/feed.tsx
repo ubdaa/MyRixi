@@ -320,5 +320,6 @@ const styles = StyleSheet.create({
   feedContent: {
     flex: 1,
     marginTop: 8,
+    marginBottom: 100
   },
 });
