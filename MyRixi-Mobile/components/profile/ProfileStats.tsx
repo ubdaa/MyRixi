@@ -12,16 +12,10 @@ interface ProfileStatsProps {
 function ProfileStats ({ profile, profileType }: ProfileStatsProps) {
   const { theme } = useTheme();
   
-  const stats = profileType === 'user' 
-    ? [
-        { label: 'Posts', value: 0 },
-        { label: 'Followers', value: 0 },
-        { label: 'Following', value: 0 },
-      ]
-    : [
-        { label: 'Posts', value: 0 },
-        { label: 'Members', value: 0 },
-        { label: 'Events', value: 0 },
+  const stats = [
+        { label: 'Publications', value: 0 },
+        { label: 'Abonnés', value: 0 },
+        { label: 'Suivis', value: 0 },
       ];
 
   return (

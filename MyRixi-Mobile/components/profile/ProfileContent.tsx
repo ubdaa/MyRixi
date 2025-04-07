@@ -24,17 +24,17 @@ function ProfileContent ({
   const [activeTab, setActiveTab] = useState('posts');
 
   const tabs = [
-        { id: 'posts', label: 'Posts' },
-        { id: 'media', label: 'Media' },
-        { id: 'likes', label: 'Likes' },
+        { id: 'posts', label: 'Publications' },
+        { id: 'comments', label: 'Commentaires' },
+        { id: 'likes', label: 'J\'aime' },
       ]
 
   const renderPlaceholder = () => (
     <View style={styles.placeholderContainer}>
       <Text style={[styles.placeholderText, { color: theme.colors.textSecondary }]}>
-        {activeTab === 'posts' && 'No posts yet'}
-        {activeTab === 'media' && 'No media yet'}
-        {activeTab === 'likes' && 'No likes yet'}
+        {activeTab === 'posts' && 'Aucun post trouvé'}
+        {activeTab === 'comments' && 'Aucun commentaire trouvé'}
+        {activeTab === 'likes' && 'Aucun j\'aime trouvé'}
       </Text>
     </View>
   );

@@ -1,56 +1,49 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
-import { Profile } from '@/types/profile';
+import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 import { fetchUserProfile } from '@/services/profileService';
+import { ProfileDto } from '@/types/profile';
 
-export interface ProfileContextType {
-  profile: Profile | null;
-  communityProfile: Profile | null;
+interface ProfileContextType {
+  profile: ProfileDto | null;
   loading: boolean;
   error: string | null;
   fetchProfile: () => Promise<void>;
 }
 
-const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
+const ProfileContext = createContext<ProfileContextType>({
+  profile: null,
+  loading: false,
+  error: null,
+  fetchProfile: async () => {},
+});
 
-export function ProfileProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [communityProfile, setCommunityProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+export const useProfile = () => useContext(ProfileContext);
+
+interface ProfileProviderProps {
+  children: ReactNode;
+}
+
+export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) => {
+  const [profile, setProfile] = useState<ProfileDto | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetchUserProfile();
-      setProfile(response);
+      const fetchedProfile = await fetchUserProfile();
+      setProfile(fetchedProfile);
     } catch (err) {
-      setError('Failed to fetch profile');
-      console.error(err);
+      console.error('Failed to fetch profile:', err);
+      setError('Failed to load profile');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const value = {
-    profile,
-    communityProfile,
-    loading,
-    error,
-    fetchProfile,
-  }
-
   return (
-    <ProfileContext.Provider value={value}>
+    <ProfileContext.Provider value={{ profile, loading, error, fetchProfile }}>
       {children}
     </ProfileContext.Provider>
   );
-}
-
-export function useProfile() {
-  const context = useContext(ProfileContext);
-  if (!context) {
-    throw new Error('useProfile must be used within a ProfileProvider');
-  }
-  return context;
-}
+};

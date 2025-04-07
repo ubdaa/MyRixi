@@ -4,6 +4,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Profile, ProfileDto } from '@/types/profile';
 import { GlassCard } from '../ui/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
+import { NeoButton } from '../ui/NeoButton';
 
 interface ProfileHeaderProps {
   profile: ProfileDto;
@@ -63,13 +64,15 @@ function ProfileHeader ({
           </Text>
         )}
         
-        {isOwner && (
-          <TouchableOpacity 
-            style={[styles.editButton, { backgroundColor: theme.colors.solarGold }]} 
+        {isOwner && onEditProfile && (
+          <NeoButton
+            title='Modifier le profil'
             onPress={onEditProfile}
+            variant='primary'
+            size='small'
+            style={{marginTop: 16}}
           >
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
+          </NeoButton>
         )}
       </GlassCard>
     </View>

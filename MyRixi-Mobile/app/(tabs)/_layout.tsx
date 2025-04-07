@@ -75,7 +75,7 @@ function MyTabs() {
       <Tabs.Screen
         name="discovery"
         options={({ navigation }) => ({
-          title: "Discovery",
+          title: "Découverte",
           ...getTabAnimation(navigation.isFocused()),
           tabBarIcon: ({ size, color }) => (
             <TabBarIcon name="compass" size={size} color={color} />
@@ -85,7 +85,7 @@ function MyTabs() {
       <Tabs.Screen
         name="home"
         options={({ navigation }) => ({
-          title: "Home",
+          title: "Accueil",
           ...getTabAnimation(navigation.isFocused()),
           tabBarIcon: ({ size, color }) => (
             <TabBarIcon name="home" size={size} color={color} />
@@ -95,7 +95,7 @@ function MyTabs() {
       <Tabs.Screen
         name="communities"
         options={({ navigation }) => ({
-          title: "Communities",
+          title: "Communautés",
           ...getTabAnimation(navigation.isFocused()),
           tabBarIcon: ({ size, color }) => (
             <TabBarIcon name="people" size={size} color={color} />

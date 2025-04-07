@@ -117,7 +117,6 @@ export default function ProfilePage() {
         isMember={isMember}
         onFollow={handleFollow}
         onMessage={handleMessage}
-        onJoinCommunity={handleJoinCommunity}
         onShare={handleShare}
       />
       
