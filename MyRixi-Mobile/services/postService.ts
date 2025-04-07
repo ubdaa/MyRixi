@@ -86,3 +86,7 @@ export const publishDraft = async (draftId: string, draft: UpdateDraft): Promise
     },
   );
 };
+
+export const deleteDraft = async (draftId: string): Promise<void> => {
+  return await apiDeleteRequest<void>(`/post/draft/${draftId}`, {});
+}

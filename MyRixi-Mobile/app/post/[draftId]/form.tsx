@@ -30,24 +30,10 @@ interface PostFormData {
 }
 
 // Interface pour les handlers externes
-interface PostFormHandlers {
-  onSaveDraft?: (data: PostFormData) => Promise<void>;
-  onDeleteDraft?: (draftId: string) => Promise<void>;
-  onPublish?: (data: PostFormData) => Promise<void>;
-  existingDraft?: PostFormData;
-  draftId?: string;
-}
-
-export default function PostForm({
-  onSaveDraft,
-  onDeleteDraft,
-  onPublish,
-  existingDraft,
-  draftId: propDraftId
-}: PostFormHandlers) {
-  const { theme, colorMode } = useTheme();
+export default function PostForm() {
+  const { theme } = useTheme();
   const { draftId } = useLocalSearchParams<{ draftId: string }>();
-  const currentDraftId = propDraftId || draftId;
+  const currentDraftId = draftId;
   const router = useRouter();
   
   // Initialisation du hook usePosts
@@ -57,11 +43,12 @@ export default function PostForm({
     loadDraftById,
     updateDraft, 
     publishDraft, 
+    deleteDraft,
     removeAttachment 
   } = usePosts();
   
   // État du formulaire
-  const [formData, setFormData] = useState<PostFormData>(existingDraft || {
+  const [formData, setFormData] = useState<PostFormData>({
     title: '',
     content: '',
     images: [],
@@ -86,7 +73,7 @@ export default function PostForm({
   // Charger le brouillon si on a un draftId
   useEffect(() => {
     const loadDraft = async () => {
-      if (currentDraftId && !existingDraft) {
+      if (currentDraftId) {
         const draft = await loadDraftById(currentDraftId);
         console.log(draft);
         if (draft) {
@@ -109,7 +96,7 @@ export default function PostForm({
     };
     
     loadDraft();
-  }, [currentDraftId, drafts, existingDraft]);
+  }, [currentDraftId, drafts]);
   
   // Handlers pour mettre à jour les champs du formulaire
   const handleTitleChange = (text: string) => {
@@ -237,19 +224,13 @@ export default function PostForm({
     try {
       setIsSubmitting(true);
       
-      // Utiliser le handler externe si disponible
-      if (onSaveDraft) {
-        await onSaveDraft(formData);
-      } else {
-        // Sinon utiliser le hook
-        await updateDraft(currentDraftId, {
-          title: formData.title,
-          content: formData.content,
-          tags: formData.tags.map(tag => ({
-            Name: tag.name,
-          }))
-        });
-      }
+      await updateDraft(currentDraftId, {
+        title: formData.title,
+        content: formData.content,
+        tags: formData.tags.map(tag => ({
+          Name: tag.name,
+        }))
+      });
       
       Alert.alert('Succès', 'Brouillon enregistré avec succès');
     } catch (error) {
@@ -274,11 +255,8 @@ export default function PostForm({
           onPress: async () => {
             try {
               setIsSubmitting(true);
-              if (onDeleteDraft) {
-                await onDeleteDraft(currentDraftId);
-                Alert.alert('Succès', 'Brouillon supprimé avec succès');
-              }
-              // Rediriger vers la liste des brouillons
+              await deleteDraft(currentDraftId);
+              Alert.alert('Succès', 'Brouillon supprimé avec succès');
               router.back();
             } catch (error) {
               Alert.alert('Erreur', 'Impossible de supprimer le brouillon');
@@ -315,20 +293,14 @@ export default function PostForm({
           onPress: async () => {
             try {
               setIsSubmitting(true);
-              
-              // Utiliser le handler externe si disponible
-              if (onPublish) {
-                await onPublish(formData);
-              } else {
-                // Sinon utiliser le hook
-                await publishDraft(currentDraftId, {
-                  title: formData.title,
-                  content: formData.content,
-                  tags: formData.tags.map(tag => ({
-                    Name: tag.name,
-                  }))
-                });
-              }
+
+              await publishDraft(currentDraftId, {
+                title: formData.title,
+                content: formData.content,
+                tags: formData.tags.map(tag => ({
+                  Name: tag.name,
+                }))
+              });
               
               Alert.alert('Succès', 'Post publié avec succès');
               // Rediriger vers la liste des posts

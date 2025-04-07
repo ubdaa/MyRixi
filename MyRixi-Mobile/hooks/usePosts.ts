@@ -1,4 +1,4 @@
-import { getDrafts, createDraft, addAttachmentToDraft, removeAttachmentFromDraft, getDraft, updateDraft, publishDraft, UpdateDraft, ReactNativeFile } from "@/services/postService";
+import { getDrafts, createDraft, addAttachmentToDraft, removeAttachmentFromDraft, getDraft, updateDraft, publishDraft, UpdateDraft, ReactNativeFile, deleteDraft } from "@/services/postService";
 import { useEffect, useState } from "react";
 import { Post } from "@/types/post";
 import { useLocalSearchParams } from "expo-router";
@@ -128,6 +128,21 @@ export function usePosts() {
     }
   };
 
+  // Fonction pour supprimer un brouillon
+  const handleDeleteDraft = async (draftId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await deleteDraft(draftId);
+      setDrafts(prev => prev.filter(draft => draft.id !== draftId));
+    } catch (err) {
+      setError('Error deleting draft');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Chargement initial des brouillons
   useEffect(() => {
     if (communityId) {
@@ -145,7 +160,8 @@ export function usePosts() {
     addAttachment: handleAddAttachment,
     removeAttachment: handleRemoveAttachment,
     updateDraft: handleUpdateDraft,
-    publishDraft: handlePublishDraft
+    publishDraft: handlePublishDraft,
+    deleteDraft: handleDeleteDraft,
   };
 }
 
