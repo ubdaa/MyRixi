@@ -54,7 +54,7 @@ export default function HomePage() {
       <Header 
         scrollY={scrollY} 
         username={profile?.displayName ?? "John Doe"}
-        avatarUrl={profile?.profilePicture.url ?? "https://i.pravatar.cc/150?img=1"}
+        avatarUrl={profile?.profilePicture.url ?? require('@/assets/images/default-avatar.jpg')}
         onProfilePress={toggleColorMode}
       />
       

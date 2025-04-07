@@ -13,6 +13,7 @@ interface PostsSectionProps {
   refreshing?: boolean;
   onRefresh?: () => void;
   emptyMessage?: string;
+  nestedScroll?: boolean; // New prop to handle nested scroll scenario
 }
 
 export const PostsSection: React.FC<PostsSectionProps> = ({
@@ -22,7 +23,8 @@ export const PostsSection: React.FC<PostsSectionProps> = ({
   loadMore,
   refreshing = false,
   onRefresh,
-  emptyMessage = "Aucun post à afficher"
+  emptyMessage = "Aucun post à afficher",
+  nestedScroll = false
 }) => {
   const { theme } = useTheme();
   
@@ -42,7 +44,15 @@ export const PostsSection: React.FC<PostsSectionProps> = ({
         <View style={styles.emptyContainer}>
           <Text style={{ color: theme.colors.textSecondary }}>{emptyMessage}</Text>
         </View>
+      ) : nestedScroll ? (
+        // For nested scroll scenarios, don't use FlatList
+        <View>
+          {posts.map(post => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </View>
       ) : (
+        // Use FlatList only when not nested in a ScrollView
         <FlatList
           data={posts}
           keyExtractor={(item) => item.id}
@@ -61,7 +71,7 @@ export const PostsSection: React.FC<PostsSectionProps> = ({
 const styles = StyleSheet.create({
   sectionContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 14,
   },
   loadingContainer: {
     flex: 1,

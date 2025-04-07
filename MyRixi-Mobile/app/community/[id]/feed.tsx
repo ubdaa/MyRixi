@@ -205,6 +205,7 @@ export default function CommunityScreen() {
             onRefresh={handleRefresh}
             title="Publications"
             emptyMessage="Aucun post dans cette communauté"
+            nestedScroll={true} // Add this prop to avoid nested scrolling
           />
         </View>
       </ScrollView>
