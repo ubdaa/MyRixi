@@ -15,6 +15,8 @@ public class PostResponseDto
     public PostState State { get; set; }
     
     // Informations sur l'auteur
+    public Guid UserId { get; set; }
+    public Guid AuthorId { get; set; }
     public AuthorDto Author { get; set; }
     public Guid CommunityId { get; set; }
     public string CommunityName { get; set; } = string.Empty;

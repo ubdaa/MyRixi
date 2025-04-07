@@ -30,10 +30,12 @@ public class PostMappingProfile : Profile
                     Url = a.Media.Url
                 }
             })))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.CommunityProfile.User.Id))
+            .ForMember(dest => dest.AuthorId, opt => opt.MapFrom(src => src.CommunityProfile.Id))
             // Mapper les informations de l'auteur
             .ForMember(dest => dest.Author, opt => opt.MapFrom(src => new AuthorDto
             {
-                Id = src.CommunityProfile.User.Id,
+                Id = src.CommunityProfile.Id,
                 Username = src.CommunityProfile.User.UserName,
                 DisplayName = src.CommunityProfile.User.UserName, // Utilisez le champ approprié si vous avez un DisplayName
                 ProfileImageUrl = src.CommunityProfile.ProfilePicture.Url ?? string.Empty

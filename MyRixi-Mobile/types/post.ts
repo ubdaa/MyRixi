@@ -25,6 +25,8 @@ export interface Post {
   publishedAt: string;
   postType: PostType;
   state: PostState;
+  userId: string;
+  authorId: string;
   author: Author;
   communityId: string;
   communityName: string;
