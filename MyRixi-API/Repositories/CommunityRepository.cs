@@ -96,6 +96,15 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
                 .ThenInclude(m => m.User)
             .ToListAsync();
     }
+    
+    public async Task<CommunityProfile?> GetMemberProfileAsync(Guid userId)
+    {
+        return await _context.CommunityProfiles
+            .Include(cp => cp.User)
+            .Include(cp => cp.ProfilePicture)
+            .Include(cp => cp.CoverPicture)
+            .FirstOrDefaultAsync(cp => cp.UserId == userId);
+    }
 
     public async Task<CommunityProfile?> GetMemberProfileAsync(Guid communityId, Guid userId)
     {
