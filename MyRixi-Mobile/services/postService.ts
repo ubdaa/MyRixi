@@ -93,7 +93,7 @@ export const deleteDraft = async (draftId: string): Promise<void> => {
 
 export const fetchCommunityPosts = async (communityId: string, page: number = 1, size: number = 10): Promise<Post[]> => {
   try {
-    return await apiGetRequest<Post[]>(`/v1/Post/community/${communityId}?page=${page}&size=${size}`, {});
+    return await apiGetRequest<Post[]>(`/post/community/${communityId}?page=${page}&size=${size}`, {});
   } catch (error) {
     console.error('Error fetching community posts:', error);
     throw error;
@@ -102,7 +102,7 @@ export const fetchCommunityPosts = async (communityId: string, page: number = 1,
 
 export const fetchPostById = async (postId: string): Promise<Post> => {
   try {
-    return await apiGetRequest<Post>(`/v1/Post/${postId}`, {});
+    return await apiGetRequest<Post>(`/post/${postId}`, {});
   } catch (error) {
     console.error('Error fetching post details:', error);
     throw error;

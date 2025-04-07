@@ -33,6 +33,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         return await _context.Posts
             .Include(p => p.CommunityProfile)
             .ThenInclude(p => p.User)
+            .Include(p => p.CommunityProfile)
+            .ThenInclude(p => p.ProfilePicture)
             .Where(p => p.CommunityId == communityId && p.CommunityProfile.UserId == userId && p.State == PostState.Draft)
             .ToListAsync();
     }
@@ -42,6 +44,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         var posts = await _context.Posts
             .Include(p => p.CommunityProfile)
             .ThenInclude(p => p.User)
+            .Include(p => p.CommunityProfile)
+            .ThenInclude(p => p.ProfilePicture)
             .Where(p => p.CommunityId == communityId)
             .Skip((page - 1) * size)
             .Take(size)
@@ -55,6 +59,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         var posts = await _context.Posts
             .Include(p => p.CommunityProfile)
             .ThenInclude(p => p.User)
+            .Include(p => p.CommunityProfile)
+            .ThenInclude(p => p.ProfilePicture)
             .Where(p => p.CommunityId == communityId && p.CommunityProfile.UserId == userId)
             .Skip((page - 1) * size)
             .Take(size)
@@ -68,6 +74,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         return await _context.Posts
             .Include(p => p.CommunityProfile)
             .ThenInclude(p => p.User)
+            .Include(p => p.CommunityProfile)
+            .ThenInclude(p => p.ProfilePicture)
             .Include(p => p.Attachments)
             .ThenInclude(a => a.Media)
             .Include(p => p.Tags)
@@ -80,6 +88,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         var posts = await _context.Posts
             .Include(p => p.CommunityProfile)
             .ThenInclude(p => p.User)
+            .Include(p => p.CommunityProfile)
+            .ThenInclude(p => p.ProfilePicture)
             .Where(p => p.Content.ToLower().Contains(searchTerm.ToLower()) || p.Title.ToLower().Contains(searchTerm.ToLower()))
             .ToListAsync();
         
@@ -91,6 +101,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         var posts = await _context.Posts
             .Include(p => p.CommunityProfile)
             .ThenInclude(p => p.User)
+            .Include(p => p.CommunityProfile)
+            .ThenInclude(p => p.ProfilePicture)
             .Include(p => p.Community)
             .Where(p => p.CommunityProfile.UserId == userId)
             .ToListAsync();

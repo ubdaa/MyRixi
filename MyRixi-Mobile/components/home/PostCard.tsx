@@ -75,7 +75,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
             <Image 
               source={{ uri: post.author.profileImageUrl }} 
               style={styles.avatar}
-              defaultSource={require('@/assets/images/default-avatar.png')}
+              defaultSource={require('@/assets/images/default-avatar.jpg')}
             />
             <View>
               <Text style={[styles.authorName, { color: theme.colors.textPrimary }]}>
