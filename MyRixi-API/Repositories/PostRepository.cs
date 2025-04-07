@@ -39,6 +39,19 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Post>> GetPostsAsync(PostState state, int page, int size)
+    {
+        return await _context.Posts
+            .Include(p => p.CommunityProfile)
+            .ThenInclude(p => p.User)
+            .Include(p => p.CommunityProfile)
+            .ThenInclude(p => p.ProfilePicture)
+            .Where(p => p.State == state)
+            .Skip((page - 1) * size)
+            .Take(size)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Post>> GetPostsAsync(PostState state, Guid communityId, int page, int size)
     {
         var posts = await _context.Posts

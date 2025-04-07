@@ -243,6 +243,27 @@ public class PostController : Controller
     
     #region PUBLISHED
     
+    [HttpGet("recent")]
+    public async Task<IActionResult> GetRecentPosts([FromQuery] int page = 1, [FromQuery] int size = 10)
+    {
+        var posts = await _postRepository.GetPostsAsync(PostState.Published, page, size);
+        // on range du plus récent au plus vieux
+        posts = posts.OrderByDescending(p => p.PublishedAt);
+        var dtos = _mapper.Map<IEnumerable<PostResponseDto>>(posts);
+    
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId != null)
+        {
+            foreach (var dto in dtos)
+            {
+                var post = posts.First(p => p.Id == dto.Id);
+                dto.IsLiked = post.Likes.Any(l => l.UserId.ToString() == userId);
+            }
+        }
+    
+        return Ok(dtos);
+    }
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPost(Guid id)
     {
