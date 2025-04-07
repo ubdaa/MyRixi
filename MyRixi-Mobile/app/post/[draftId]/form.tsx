@@ -46,8 +46,8 @@ export default function PostForm({
   draftId: propDraftId
 }: PostFormHandlers) {
   const { theme, colorMode } = useTheme();
-  const { draftId: paramDraftId, communityId } = useLocalSearchParams<{ draftId: string, communityId: string }>();
-  const currentDraftId = propDraftId || paramDraftId;
+  const { draftId } = useLocalSearchParams<{ draftId: string }>();
+  const currentDraftId = propDraftId || draftId;
   const router = useRouter();
   
   // Initialisation du hook usePosts
@@ -57,7 +57,6 @@ export default function PostForm({
     loadDraftById,
     updateDraft, 
     publishDraft, 
-    addAttachment, 
     removeAttachment 
   } = usePosts();
   
@@ -72,12 +71,24 @@ export default function PostForm({
   // État pour gérer l'ajout de nouveaux tags
   const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Couleurs disponibles pour les tags basées sur le thème
+  const tagColors = [
+    theme.colors.cyberPink,
+    theme.colors.neoPurple,
+    theme.colors.technoBlue,
+    theme.colors.synthGreen,
+    theme.colors.solarGold,
+    theme.colors.holoTurquoise,
+    theme.colors.neoRed
+  ];
   
   // Charger le brouillon si on a un draftId
   useEffect(() => {
     const loadDraft = async () => {
-      if (currentDraftId && drafts.length > 0 && !existingDraft) {
+      if (currentDraftId && !existingDraft) {
         const draft = await loadDraftById(currentDraftId);
+        console.log(draft);
         if (draft) {
           // Convertir le format de draft à PostFormData
           setFormData({
@@ -90,7 +101,7 @@ export default function PostForm({
             tags: draft.tags?.map(tag => ({
               id: tag.id,
               name: tag.name,
-              color: tag.color || theme.colors.cyberPink
+              color: tagColors[Math.floor(Math.random() * tagColors.length)]
             })) || []
           });
         }
@@ -99,17 +110,6 @@ export default function PostForm({
     
     loadDraft();
   }, [currentDraftId, drafts, existingDraft]);
-  
-  // Couleurs disponibles pour les tags basées sur le thème
-  const tagColors = [
-    theme.colors.cyberPink,
-    theme.colors.neoPurple,
-    theme.colors.technoBlue,
-    theme.colors.synthGreen,
-    theme.colors.solarGold,
-    theme.colors.holoTurquoise,
-    theme.colors.neoRed
-  ];
   
   // Handlers pour mettre à jour les champs du formulaire
   const handleTitleChange = (text: string) => {
