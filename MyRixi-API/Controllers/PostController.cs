@@ -268,7 +268,7 @@ public class PostController : Controller
     public async Task<IActionResult> GetPost(Guid id)
     {
         try {
-            var post = await _postRepository.GetByIdAsync(id);
+            var post = await _postRepository.GetPostAsync(id);
             if (post == null) return NotFound();
         
             var dto = _mapper.Map<PostResponseDto>(post);
