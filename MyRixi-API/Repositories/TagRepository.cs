@@ -10,17 +10,17 @@ public class TagRepository : GenericRepository<Tag>, ITagRepository
     {
     }
 
-    public async Task<Tag> GetOrCreateTagAsync(string description)
+    public async Task<Tag> GetOrCreateTagAsync(string name)
     {
-        description = description.ToLower();
+        name = name.ToLower();
         
-        var tag = _context.Tags.FirstOrDefault(t => t.Description.ToLower() == description);
+        var tag = _context.Tags.FirstOrDefault(t => t.Name.ToLower() == name);
         
         if (tag == null)
         {
             tag = new Tag
             {
-                Description = description
+                Name = name
             };
             
             return await CreateAsync(tag);
@@ -29,13 +29,13 @@ public class TagRepository : GenericRepository<Tag>, ITagRepository
         return tag;
     }
 
-    public async Task<IEnumerable<Tag>> GetOrCreateTagsAsync(IEnumerable<string> descriptions)
+    public async Task<IEnumerable<Tag>> GetOrCreateTagsAsync(IEnumerable<string> names)
     {
         var tags = new List<Tag>();
         
-        foreach (var description in descriptions)
+        foreach (var name in names)
         {
-            tags.Add(await GetOrCreateTagAsync(description));
+            tags.Add(await GetOrCreateTagAsync(name));
         }
         
         return tags;

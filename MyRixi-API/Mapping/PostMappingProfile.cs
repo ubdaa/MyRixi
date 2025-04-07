@@ -16,7 +16,7 @@ public class PostMappingProfile : Profile
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => new TagResponseDto
             {
                 Id = t.Id,
-                Description = t.Description
+                Description = t.Name
             })))
             .ForMember(dest => dest.Attachments, opt => opt.MapFrom(src => src.Attachments.Select(a => new AttachmentResponseDto
             {
