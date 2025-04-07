@@ -103,7 +103,8 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .Include(cp => cp.User)
             .Include(cp => cp.ProfilePicture)
             .Include(cp => cp.CoverPicture)
-            .FirstOrDefaultAsync(cp => cp.UserId == userId);
+            .Include(cp => cp.Community)
+            .FirstOrDefaultAsync(cp => cp.Id == userId);
     }
 
     public async Task<CommunityProfile?> GetMemberProfileAsync(Guid communityId, Guid userId)
