@@ -295,6 +295,8 @@ public class PostController : Controller
     public async Task<IActionResult> GetCommunityPosts(Guid communityId, [FromQuery] int page = 1, [FromQuery] int size = 10)
     {
         var posts = await _postRepository.GetPostsAsync(PostState.Published, communityId, page, size);
+        // on range du plus récent au plus vieux
+        posts = posts.OrderByDescending(p => p.PublishedAt);
         var dtos = _mapper.Map<IEnumerable<PostResponseDto>>(posts);
     
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
