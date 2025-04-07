@@ -64,7 +64,9 @@ public class ProfileController : Controller
             {
                 return NotFound();
             }
-            return Ok(_mapper.Map<UserProfileDto>(profile));
+            
+            var profileDto = await _profileService.GetProfileByIdAsync(profile.Id, userId);
+            return Ok(profileDto);
         }
         catch (Exception ex)
         {
