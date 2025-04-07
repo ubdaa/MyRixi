@@ -13,7 +13,9 @@ interface PostsSectionProps {
   refreshing?: boolean;
   onRefresh?: () => void;
   emptyMessage?: string;
+  showCommunity?: boolean; // New prop to show community name
   nestedScroll?: boolean; // New prop to handle nested scroll scenario
+  style?: object; // Optional style prop for custom styling
 }
 
 export function PostsSection ({
@@ -24,7 +26,9 @@ export function PostsSection ({
   refreshing = false,
   onRefresh,
   emptyMessage = "Aucun post à afficher",
-  nestedScroll = false
+  showCommunity = false,
+  nestedScroll = false,
+  style = {},
 }: PostsSectionProps) {
   const { theme } = useTheme();
   
@@ -37,7 +41,7 @@ export function PostsSection ({
   }
 
   return (
-    <View style={styles.sectionContainer}>
+    <View style={[styles.sectionContainer, style]}>
       <SectionHeader title={title} />
       
       {posts.length === 0 ? (
@@ -71,7 +75,7 @@ export function PostsSection ({
 const styles = StyleSheet.create({
   sectionContainer: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   loadingContainer: {
     flex: 1,

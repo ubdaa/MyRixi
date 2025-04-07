@@ -27,6 +27,7 @@ export interface Post {
   state: PostState;
   author: Author;
   communityId: string;
+  communityName: string;
   tags: TagResponse[];
   attachments: Attachment[];
   comments: CommentResponse[];

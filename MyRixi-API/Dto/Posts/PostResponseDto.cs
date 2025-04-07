@@ -17,6 +17,7 @@ public class PostResponseDto
     // Informations sur l'auteur
     public AuthorDto Author { get; set; }
     public Guid CommunityId { get; set; }
+    public string CommunityName { get; set; } = string.Empty;
     
     public List<TagResponseDto> Tags { get; set; } = new();
     public List<AttachmentResponseDto> Attachments { get; set; } = new();

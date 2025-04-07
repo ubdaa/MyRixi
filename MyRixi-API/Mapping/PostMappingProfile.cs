@@ -40,6 +40,8 @@ public class PostMappingProfile : Profile
             }))
             // Mapper l'ID de la communauté
             .ForMember(dest => dest.CommunityId, opt => opt.MapFrom(src => src.CommunityId))
+            // Mapper le nom de la communauté
+            .ForMember(dest => dest.CommunityName, opt => opt.MapFrom(src => src.Community.Name))
             // Mapper l'état du post
             .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State))
             // Mapper le nombre de commentaires

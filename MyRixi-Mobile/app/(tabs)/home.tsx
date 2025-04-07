@@ -105,9 +105,10 @@ export default function HomePage() {
           loadMore={fetchPosts}
           refreshing={refreshing}
           onRefresh={fetchPosts}
-          title="Fil d\'actualité"
+          title="Fil d'actualité"
           emptyMessage="Aucun post à afficher"
           nestedScroll
+          style={{marginTop: 20}}
         />
       </Animated.ScrollView>
       
