@@ -128,6 +128,6 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     paddingTop: 120, // Pour compenser le header
-    paddingBottom: 20,
+    paddingBottom: 80, // Augmenter le padding pour éviter le débordement // Augmenté pour éviter que le contenu passe sous la tab bar
   },
 });

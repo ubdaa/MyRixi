@@ -30,6 +30,11 @@ export function PostContent({
   compact = false
 }: PostContentProps) {
   const { theme } = useTheme();
+  
+  // Truncate content to 256 characters when in compact mode
+  const displayContent = compact && content.length > 256
+    ? `${content.substring(0, 256)}...`
+    : content;
 
   return (
     <View>
@@ -48,7 +53,7 @@ export function PostContent({
         { color: theme.colors.textPrimary },
         compact ? styles.postContentCompact : {}
       ]}>
-        {content}
+        {displayContent}
       </Text>
 
       {attachments.length > 0 && (
