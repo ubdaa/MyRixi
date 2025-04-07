@@ -16,7 +16,7 @@ interface PostsSectionProps {
   nestedScroll?: boolean; // New prop to handle nested scroll scenario
 }
 
-export const PostsSection: React.FC<PostsSectionProps> = ({
+export function PostsSection ({
   posts,
   loading,
   title = "Fil d'actualité",
@@ -25,7 +25,7 @@ export const PostsSection: React.FC<PostsSectionProps> = ({
   onRefresh,
   emptyMessage = "Aucun post à afficher",
   nestedScroll = false
-}) => {
+}: PostsSectionProps) {
   const { theme } = useTheme();
   
   if (loading && posts.length === 0) {
@@ -71,7 +71,7 @@ export const PostsSection: React.FC<PostsSectionProps> = ({
 const styles = StyleSheet.create({
   sectionContainer: {
     flex: 1,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
   },
   loadingContainer: {
     flex: 1,

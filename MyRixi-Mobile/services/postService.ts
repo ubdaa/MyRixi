@@ -91,6 +91,15 @@ export const deleteDraft = async (draftId: string): Promise<void> => {
   return await apiDeleteRequest<void>(`/post/draft/${draftId}`, {});
 }
 
+export const fetchRecentPosts = async (page: number = 1, size: number = 10): Promise<Post[]> => {
+  try {
+    return await apiGetRequest<Post[]>(`/post/recent?page=${page}&size=${size}`, {});
+  } catch (error) {
+    console.error('Error fetching recent posts:', error);
+    throw error;
+  }
+}
+
 export const fetchCommunityPosts = async (communityId: string, page: number = 1, size: number = 10): Promise<Post[]> => {
   try {
     return await apiGetRequest<Post[]>(`/post/community/${communityId}?page=${page}&size=${size}`, {});

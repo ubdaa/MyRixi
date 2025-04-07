@@ -6,8 +6,6 @@ import {
   StatusBar,
 } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import useChannel from '@/hooks/useChannel';
-import { DEMO_POSTS } from '@/data/demo';
 
 import { AnimatedBackground } from '@/components/home/AnimatedBackground';
 import { Header } from '@/components/home/Header';
@@ -18,6 +16,8 @@ import { PostsSection } from '@/components/home/PostsSection';
 import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 import { useCommunity } from '@/contexts/CommunityContext';
 import { useProfile } from '@/contexts/ProfileContext';
+import { fetchRecentPosts } from '@/services/postService';
+import { Post } from '@/types/post';
 
 export default function HomePage() {
   const { theme, colorMode, toggleColorMode } = useTheme();
@@ -35,6 +35,26 @@ export default function HomePage() {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchPosts = async () => {
+    setLoadingPosts(true);
+    try {
+      const fetchedPosts = await fetchRecentPosts();
+      setPosts(fetchedPosts);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des posts:', error);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   return (
     <View style={[
@@ -77,6 +97,18 @@ export default function HomePage() {
         
         {/* Section Communautés */}
         <CommunitiesSection communities={communities} />
+
+        {/* Section Posts */}
+        <PostsSection
+          posts={posts}
+          loading={loadingPosts}
+          loadMore={fetchPosts}
+          refreshing={refreshing}
+          onRefresh={fetchPosts}
+          title="Fil d\'actualité"
+          emptyMessage="Aucun post à afficher"
+          nestedScroll
+        />
       </Animated.ScrollView>
       
       {/* Bouton flottant pour nouveau post */}
