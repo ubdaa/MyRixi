@@ -294,7 +294,7 @@ public class PostController : Controller
     [HttpGet("community/{communityId}")]
     public async Task<IActionResult> GetCommunityPosts(Guid communityId, [FromQuery] int page = 1, [FromQuery] int size = 10)
     {
-        var posts = await _postRepository.GetPostsAsync(communityId, page, size);
+        var posts = await _postRepository.GetPostsAsync(PostState.Published, communityId, page, size);
         var dtos = _mapper.Map<IEnumerable<PostResponseDto>>(posts);
     
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
