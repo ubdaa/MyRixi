@@ -246,7 +246,7 @@ export default function PostForm({
           title: formData.title,
           content: formData.content,
           tags: formData.tags.map(tag => ({
-            name: tag.name,
+            Name: tag.name,
           }))
         });
       }
@@ -325,9 +325,7 @@ export default function PostForm({
                   title: formData.title,
                   content: formData.content,
                   tags: formData.tags.map(tag => ({
-                    id: tag.id,
-                    name: tag.name,
-                    color: tag.color
+                    Name: tag.name,
                   }))
                 });
               }

@@ -42,7 +42,7 @@ export const removeAttachmentFromDraft = async (draftId: string, attachmentId: s
 };
 
 export interface TagDto {
-  name: string;
+  Name: string;
 }
 
 export interface UpdateDraft {
