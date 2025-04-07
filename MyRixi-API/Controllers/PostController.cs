@@ -1,10 +1,12 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MyRixiApi.Dto;
 using MyRixiApi.Dto.Posts;
+using MyRixiApi.Dto.Tags;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
 
@@ -157,12 +159,23 @@ public class PostController : Controller
         post.Title = model.Title;
         post.Content = model.Content;
         
-        if (model.Tags != null)
+        if (!string.IsNullOrEmpty(model.Tags))
         {
-            var tags = await _tagRepository.GetOrCreateTagsAsync(model.Tags.Select(t => t.Name).ToList());
-            post.Tags = (ICollection<Tag>)tags;
+            try
+            {
+                var tagList = JsonSerializer.Deserialize<List<CreateTagDto>>(model.Tags);
+                if (tagList != null)
+                {
+                    var createdTags = await _tagRepository.GetOrCreateTagsAsync(tagList.Select(t => t.Name).ToList());
+                    post.Tags = (ICollection<Tag>)createdTags;
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Invalid tags format: " + ex.Message);
+            }
         }
-
+        
         await _postRepository.UpdateAsync(post);
         
         return Ok(_mapper.Map<PostResponseDto>(post));
@@ -187,10 +200,21 @@ public class PostController : Controller
         post.Content = model.Content;
         post.State = PostState.Published;
         
-        if (model.Tags != null)
+        if (!string.IsNullOrEmpty(model.Tags))
         {
-            var tags = await _tagRepository.GetOrCreateTagsAsync(model.Tags.Select(t => t.Name).ToList());
-            post.Tags = (ICollection<Tag>)tags;
+            try
+            {
+                var tagList = JsonSerializer.Deserialize<List<CreateTagDto>>(model.Tags);
+                if (tagList != null)
+                {
+                    var createdTags = await _tagRepository.GetOrCreateTagsAsync(tagList.Select(t => t.Name).ToList());
+                    post.Tags = (ICollection<Tag>)createdTags;
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Invalid tags format: " + ex.Message);
+            }
         }
 
         await _postRepository.UpdateAsync(post);

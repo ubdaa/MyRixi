@@ -11,5 +11,5 @@ public class UpdatePostDto
     [Required(ErrorMessage = "Content is required")]
     public string Content { get; set; } = string.Empty;
     
-    public List<CreateTagDto>? Tags { get; set; } = new();
+    public string? Tags { get; set; } = String.Empty;
 }
