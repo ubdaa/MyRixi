@@ -222,6 +222,23 @@ public class PostController : Controller
         return Ok(_mapper.Map<PostResponseDto>(post));
     }
     
+    [Authorize]
+    [HttpDelete("draft/{id}")]
+    public async Task<IActionResult> DeleteDraft(Guid id)
+    {
+        var post = await _postRepository.GetPostAsync(id);
+        if (post == null) return NotFound();
+        
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+        
+        if (post.CommunityProfile.UserId.ToString() != userId) return Unauthorized();
+        
+        await _postRepository.DeleteAsync(id);
+        
+        return Ok();
+    }
+    
     #endregion
     
     #region PUBLISHED
