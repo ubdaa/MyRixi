@@ -1,25 +1,23 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   ScrollView, 
-  Image, 
-  TouchableOpacity, 
-  Pressable,
   Alert,
-  TextInput,
   SafeAreaView,
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/contexts/ThemeContext';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { usePosts } from '@/hooks/usePosts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { addAttachmentToDraft } from '@/services/postService';
+import { ImageSection } from '@/components/post/ImageSection';
+import { TagsSection } from '@/components/post/TagsSection';
+import { ActionButtons } from '@/components/post/ActionButtons';
 
 // Types pour notre formulaire
 interface PostFormData {
@@ -356,139 +354,40 @@ export default function PostForm() {
           />
           
           {/* Section des images */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Images</Text>
-              <TouchableOpacity 
-                style={[styles.addButton, { backgroundColor: theme.colors.technoBlue }]} 
-                onPress={handleAddImages}
-              >
-                <Ionicons name="add" size={20} color="#fff" />
-                <Text style={styles.addButtonText}>Ajouter</Text>
-              </TouchableOpacity>
-            </View>
-            
-            {formData.images.length > 0 ? (
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
-                style={styles.imagesContainer}
-                contentContainerStyle={styles.imagesContent}
-              >
-                {formData.images.map((image, index) => (
-                  <View key={image.id} style={styles.imageWrapper}>
-                    <Image source={{ uri: image.uri }} style={styles.image} />
-                    <TouchableOpacity 
-                      style={styles.removeImageButton} 
-                      onPress={() => handleRemoveImage(image.id)}
-                    >
-                      <Ionicons name="close-circle" size={24} color={theme.colors.neoRed} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </ScrollView>
-            ) : (
-              <View style={[styles.emptyState, { borderColor: theme.colors.divider }]}>
-                <MaterialCommunityIcons 
-                  name="image-outline" 
-                  size={36} 
-                  color={theme.colors.textSecondary} 
-                />
-                <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-                  Aucune image ajoutée
-                </Text>
-              </View>
-            )}
-          </View>
+          <ImageSection 
+            images={formData.images}
+            onAddImages={handleAddImages}
+            onRemoveImage={handleRemoveImage}
+            textColor={theme.colors.textPrimary}
+            accentColor={theme.colors.technoBlue}
+            textSecondary={theme.colors.textSecondary}
+            dividerColor={theme.colors.divider}
+            isSubmitting={isSubmitting}
+          />
           
           {/* Section des tags */}
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Tags</Text>
-              <View style={styles.tagInputContainer}>
-                <GlassInput
-                  placeholder="Ajouter un tag"
-                  value={newTag}
-                  onChangeText={setNewTag}
-                  containerStyle={{ flex: 1, marginRight: 10, marginVertical: 0 }}
-                  accentColor={theme.colors.solarGold}
-                  onSubmitEditing={handleAddTag}
-                  returnKeyType="done"
-                />
-                <TouchableOpacity 
-                  style={[styles.tagAddButton, { backgroundColor: theme.colors.solarGold }]} 
-                  onPress={handleAddTag}
-                  disabled={!newTag.trim()}
-                >
-                  <Ionicons name="add" size={24} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            </View>
-            
-            <View style={styles.tagsContainer}>
-              {formData.tags.length > 0 ? (
-                <View style={styles.tagsList}>
-                  {formData.tags.map(tag => (
-                    <View 
-                      key={tag.id} 
-                      style={[styles.tag, { backgroundColor: tag.color + '20', borderColor: tag.color }]}
-                    >
-                      <Text style={[styles.tagText, { color: tag.color }]}>
-                        {tag.name}
-                      </Text>
-                      <TouchableOpacity 
-                        style={styles.removeTagButton} 
-                        onPress={() => handleRemoveTag(tag.id)}
-                      >
-                        <Ionicons name="close" size={16} color={tag.color} />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </View>
-              ) : (
-                <View style={[styles.emptyState, { borderColor: theme.colors.divider }]}>
-                  <MaterialCommunityIcons 
-                    name="tag-outline" 
-                    size={36} 
-                    color={theme.colors.textSecondary} 
-                  />
-                  <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-                    Aucun tag ajouté
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
+          <TagsSection 
+            tags={formData.tags}
+            newTag={newTag}
+            onChangeNewTag={setNewTag}
+            onAddTag={handleAddTag}
+            onRemoveTag={handleRemoveTag}
+            textColor={theme.colors.textPrimary}
+            accentColor={theme.colors.solarGold}
+            textSecondary={theme.colors.textSecondary}
+            dividerColor={theme.colors.divider}
+          />
           
           {/* Boutons d'action */}
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity 
-              style={[styles.actionButton, { backgroundColor: theme.colors.synthGreen }]} 
-              onPress={handleSaveDraft}
-              disabled={isSubmitting}
-            >
-              <Ionicons name="save-outline" size={20} color="#fff" />
-            </TouchableOpacity>
-          
-            <TouchableOpacity 
-              style={[styles.actionButton, { backgroundColor: theme.colors.neoRed }]} 
-              onPress={handleDeleteDraft}
-              disabled={isSubmitting}
-            >
-              <Ionicons name="trash-outline" size={20} color="#fff" />
-            </TouchableOpacity>
-          
-            <TouchableOpacity 
-              style={[
-                styles.actionButton, 
-                { backgroundColor: theme.colors.cyberPink }
-              ]} 
-              onPress={handlePublish}
-              disabled={isSubmitting}
-            >
-              <Ionicons name="send" size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
+          <ActionButtons 
+            onSave={handleSaveDraft}
+            onDelete={handleDeleteDraft}
+            onPublish={handlePublish}
+            saveColor={theme.colors.synthGreen}
+            deleteColor={theme.colors.neoRed}
+            publishColor={theme.colors.cyberPink}
+            isDisabled={isSubmitting}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -510,145 +409,5 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 16,
-  },
-  contentInputContainer: {
-    marginBottom: 24,
-  },
-  label: {
-    marginBottom: 6,
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  contentBlurContainer: {
-    overflow: 'hidden',
-    width: '100%',
-  },
-  contentInput: {
-    minHeight: 150,
-    padding: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    textAlignVertical: 'top',
-  },
-  sectionContainer: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 30,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  imagesContainer: {
-    paddingVertical: 10,
-    maxHeight: 120,
-  },
-  imagesContent: {
-    paddingRight: 16,
-  },
-  imageWrapper: {
-    position: 'relative',
-    marginRight: 10,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-  },
-  removeImageButton: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    zIndex: 10,
-  },
-  emptyState: {
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderRadius: 8,
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyText: {
-    marginTop: 8,
-  },
-  tagInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginLeft: 10,
-  },
-  tagAddButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tagsContainer: {
-    marginTop: 5,
-  },
-  tagsList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    marginRight: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-  },
-  tagText: {
-    fontWeight: '500',
-    marginRight: 4,
-  },
-  removeTagButton: {
-    padding: 2,
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    borderRadius: 100,
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    marginLeft: 6,
-  },
-  publishButton: {
-    flex: 1.5,
   },
 });

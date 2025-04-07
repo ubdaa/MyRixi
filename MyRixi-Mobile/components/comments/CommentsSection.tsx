@@ -23,7 +23,7 @@ export default function CommentsSection({ commentsCount, onSendComment }: Commen
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={100}
+      keyboardVerticalOffset={0}
       style={styles.keyboardAvoidingView}
     >
       <View style={[styles.commentsSection, { backgroundColor: theme.colors.background2 }]}>
