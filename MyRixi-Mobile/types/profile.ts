@@ -14,6 +14,7 @@ export interface Profile {
   profilePicture: Media;
   coverPicture: Media;
   user: UserChannel;
+  verified: boolean;
 }
 
 export interface CommunityProfile extends Profile {
