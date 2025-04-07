@@ -19,20 +19,20 @@ export const fetchUserProfile = async (): Promise<ProfileDto> => {
   }
 };
 
+export const fetchCommunityProfile = async (id: string): Promise<ProfileDto> => {
+  try {
+    return await apiGetRequest<ProfileDto>(`/profile/community/${id}`, {});
+  } catch (error) {
+    console.error('Failed to fetch community profile:', error);
+    throw error;
+  }
+}
+
 export const fetchUserProfileById = async (userId: string): Promise<ProfileDto> => {
   try {
     return await apiGetRequest<ProfileDto>(`/profile/user/${userId}`, {});
   } catch (error) {
     console.error(`Failed to fetch user profile with ID ${userId}:`, error);
-    throw error;
-  }
-};
-
-export const fetchCommunityProfileById = async (communityId: string): Promise<ProfileDto> => {
-  try {
-    return await apiGetRequest<ProfileDto>(`/profile/community/${communityId}`, {});
-  } catch (error) {
-    console.error(`Failed to fetch community profile with ID ${communityId}:`, error);
     throw error;
   }
 };

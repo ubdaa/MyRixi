@@ -21,7 +21,7 @@ export default function ProfileScreen() {
   }, [fetchProfile]);
 
   const handleEditProfile = () => {
-    router.push('/profile/edit');
+    router.push(`/profile/${profile?.id}/edit`);
   };
   
   const handleFollow = () => {

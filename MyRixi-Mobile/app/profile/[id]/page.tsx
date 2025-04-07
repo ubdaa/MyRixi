@@ -53,7 +53,7 @@ export default function ProfilePage() {
   }, [id, currentUserProfile]);
 
   const handleEditProfile = () => {
-    router.push('/profile/edit');
+    router.push(`/profile/${id}/edit`);
   };
   
   const handleFollow = () => {
