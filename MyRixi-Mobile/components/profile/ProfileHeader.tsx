@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Profile } from '@/types/profile';
+import { Profile, ProfileDto } from '@/types/profile';
 import { GlassCard } from '../ui/GlassCard';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ProfileHeaderProps {
-  profile: Profile;
+  profile: ProfileDto;
   isOwner: boolean;
   profileType: 'user' | 'community';
   onEditProfile?: () => void;
@@ -48,13 +48,13 @@ function ProfileHeader ({
             {profile.displayName}
           </Text>
           
-          {profileType === 'user' && profile.verified && (
+          {profileType === 'user' && profile.isVerified && (
             <Ionicons name="checkmark-circle" size={18} color={theme.colors.technoBlue} style={styles.verifiedIcon} />
           )}
         </View>
         
         <Text style={[styles.username, { color: theme.colors.textSecondary }]}>
-          {`@${profile.user.userName}`}
+          {`@${profile.username}`}
         </Text>
         
         {profile.bio && (

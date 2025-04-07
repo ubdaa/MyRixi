@@ -2,10 +2,10 @@ import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { GlassCard } from '../ui/GlassCard';
-import { Profile } from '@/types/profile';
+import { ProfileDto } from '@/types/profile';
 
 interface ProfileStatsProps {
-  profile: Profile;
+  profile: ProfileDto;
   profileType: 'user' | 'community';
 }
 

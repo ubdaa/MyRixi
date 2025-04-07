@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, FlatList } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { GlassCard } from '../ui/GlassCard';
+import { ProfileDto } from '@/types/profile';
 
 interface ProfileContentProps {
   profileType: 'user' | 'community';
+  profile: ProfileDto;
   // You would include actual content data here
   posts?: any[];
   events?: any[];
@@ -13,6 +15,7 @@ interface ProfileContentProps {
 
 function ProfileContent ({ 
   profileType,
+  profile,
   posts = [],
   events = [], 
   photos = [],
@@ -20,17 +23,11 @@ function ProfileContent ({
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('posts');
 
-  const tabs = profileType === 'user'
-    ? [
+  const tabs = [
         { id: 'posts', label: 'Posts' },
         { id: 'media', label: 'Media' },
         { id: 'likes', label: 'Likes' },
       ]
-    : [
-        { id: 'posts', label: 'Posts' },
-        { id: 'events', label: 'Events' },
-        { id: 'photos', label: 'Photos' },
-      ];
 
   const renderPlaceholder = () => (
     <View style={styles.placeholderContainer}>
@@ -38,8 +35,6 @@ function ProfileContent ({
         {activeTab === 'posts' && 'No posts yet'}
         {activeTab === 'media' && 'No media yet'}
         {activeTab === 'likes' && 'No likes yet'}
-        {activeTab === 'events' && 'No events yet'}
-        {activeTab === 'photos' && 'No photos yet'}
       </Text>
     </View>
   );

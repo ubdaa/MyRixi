@@ -3,12 +3,8 @@ import { ScrollView, StyleSheet, View, ActivityIndicator, RefreshControl } from 
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useProfile } from '@/contexts/ProfileContext';
-import {
-  fetchUserProfileById,
-  fetchCommunityProfileById,
-  determineProfileType,
-} from '@/services/profileService';
-import { Profile } from '@/types/profile';
+import { fetchProfileById } from '@/services/profileService';
+import { ProfileDto } from '@/types/profile';
 
 // Components
 import ProfileHeader from '@/components/profile/ProfileHeader';
@@ -23,9 +19,7 @@ export default function ProfilePage() {
   const { theme } = useTheme();
   const { profile: currentUserProfile } = useProfile();
   
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [profileType, setProfileType] = useState<'user' | 'community'>('user');
-  const [isOwner, setIsOwner] = useState(false);
+  const [profile, setProfile] = useState<ProfileDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -38,26 +32,13 @@ export default function ProfilePage() {
     setError(null);
     
     try {
-      // Determine profile type based on ID
-      const type = determineProfileType(id);
-      setProfileType(type);
-      
-      // Fetch the appropriate profile
-      const fetchedProfile = type === 'user'
-        ? await fetchUserProfileById(id)
-        : await fetchCommunityProfileById(id);
-        
+      // Fetch profile using the unified endpoint
+      const fetchedProfile = await fetchProfileById(id);
       setProfile(fetchedProfile);
       
-      // Check if current user is the owner of this profile
-      if (currentUserProfile && type === 'user') {
-        setIsOwner(currentUserProfile.id === fetchedProfile.id);
-      }
-      
-      // In a real app, you would also check if user is following/member
-      // This is placeholder logic
-      setIsFollowing(false);
-      setIsMember(false);
+      // Use the relationship flags from the DTO
+      setIsFollowing(fetchedProfile.isFollowing);
+      setIsMember(fetchedProfile.isMember);
       
     } catch (err) {
       console.error('Error fetching profile:', err);
@@ -72,7 +53,6 @@ export default function ProfilePage() {
   }, [id, currentUserProfile]);
 
   const handleEditProfile = () => {
-    // Navigate to edit profile screen
     router.push('/profile/edit');
   };
   
@@ -87,13 +67,11 @@ export default function ProfilePage() {
   };
   
   const handleMessage = () => {
-    // Navigate to messaging screen
-    //router.push(`/messages/${id}`);
+    // router.push(`/messages/${id}`);
   };
   
   const handleShare = () => {
     // Share profile functionality
-    // This would use Share API from react-native
   };
 
   if (loading) {
@@ -122,19 +100,19 @@ export default function ProfilePage() {
     >
       <ProfileHeader
         profile={profile}
-        isOwner={isOwner}
-        profileType={profileType}
+        isOwner={profile.isOwner}
+        profileType={profile.profileType}
         onEditProfile={handleEditProfile}
       />
       
       <ProfileStats 
         profile={profile} 
-        profileType={profileType} 
+        profileType={profile.profileType} 
       />
       
       <ProfileActions
-        isOwner={isOwner}
-        profileType={profileType}
+        isOwner={profile.isOwner}
+        profileType={profile.profileType}
         isFollowing={isFollowing}
         isMember={isMember}
         onFollow={handleFollow}
@@ -144,7 +122,8 @@ export default function ProfilePage() {
       />
       
       <ProfileContent 
-        profileType={profileType} 
+        profileType={profile.profileType}
+        profile={profile}
       />
     </ScrollView>
   );

@@ -1,5 +1,14 @@
-import { Profile } from "@/types/profile";
+import { Profile, ProfileDto } from "@/types/profile";
 import { apiGetRequest } from "./api";
+
+export const fetchProfileById = async (id: string): Promise<ProfileDto> => {
+  try {
+    return await apiGetRequest<ProfileDto>(`/profile/${id}`, {});
+  } catch (error) {
+    console.error('Failed to fetch profile:', error);
+    throw error;
+  }
+}
 
 export const fetchUserProfile = async (): Promise<Profile> => {
   try {
