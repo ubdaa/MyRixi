@@ -51,7 +51,7 @@ public class ProfileController : Controller
             return StatusCode(500, "An error occurred while processing your request");
         }
     }
-    
+
     [Authorize]
     [HttpGet("user")]
     public async Task<IActionResult> GetProfile()
@@ -64,7 +64,7 @@ public class ProfileController : Controller
             {
                 return NotFound();
             }
-            
+
             var profileDto = await _profileService.GetProfileByIdAsync(profile.Id, userId);
             return Ok(profileDto);
         }
@@ -74,26 +74,7 @@ public class ProfileController : Controller
             return StatusCode(500, "An error occurred while processing your request");
         }
     }
-    
-    [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetUserProfile(Guid userId)
-    {
-        try
-        {
-            var profile = await _userProfileRepository.GetByUserIdAsync(userId);
-            if (profile == null)
-            {
-                return NotFound();
-            }
-            return Ok(_mapper.Map<UserProfileDto>(profile));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error while getting user profile");
-            return StatusCode(500, "An error occurred while processing your request");
-        }
-    }
-    
+
     [Authorize]
     [HttpGet("community/{communityId}")]
     public async Task<IActionResult> GetCommunityProfile(Guid communityId)
@@ -116,21 +97,17 @@ public class ProfileController : Controller
         }
     }
     
-    [HttpGet("community/{communityId}/user/{userId}")]
-    public async Task<IActionResult> GetCommunityProfile(Guid communityId, Guid userId)
+    [HttpGet("community/{communityId}/members")]
+    public async Task<IActionResult> GetCommunityMembers(Guid communityId, [FromQuery] int page = 1, [FromQuery] int size = 10)
     {
         try
         {
-            var profile = await _communityProfileRepository.GetByUserIdAsync(communityId, userId);
-            if (profile == null)
-            {
-                return NotFound();
-            }
-            return Ok(_mapper.Map<CommunityProfileDto>(profile));
+            var members = await _profileService.GetProfilesByCommunityIdAsync(communityId, page, size);
+            return Ok(members);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error while getting community profile");
+            _logger.LogError(ex, "Error while getting community members");
             return StatusCode(500, "An error occurred while processing your request");
         }
     }

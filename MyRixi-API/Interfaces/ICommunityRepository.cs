@@ -12,6 +12,7 @@ public interface ICommunityRepository : IGenericRepository<Community>
     Task<IEnumerable<Community>> GetJoinedCommunitiesAsync(Guid userId);
     Task<CommunityProfile?> GetMemberProfileAsync(Guid userId);
     Task<CommunityProfile?> GetMemberProfileAsync(Guid communityId, Guid userId);
+    Task<IEnumerable<CommunityProfile>> GetMemberProfilesAsync(Guid communityId, int page, int size);
     Task AddMemberAsync(CommunityProfile profile);
     Task UpdateMemberRoleAsync(Guid communityId, Guid userId, CommunityRole newRole);
     Task UpdateMemberStatusAsync(Guid communityId, Guid userId, JoinStatus status);

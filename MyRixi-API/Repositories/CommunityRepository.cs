@@ -116,6 +116,20 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .FirstOrDefaultAsync(cp => cp.CommunityId == communityId && cp.UserId == userId);
     }
 
+    public async Task<IEnumerable<CommunityProfile>> GetMemberProfilesAsync(Guid communityId, int page, int size)
+    {
+        return await _context.CommunityProfiles
+            .Include(cp => cp.User)
+            .Include(cp => cp.ProfilePicture)
+            .Include(cp => cp.CoverPicture)
+            .Include(cp => cp.Community)
+            .Where(cp => cp.CommunityId == communityId)
+            .OrderByDescending(cp => cp.JoinedAt)
+            .Skip((page - 1) * size)
+            .Take(size)
+            .ToListAsync();
+    }
+
     public async Task AddMemberAsync(CommunityProfile profile)
     {
         await _context.CommunityProfiles.AddAsync(profile);

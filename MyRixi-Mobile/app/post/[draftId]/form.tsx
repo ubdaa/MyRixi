@@ -37,7 +37,7 @@ export default function PostForm() {
   // Initialisation du hook usePosts
   const { 
     drafts, 
-    loading, 
+    refreshDrafts,
     loadDraftById,
     updateDraft, 
     publishDraft, 
@@ -299,8 +299,12 @@ export default function PostForm() {
                   Name: tag.name,
                 }))
               });
+
+              await refreshDrafts();
+
+              // Rediriger vers la page du post publié
+              router.push(`/post/${currentDraftId}/page`);
               
-              Alert.alert('Succès', 'Post publié avec succès');
               // Rediriger vers la liste des posts
               router.back();
             } catch (error) {
