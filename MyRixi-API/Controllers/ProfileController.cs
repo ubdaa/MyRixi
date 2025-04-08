@@ -98,8 +98,11 @@ public class ProfileController : Controller
     }
     
     [HttpGet("community/{communityId}/members")]
-    public async Task<IActionResult> GetCommunityMembers(Guid communityId, [FromQuery] int page = 1, [FromQuery] int size = 10)
+    public async Task<IActionResult> GetCommunityMembers(Guid communityId, [FromQuery] int page = 1, [FromQuery] int size = 10, [FromQuery] string? search = null)
     {
+        if (page < 1 || size < 1) return BadRequest("Page and size must be greater than 0");
+        if (string.IsNullOrWhiteSpace(search)) search = string.Empty;
+        
         try
         {
             var members = await _profileService.GetProfilesByCommunityIdAsync(communityId, page, size);

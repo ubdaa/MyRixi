@@ -48,9 +48,9 @@ public class ProfileService : IProfileService
         return null;
     }
 
-    public async Task<List<ProfileDto>> GetProfilesByCommunityIdAsync(Guid communityId, int page, int size)
+    public async Task<List<ProfileDto>> GetProfilesByCommunityIdAsync(Guid communityId, int page, int size, string searchTerm)
     {
-        var communityProfiles = await _communityRepository.GetMemberProfilesAsync(communityId, page, size);
+        var communityProfiles = await _communityRepository.GetMemberProfilesAsync(communityId, page, size, searchTerm);
 
         return communityProfiles.Select(profile => 
             ProfileMapper.ToDTO(profile)).ToList();
