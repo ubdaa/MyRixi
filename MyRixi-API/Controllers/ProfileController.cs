@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyRixiApi.Dto.Profile;
 using MyRixiApi.Interfaces;
+using MyRixiApi.Models;
 using Exception = System.Exception;
 
 namespace MyRixiApi.Controllers;
@@ -16,6 +17,7 @@ public class ProfileController : Controller
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ICommunityProfileRepository _communityProfileRepository;
     private readonly IProfileService _profileService;
+    private readonly IMediaService _mediaService;
     private readonly ILogger _logger;
 
 
@@ -23,12 +25,14 @@ public class ProfileController : Controller
         IUserProfileRepository userProfileRepository,
         ICommunityProfileRepository communityProfileRepository,
         IProfileService profileService,
+        IMediaService mediaService,
         ILogger<ProfileController> logger)
     {
         _mapper = mapper;
         _userProfileRepository = userProfileRepository;
         _communityProfileRepository = communityProfileRepository;
         _profileService = profileService;
+        _mediaService = mediaService;
         _logger = logger;
     }
     
@@ -137,20 +141,80 @@ public class ProfileController : Controller
         try
         {
             var userId = GetCurrentUserId();
-            var profile = await _userProfileRepository.GetByUserIdAsync(userId);
+            var profile = await _profileService.GetProfileByIdAsync(profileId, userId);
             if (profile == null)
             {
                 return NotFound();
             }
 
-            if (profile.Id != profileId)
+            if (profile.IsOwner == false || profile.UserId != userId)
             {
                 return Forbid();
             }
 
-            // ajouter toute la logique pour l'édition du profil
+            UserProfile? userProfile = null;
+            CommunityProfile? communityProfile = null;
+
+            switch (profile.ProfileType)
+            {
+                case "user":
+                    userProfile = await _userProfileRepository.GetByIdAsync(profileId);
+                    break;
+                case "community":
+                    communityProfile = await _communityProfileRepository.GetByIdAsync(profileId);
+                    break;
+            }
             
-            return Ok();
+            if (userProfile == null && communityProfile == null)
+            {
+                return NotFound();
+            }
+            
+            if (userProfile != null)
+            {
+                userProfile.DisplayName = profileDto.Name;
+                userProfile.Bio = profileDto.Bio ?? "";
+            }
+            else if (communityProfile != null)
+            {
+                communityProfile.Pseudonym = profileDto.Name;
+                communityProfile.Bio = profileDto.Bio ?? "";
+            }
+
+            // ajouter toute la logique pour l'édition du profil
+            if (profileDto.ProfileFile != null)
+            {
+                var avatarMedia = await _mediaService.UploadMediaAsync(profileDto.ProfileFile);
+
+                if (userProfile != null) userProfile.ProfilePicture = avatarMedia;
+                else if (communityProfile != null) communityProfile.ProfilePicture = avatarMedia;
+            }
+            
+            if (profileDto.CoverFile != null)
+            {
+                var coverMedia = await _mediaService.UploadMediaAsync(profileDto.CoverFile);
+
+                if (userProfile != null) userProfile.CoverPicture = coverMedia;
+                else if (communityProfile != null) communityProfile.CoverPicture = coverMedia;
+            }
+            
+            // on sauvegarde maintenant
+            if (userProfile != null)
+            {
+                await _userProfileRepository.UpdateAsync(userProfile);
+            }
+            else if (communityProfile != null)
+            {
+                await _communityProfileRepository.UpdateAsync(communityProfile);
+            }
+            
+            // On renvoie le profil mis à jour
+            var updatedProfile = await _profileService.GetProfileByIdAsync(profileId, userId);
+            if (updatedProfile == null)
+            {
+                return NotFound();
+            }
+            return Ok(updatedProfile);
         }
         catch (Exception ex)
         {
