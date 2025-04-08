@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ViewProps } from 'react-native';
+import { StyleSheet, View, ViewProps, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -37,6 +37,39 @@ export function GlassCard ({
   // Type de flou basé sur le mode couleur
   const defaultBlurTint = colorMode === 'dark' ? 'dark' : 'light';
 
+  const contentStyle = {
+    backgroundColor,
+    borderWidth: 1,
+    borderColor: borderBottomColor,
+    borderRadius: theme.roundness - 1,
+    padding: 16,
+  };
+
+  // Sur Android, on n'utilise pas BlurView
+  if (Platform.OS === 'android') {
+    return (
+      <View 
+        style={[
+          styles.container, 
+          {
+            borderRadius: theme.roundness,
+            elevation: 10,
+            backgroundColor,
+            borderWidth: 1,
+            borderColor: borderBottomColor,
+          }, 
+          style
+        ]} 
+        {...props}
+      >
+        <View style={[styles.content, contentStyle]}>
+          {children}
+        </View>
+      </View>
+    );
+  }
+
+  // Sur iOS, on garde BlurView
   return (
     <View style={[styles.container, { 
       borderRadius: theme.roundness,
@@ -48,17 +81,7 @@ export function GlassCard ({
         tint={blurTint || defaultBlurTint}
         experimentalBlurMethod='dimezisBlurView'
       >
-        <View 
-          style={[
-            styles.content, 
-            { 
-              backgroundColor,
-              borderWidth: 1,
-              borderColor: borderBottomColor,
-              borderRadius: theme.roundness - 1,
-            }
-          ]}
-        >
+        <View style={[styles.content, contentStyle]}>
           {children}
         </View>
       </BlurView>
@@ -76,6 +99,5 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
   }
 });

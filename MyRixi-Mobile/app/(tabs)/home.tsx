@@ -112,9 +112,6 @@ export default function HomePage() {
           style={{marginTop: 20}}
         />
       </Animated.ScrollView>
-      
-      {/* Bouton flottant pour nouveau post */}
-      <FloatingActionButton onPress={() => {}} />
     </View>
   );
 }

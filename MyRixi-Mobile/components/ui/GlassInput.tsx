@@ -8,7 +8,8 @@ import {
   TextStyle,
   TextInputProps,
   Animated,
-  Pressable
+  Pressable,
+  Platform
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -113,20 +114,61 @@ export const GlassInput: React.FC<GlassInputProps> = ({
       )}
       
       <View style={styles.inputWrapper}>
-        <BlurView
-          intensity={isFocused ? 20 : 10}
-          tint={colorMode === 'dark' ? 'dark' : 'light'}
-          style={[styles.blurContainer, { borderRadius: theme.roundness }]}
-          experimentalBlurMethod='dimezisBlurView'
-        >
+        {Platform.OS === 'ios' ? (
+          <BlurView
+            intensity={isFocused ? 20 : 10}
+            tint={colorMode === 'dark' ? 'dark' : 'light'}
+            style={[styles.blurContainer, { borderRadius: theme.roundness }]}
+            experimentalBlurMethod='dimezisBlurView'
+          >
+            <Animated.View
+              style={[
+                styles.inputContainer,
+                {
+                  backgroundColor,
+                  borderColor,
+                  borderRadius: theme.roundness,
+                  borderWidth,
+                },
+              ]}
+            >
+              <TextInput
+                ref={inputRef}
+                style={[
+                  styles.input,
+                  { 
+                    color: theme.colors.textPrimary,
+                    flex: rightIcon ? 1 : undefined,
+                  },
+                  inputStyle
+                ]}
+                placeholderTextColor={theme.colors.textSecondary + '99'}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                selectionColor={actualAccentColor}
+                {...restProps}
+              />
+              
+              {rightIcon && (
+                <View style={styles.rightIconContainer}>
+                  {rightIcon}
+                </View>
+              )}
+            </Animated.View>
+          </BlurView>
+        ) : (
           <Animated.View
             style={[
               styles.inputContainer,
+              styles.androidContainer,
               {
-                backgroundColor,
+                backgroundColor: colorMode === 'dark' 
+                  ? 'rgba(26, 27, 31, 0.9)' 
+                  : 'rgba(255, 255, 255, 0.9)',
                 borderColor,
                 borderRadius: theme.roundness,
                 borderWidth,
+                elevation: isFocused ? 3 : 1,
               },
             ]}
           >
@@ -153,9 +195,9 @@ export const GlassInput: React.FC<GlassInputProps> = ({
               </View>
             )}
           </Animated.View>
-        </BlurView>
+        )}
         
-        {/* Effet de lueur sous le champ lorsqu'il est focus */}
+        {/* Effet de lueur sous le champ lorsqu'il est focus - iOS only */}
         {isFocused && (
           <Animated.View
             style={[
@@ -224,5 +266,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: -1,
     transform: [{ translateY: 4 }],
-  }
+  },
+  androidContainer: {
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
+  },
 });
