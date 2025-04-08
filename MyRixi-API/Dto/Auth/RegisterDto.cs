@@ -6,6 +6,8 @@ namespace MyRixiApi.Dto.Auth;
 public class RegisterDto
 {
     [Required]
+    [MinLength(2, ErrorMessage = "Username must be at least 2 characters.")]
+    [RegularExpression(@"^[a-zA-Z0-9_-]+$", ErrorMessage = "Username can only contain letters, numbers, underscores and dashes.")]
     public string Username { get; set; } = string.Empty;
     
     [Required]

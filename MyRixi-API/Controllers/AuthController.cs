@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -81,6 +82,21 @@ public class AuthController : ControllerBase
         }
 
         return BadRequest(result.Errors);
+    }
+    
+    [Authorize]
+    [HttpGet("check-token")]
+    public IActionResult CheckToken()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        var user = _userManager.FindByIdAsync(userId).Result;
+        if (user == null)
+            return Unauthorized();
+
+        return Ok(new { Message = "Token valide" });
     }
     
     [HttpPost("login")]
