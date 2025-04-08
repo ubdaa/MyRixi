@@ -4,35 +4,19 @@ import {
   Text, 
   StyleSheet, 
   ScrollView, 
-  TouchableOpacity, 
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   SafeAreaView
 } from "react-native";
-import { Image } from "expo-image";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { GlassInput } from "@/components/ui/GlassInput";
 import { NeoButton } from "@/components/ui/NeoButton";
 import { fetchProfileById } from "@/services/profileService";
-
-// Placeholder for actual profile service - replace with your actual API calls
-const fetchUserProfile = async (userId: string) => {
-  // This would be replaced with actual API call
-  return {
-    displayName: "User " + userId,
-    bio: "This is a sample biography. Tell people about yourself!",
-    profilePicture: null,
-    banner: null
-  };
-};
+import { ProfileImageSection } from "@/components/profile/ProfileImageSection";
 
 const updateUserProfile = async (userId: string, profileData: any) => {
   // This would be replaced with actual API call
@@ -79,31 +63,12 @@ export default function EditProfile() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const pickImage = async (type: "profilePicture" | "banner") => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const handleBannerSelected = (uri: string) => {
+    setFormData(prev => ({ ...prev, banner: uri }));
+  };
 
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert(
-        "Permissions Requis",
-        "Vous devez autoriser l'accès à la bibliothèque d'images pour sélectionner une image.",
-      );
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "images",
-      allowsEditing: true,
-      aspect: type === "profilePicture" ? [1, 1] : [16, 9],
-      quality: 0.8,
-    });
-
-    if (!result.canceled) {
-      setFormData(prev => ({
-        ...prev,
-        [type]: result.assets[0].uri
-      }));
-    }
+  const handleProfilePictureSelected = (uri: string) => {
+    setFormData(prev => ({ ...prev, profilePicture: uri }));
   };
 
   const handleSave = async () => {
@@ -142,75 +107,17 @@ export default function EditProfile() {
             Édition du profil
           </Text>
 
-          {/* Banner Image */}
-          <TouchableOpacity
-            style={styles.bannerContainer}
-            activeOpacity={0.8}
-            onPress={() => pickImage("banner")}
-          >
-            {formData.banner ? (
-              <Image
-                source={formData.banner}
-                style={styles.bannerImage}
-                contentFit="cover"
-              />
-            ) : (
-              <LinearGradient
-                colors={[
-                  colorMode === "dark" ? "#2a2a2e" : "#e0e0e0",
-                  colorMode === "dark" ? "#1a1b1f" : "#f5f5f5"
-                ]}
-                style={styles.bannerPlaceholder}
-              >
-                <Ionicons 
-                  name="image-outline" 
-                  size={40} 
-                  color={colorMode === "dark" ? "#888" : "#aaa"} 
-                />
-                <Text style={[
-                  styles.placeholderText,
-                  {color: theme.colors.textSecondary}
-                ]}>
-                  Ajouter une bannière
-                </Text>
-              </LinearGradient>
-            )}
-          </TouchableOpacity>
-
-          {/* Profile Picture */}
-          <TouchableOpacity
-            style={[
-              styles.profilePictureContainer,
-              {
-                borderColor: theme.colors.background1,
-                shadowColor: colorMode === "dark" ? "#000" : "#000",
-              }
-            ]}
-            activeOpacity={0.8}
-            onPress={() => pickImage("profilePicture")}
-          >
-            {formData.profilePicture ? (
-              <Image
-                source={formData.profilePicture}
-                style={styles.profilePicture}
-                contentFit="cover"
-              />
-            ) : (
-              <View style={[
-                styles.profilePicturePlaceholder,
-                {backgroundColor: colorMode === "dark" ? "#2a2a2e" : "#e0e0e0"}
-              ]}>
-                <MaterialCommunityIcons
-                  name="account"
-                  size={60}
-                  color={colorMode === "dark" ? "#888" : "#aaa"}
-                />
-              </View>
-            )}
-          </TouchableOpacity>
+          <ProfileImageSection 
+            banner={formData.banner}
+            profilePicture={formData.profilePicture}
+            onBannerSelected={handleBannerSelected}
+            onProfilePictureSelected={handleProfilePictureSelected}
+            colorMode={colorMode}
+            backgroundcolor={theme.colors.background1}
+            textSecondary={theme.colors.textSecondary}
+          />
 
           <View style={styles.formContainer}>
-            {/* Display Name / Pseudonym Input */}
             <GlassInput
               label="Nom du profil"
               placeholder="Ton nom de profil sur la plateforme"
@@ -220,7 +127,6 @@ export default function EditProfile() {
               containerStyle={styles.inputContainer}
             />
 
-            {/* Biography Input */}
             <GlassInput
               label="Biographie"
               placeholder="A propos de toi..."
@@ -271,74 +177,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginLeft: 8,
   },
-  bannerContainer: {
-    width: "100%",
-    height: 180,
-    borderRadius: 16,
-    overflow: "hidden",
-    position: "relative",
-  },
-  bannerImage: {
-    width: "100%",
-    height: "100%",
-  },
-  bannerPlaceholder: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  profilePictureContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    position: "absolute",
-    top: 180 - 60,
-    left: 24,
-    borderWidth: 4,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    overflow: "hidden",
-  },
-  profilePicture: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 60,
-  },
-  profilePicturePlaceholder: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 60,
-  },
-  placeholderText: {
-    marginTop: 8,
-    fontSize: 16,
-  },
-  editBadge: {
-    position: "absolute",
-    right: 12,
-    bottom: 12,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  editProfileBadge: {
-    position: "absolute",
-    right: 4,
-    bottom: 4,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   formContainer: {
     marginTop: 16,
   },
@@ -349,19 +187,6 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: "top",
     paddingTop: 12,
-  },
-  infoCard: {
-    marginVertical: 16,
-    padding: 16,
-  },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  infoText: {
-    fontSize: 14,
-    lineHeight: 20,
   },
   buttonContainer: {
     flexDirection: "row",

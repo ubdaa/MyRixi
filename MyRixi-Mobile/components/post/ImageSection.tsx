@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { EmptyState } from './EmptyState';
+import { ImagePicker } from '../ui/ImagePicker';
+import * as ExpoImagePicker from 'expo-image-picker';
 
 interface Media {
   uri: string;
@@ -17,7 +19,7 @@ interface Media {
 
 interface ImageSectionProps {
   images: Media[];
-  onAddImages: () => void;
+  onAddImages: (result: any) => void;
   onRemoveImage: (id: string) => void;
   textColor: string;
   accentColor: string;
@@ -40,14 +42,17 @@ export const ImageSection = ({
     <View style={styles.sectionContainer}>
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: textColor }]}>Images</Text>
-        <TouchableOpacity 
+        <ImagePicker 
+          onImageSelected={(result) => {
+            onAddImages(result);
+          }}
           style={[styles.addButton, { backgroundColor: accentColor }]} 
-          onPress={onAddImages}
-          disabled={isSubmitting}
+          allowsMultipleSelection={true}
+          allowsEditing={false}
         >
           <Ionicons name="add" size={20} color="#fff" />
           <Text style={styles.addButtonText}>Ajouter</Text>
-        </TouchableOpacity>
+        </ImagePicker>
       </View>
       
       {images.length > 0 ? (

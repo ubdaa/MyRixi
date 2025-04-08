@@ -131,55 +131,40 @@ export default function PostForm() {
   }
   
   // Handler pour ajouter des images
-  const handleAddImages = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (permissionResult.granted === false) {
-      Alert.alert('Permission requise', 'Vous devez autoriser l\'accès à votre galerie pour ajouter des images.');
-      return;
-    }
-    
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "images",
-      allowsMultipleSelection: false,
-      quality: 0.8,
-    });
-    
-    if (!result.canceled && currentDraftId) {
+  const handleAddImages = async (asset: ImagePicker.ImagePickerAsset) => {
+    if (currentDraftId) {
       try {
         setIsSubmitting(true);
         
-        for (const asset of result.assets) {
-          // React Native n'a pas de constructeur File natif, donc on utilise FormData directement
-          // avec l'URI de l'image et les métadonnées nécessaires
-          const fileNameParts = asset.uri.split('/');
-          const fileName = fileNameParts[fileNameParts.length - 1];
-          
-          // Ajouter l'attachment via le service
-          const updatedDraft = await addAttachmentToDraft(
-            currentDraftId,
-            {
-              uri: asset.uri,
-              name: fileName,
-              type: 'image/jpeg' // ou detecter dynamiquement le type via le nom de fichier
-            }
-          );
-
-          if (updatedDraft) {
-            // Ajouter localement l'image dans le state formData
-            const newImage = {
-              uri: asset.uri,
-              id: updatedDraft.attachments[updatedDraft.attachments.length - 1].id
-            };
-            
-            setFormData(prev => ({
-              ...prev,
-              images: [...prev.images, newImage]
-            }));
+        // React Native n'a pas de constructeur File natif, donc on utilise FormData directement
+        // avec l'URI de l'image et les métadonnées nécessaires
+        const fileNameParts = asset.uri.split('/');
+        const fileName = fileNameParts[fileNameParts.length - 1];
+        
+        // Ajouter l'attachment via le service
+        const updatedDraft = await addAttachmentToDraft(
+          currentDraftId,
+          {
+            uri: asset.uri,
+            name: fileName,
+            type: 'image/jpeg' // ou detecter dynamiquement le type via le nom de fichier
           }
+        );
+
+        if (updatedDraft) {
+          // Ajouter localement l'image dans le state formData
+          const newImage = {
+            uri: asset.uri,
+            id: updatedDraft.attachments[updatedDraft.attachments.length - 1].id
+          };
+          
+          setFormData(prev => ({
+            ...prev,
+            images: [...prev.images, newImage]
+          }));
         }
       } catch (error) {
-        Alert.alert('Erreur', 'Impossible d\'ajouter les images');
+        Alert.alert('Erreur', 'Impossible d\'ajouter l\'image');
         console.error(error);
       } finally {
         setIsSubmitting(false);
@@ -300,7 +285,7 @@ export default function PostForm() {
                 }))
               });
 
-              await refreshDrafts();
+              refreshDrafts();
 
               // Rediriger vers la page du post publié
               router.push(`/post/${currentDraftId}/page`);
