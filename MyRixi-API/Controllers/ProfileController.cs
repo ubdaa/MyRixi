@@ -106,7 +106,15 @@ public class ProfileController : Controller
         try
         {
             var members = await _profileService.GetProfilesByCommunityIdAsync(communityId, page, size);
-            return Ok(members);
+            var totalCount = await _profileService.GetProfilesCountByCommunityIdAsync(communityId);
+            return Ok(new
+            {
+                Items = members,
+                TotalCount = totalCount,
+                Page = page,
+                Size = size,
+                TotalPages = (int)Math.Ceiling((double)totalCount / size)
+            });
         }
         catch (Exception ex)
         {

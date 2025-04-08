@@ -147,6 +147,12 @@ public class CommunityRepository : GenericRepository<Community>, ICommunityRepos
             .ToListAsync();
     }
 
+    public Task<int> GetProfilesCountByCommunityIdAsync(Guid communityId)
+    {
+        return _context.CommunityProfiles
+            .CountAsync(cp => cp.CommunityId == communityId);
+    }
+
     public async Task AddMemberAsync(CommunityProfile profile)
     {
         await _context.CommunityProfiles.AddAsync(profile);

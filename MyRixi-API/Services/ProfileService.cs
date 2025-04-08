@@ -56,5 +56,8 @@ public class ProfileService : IProfileService
             ProfileMapper.ToDTO(profile)).ToList();
     }
 
-    // Add other methods like GetUserProfileAsync, GetCommunityProfileAsync, etc.
+    public Task<int> GetProfilesCountByCommunityIdAsync(Guid communityId)
+    {
+        return _communityRepository.GetProfilesCountByCommunityIdAsync(communityId);
+    }
 }
