@@ -22,8 +22,8 @@ import { Platform } from 'react-native';
 export const BASE_URL = 'http://172.20.10.2:5000/v1';
 export const API_URL = Platform.OS === "android" ? 'http://10.0.2.2:5000/v1' : BASE_URL;
 
-// Interface définissant les valeurs de retour du hook
-interface UseChannelReturn {
+// Interface pour les valeurs retournées par le hook
+export interface UseChannelReturn {
   // États
   loading: boolean;
   error: Error | null;
@@ -34,7 +34,7 @@ interface UseChannelReturn {
   privateChannels: Channel[];
   currentChannel: ChannelDetail | null;
   
-  // Actions liées aux canaux
+  // Actions - Canaux
   loadCommunityChannels: (communityId: string) => Promise<void>;
   loadPrivateChannels: () => Promise<void>;
   loadChannel: (channelId: string) => Promise<ChannelDetail | null>;
@@ -43,26 +43,23 @@ interface UseChannelReturn {
   updateChannel: (channelId: string, channel: UpdateChannelRequest) => Promise<boolean>;
   deleteChannel: (channelId: string) => Promise<boolean>;
   
-  // Actions liées à SignalR
-  chatService: typeof chatService;
-  connectSignalR: () => Promise<boolean>;
+  // Actions - Chat
   joinChannel: (channelId: string) => Promise<boolean>;
   leaveChannel: (channelId: string) => Promise<boolean>;
   
-  // Callbacks pour notifications utilisateurs
-  onUserJoinedChannel: (callback: (data: { UserId: string, ChannelId: string }) => void) => void;
-  onUserLeftChannel: (callback: (data: { UserId: string, ChannelId: string }) => void) => void;
-  onConnectionClosed: (callback: (error: Error | undefined) => void) => void;
+  // Service de chat
+  chatService: typeof chatService;
+  
+  // Méthodes de compatibilité
+  onConnectionClosed: (callback: (error?: Error) => void) => void;
   onConnectionReconnected: (callback: () => void) => void;
 }
 
 export const useChannel = (): UseChannelReturn => {
-  // États de base
+  // États
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const [isSignalRConnected, setIsSignalRConnected] = useState<boolean>(false);
-  
-  // États pour les données des canaux
   const [communityChannels, setCommunityChannels] = useState<Channel[]>([]);
   const [privateChannels, setPrivateChannels] = useState<Channel[]>([]);
   const [currentChannel, setCurrentChannel] = useState<ChannelDetail | null>(null);
@@ -70,12 +67,61 @@ export const useChannel = (): UseChannelReturn => {
   // Références pour éviter les problèmes de fermeture (closure)
   const chatServiceRef = useRef(chatService);
   
-  // Gestionnaire d'erreur d'API centralisé
+  // Gestionnaire d'erreur centralisé
   const handleApiError = useCallback((err: any, action: string) => {
-    const errorMessage = err instanceof Error ? err.message : 'Une erreur inattendue est survenue';
     console.error(`Erreur lors de ${action}:`, err);
+    const errorMessage = err instanceof Error ? err.message : "Une erreur inattendue est survenue";
     setError(new Error(`${action} a échoué: ${errorMessage}`));
     return null;
+  }, []);
+
+  // Initialisation du service de chat
+  useEffect(() => {
+    let isMounted = true;
+
+    const initializeChatService = async () => {
+      try {
+        const connected = await chatService.initialize();
+        if (isMounted) {
+          setIsSignalRConnected(connected);
+        }
+      } catch (err) {
+        console.error("Erreur d'initialisation du service de chat:", err);
+        if (isMounted) {
+          setError(new Error("Impossible de se connecter au service de chat"));
+        }
+      }
+    };
+
+    // Configuration des écouteurs d'événements
+    const disconnectCleanup = chatService.onDisconnected(() => {
+      if (isMounted) {
+        setIsSignalRConnected(false);
+      }
+    });
+
+    const reconnectCleanup = chatService.onReconnected(() => {
+      if (isMounted) {
+        setIsSignalRConnected(true);
+      }
+    });
+
+    const errorCleanup = chatService.onError((err) => {
+      console.error("Erreur SignalR:", err);
+      if (isMounted) {
+        setError(new Error("Erreur de communication avec le serveur"));
+      }
+    });
+
+    initializeChatService();
+
+    // Nettoyer les écouteurs d'événements
+    return () => {
+      isMounted = false;
+      disconnectCleanup();
+      reconnectCleanup();
+      errorCleanup();
+    };
   }, []);
 
   // Chargement des canaux d'une communauté
@@ -135,7 +181,7 @@ export const useChannel = (): UseChannelReturn => {
       setCommunityChannels(prev => [...prev, newChannel]);
       return newChannel;
     } catch (err) {
-      handleApiError(err, 'création d\'un canal communautaire');
+      handleApiError(err, 'création du canal communautaire');
       return null;
     } finally {
       setLoading(false);
@@ -156,7 +202,7 @@ export const useChannel = (): UseChannelReturn => {
       }
       return channel;
     } catch (err) {
-      handleApiError(err, 'création d\'un canal privé');
+      handleApiError(err, 'création du canal privé');
       return null;
     } finally {
       setLoading(false);
@@ -218,104 +264,41 @@ export const useChannel = (): UseChannelReturn => {
     }
   }, [currentChannel, handleApiError]);
 
-  // Connexion à SignalR
-  const connectSignalR = useCallback(async () => {
+  // Rejoindre un canal avec SignalR
+  const joinChannel = useCallback(async (channelId: string): Promise<boolean> => {
     try {
-      const success = await chatServiceRef.current.connect(`${API_URL}/hubs/chat`);
-      setIsSignalRConnected(success);
-      return success;
-    } catch (err) {
-      handleApiError(err, 'connexion au chat');
-      setIsSignalRConnected(false);
-      return false;
-    }
-  }, [handleApiError]);
-
-  // Rejoindre un canal
-  const joinChannel = useCallback(async (channelId: string) => {
-    try {
-      const success = await chatServiceRef.current.joinChannel(channelId);
+      setError(null);
+      const success = await chatService.joinChannel(channelId);
       if (!success) {
-        console.warn(`Échec de connexion au canal ${channelId}, tentative de reconnexion`);
-        // Tente de se reconnecter puis de rejoindre à nouveau
-        const reconnected = await connectSignalR();
-        if (reconnected) {
-          return await chatServiceRef.current.joinChannel(channelId);
-        }
+        setError(new Error("Impossible de rejoindre le canal"));
       }
       return success;
     } catch (err) {
-      handleApiError(err, `rejoindre le canal ${channelId}`);
-      return false;
-    }
-  }, [connectSignalR, handleApiError]);
-
-  // Quitter un canal
-  const leaveChannel = useCallback(async (channelId: string) => {
-    try {
-      return await chatServiceRef.current.leaveChannel(channelId);
-    } catch (err) {
-      handleApiError(err, `quitter le canal ${channelId}`);
+      handleApiError(err, 'rejoindre le canal');
       return false;
     }
   }, [handleApiError]);
 
-  // Callback pour les utilisateurs rejoignant un canal
-  const onUserJoinedChannel = useCallback((callback: (data: { UserId: string, ChannelId: string }) => void) => {
-    chatServiceRef.current.onUserJoinedChannel(callback);
-  }, []);
+  // Quitter un canal avec SignalR
+  const leaveChannel = useCallback(async (channelId: string): Promise<boolean> => {
+    try {
+      return await chatService.leaveChannel(channelId);
+    } catch (err) {
+      handleApiError(err, 'quitter le canal');
+      return false;
+    }
+  }, [handleApiError]);
 
-  // Callback pour les utilisateurs quittant un canal
-  const onUserLeftChannel = useCallback((callback: (data: { UserId: string, ChannelId: string }) => void) => {
-    chatServiceRef.current.onUserLeftChannel(callback);
+  // Méthodes de compatibilité pour l'ancienne interface
+  const onConnectionClosed = useCallback((callback: (error?: Error) => void): void => {
+    console.log('useChannel: onConnectionClosed appelé (déprécié), utiliser chatService.onDisconnected à la place');
+    chatServiceRef.current.onDisconnected(callback);
   }, []);
-
-  // Callback pour la fermeture de connexion
-  const onConnectionClosed = useCallback((callback: (error: Error | undefined) => void) => {
-    chatServiceRef.current.onConnectionClosed((error) => {
-      setIsSignalRConnected(false);
-      callback(error);
-    });
+  
+  const onConnectionReconnected = useCallback((callback: () => void): void => {
+    console.log('useChannel: onConnectionReconnected appelé (déprécié), utiliser chatService.onReconnected à la place');
+    chatServiceRef.current.onReconnected(callback);
   }, []);
-
-  // Callback pour la reconnexion
-  const onConnectionReconnected = useCallback((callback: () => void) => {
-    chatServiceRef.current.onConnectionReconnected(() => {
-      setIsSignalRConnected(true);
-      callback();
-    });
-  }, []);
-
-  // Connexion automatique à SignalR au chargement du hook
-  useEffect(() => {
-    let isMounted = true;
-    
-    connectSignalR().catch(err => {
-      if (isMounted) {
-        console.error('Échec de connexion à SignalR:', err);
-        setError(new Error('La connexion au chat a échoué. Veuillez réessayer.'));
-      }
-    });
-    
-    // Configuration des événements de connexion/déconnexion
-    chatServiceRef.current.onConnectionClosed(() => {
-      if (isMounted) {
-        setIsSignalRConnected(false);
-      }
-    });
-    
-    chatServiceRef.current.onConnectionReconnected(() => {
-      if (isMounted) {
-        setIsSignalRConnected(true);
-      }
-    });
-    
-    // Nettoyage lors du démontage du hook
-    return () => {
-      isMounted = false;
-      // Pas besoin de se déconnecter ici car SignalRManager gère la connexion globale
-    };
-  }, [connectSignalR]);
 
   return {
     // États
@@ -328,7 +311,7 @@ export const useChannel = (): UseChannelReturn => {
     privateChannels,
     currentChannel,
     
-    // Actions liées aux canaux
+    // Actions - Canaux
     loadCommunityChannels,
     loadPrivateChannels,
     loadChannel,
@@ -337,15 +320,14 @@ export const useChannel = (): UseChannelReturn => {
     updateChannel,
     deleteChannel,
     
-    // Actions liées à SignalR
-    chatService: chatServiceRef.current,
-    connectSignalR,
+    // Actions - Chat
     joinChannel,
     leaveChannel,
     
-    // Callbacks pour notifications utilisateurs
-    onUserJoinedChannel,
-    onUserLeftChannel,
+    // Service de chat
+    chatService: chatServiceRef.current,
+    
+    // Méthodes de compatibilité
     onConnectionClosed,
     onConnectionReconnected
   };

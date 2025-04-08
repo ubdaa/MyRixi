@@ -1,211 +1,191 @@
 import { CreateMessageDto } from '@/types/message';
-import SignalRManager, { SignalREvents } from './signalRService';
+import SignalRManager, { SignalREvents, getApiBaseUrl } from './signalRService';
 
-export class ChatService {
-  private callbacks: {
-    messageReceived: (messageDto: any) => void,
-    userJoinedChannel: (data: { UserId: string, ChannelId: string }) => void,
-    userLeftChannel: (data: { UserId: string, ChannelId: string }) => void,
-    connectionClosed: (error: Error | undefined) => void,
-    connectionReconnected: () => void
-  };
+/**
+ * Service de chat pour gérer les communications via SignalR
+ */
+class ChatService {
+  private _isInitialized: boolean = false;
   
-  private registeredEvents: boolean = false;
-  private cleanupFunctions: (() => void)[] = [];
-
-  constructor() {
-    this.callbacks = {
-      messageReceived: () => {},
-      userJoinedChannel: () => {},
-      userLeftChannel: () => {},
-      connectionClosed: () => {},
-      connectionReconnected: () => {}
-    };
-  }
-
   /**
-   * Établit la connexion au hub SignalR et enregistre les gestionnaires d'événements
+   * Initialise la connexion au hub de chat
    */
-  async connect(url: string): Promise<boolean> {
+  async initialize(): Promise<boolean> {
+    if (this._isInitialized) {
+      return SignalRManager.isConnected();
+    }
+    
     try {
-      // Nettoie les écouteurs précédents
-      this.unregisterEventHandlers();
+      const url = `${getApiBaseUrl()}/hubs/chat`;
+      console.log(`[ChatService] Initialisation avec l'URL: ${url}`);
       
-      const success = await SignalRManager.connect(url);
-      
-      if (success) {
-        this.registerEventHandlers();
-      }
-      
-      return success;
+      const connected = await SignalRManager.connect(url);
+      this._isInitialized = connected;
+      return connected;
     } catch (error) {
-      console.error('Erreur lors de la connexion à SignalR:', error);
+      console.error('[ChatService] Erreur d\'initialisation:', error);
       return false;
     }
   }
 
   /**
-   * Enregistre les gestionnaires d'événements pour SignalR
-   */
-  private registerEventHandlers(): void {
-    if (this.registeredEvents) {
-      return;
-    }
-    
-    // Gestion des messages reçus
-    SignalRManager.on('ReceiveMessage', (messageDto: any) => {
-      console.log('SignalR: événement ReceiveMessage déclenché:', messageDto);
-      this.callbacks.messageReceived(messageDto);
-    });
-    
-    // Gestion des utilisateurs rejoignant un canal
-    SignalRManager.on('UserJoinedChannel', (data: { UserId: string, ChannelId: string }) => {
-      console.log('SignalR: événement UserJoinedChannel déclenché:', data);
-      this.callbacks.userJoinedChannel(data);
-    });
-    
-    // Gestion des utilisateurs quittant un canal
-    SignalRManager.on('UserLeftChannel', (data: { UserId: string, ChannelId: string }) => {
-      console.log('SignalR: événement UserLeftChannel déclenché:', data);
-      this.callbacks.userLeftChannel(data);
-    });
-    
-    // Gestion des événements de connexion/déconnexion
-    const disconnectedCleaner = SignalRManager.addEventListener(SignalREvents.DISCONNECTED, 
-      (error: Error | undefined) => {
-        console.log('SignalR: événement DISCONNECTED déclenché');
-        this.callbacks.connectionClosed(error);
-      }
-    );
-    
-    const reconnectedCleaner = SignalRManager.addEventListener(SignalREvents.RECONNECTED, 
-      () => {
-        console.log('SignalR: événement RECONNECTED déclenché');
-        this.callbacks.connectionReconnected();
-      }
-    );
-    
-    // Sauvegarde des fonctions de nettoyage
-    this.cleanupFunctions.push(disconnectedCleaner, reconnectedCleaner);
-    
-    this.registeredEvents = true;
-  }
-
-  /**
-   * Supprime les gestionnaires d'événements
-   */
-  private unregisterEventHandlers(): void {
-    if (!this.registeredEvents) {
-      return;
-    }
-    
-    // Suppression des gestionnaires d'événements hub
-    SignalRManager.off('ReceiveMessage');
-    SignalRManager.off('UserJoinedChannel');
-    SignalRManager.off('UserLeftChannel');
-    
-    // Suppression des écouteurs d'événements
-    this.cleanupFunctions.forEach(cleanup => cleanup());
-    this.cleanupFunctions = [];
-    
-    this.registeredEvents = false;
-  }
-
-  /**
-   * Ferme la connexion
-   */
-  async disconnect(): Promise<void> {
-    this.unregisterEventHandlers();
-    // Pas besoin de fermer la connexion SignalR ici
-    // car SignalRManager gère cela au niveau global
-  }
-
-  /**
-   * Définit le callback pour les messages reçus
-   */
-  onMessageReceived(callback: (messageDto: any) => void): void {
-    console.log('Configuration du callback pour les nouveaux messages');
-    this.callbacks.messageReceived = callback;
-  }
-
-  /**
-   * Définit le callback pour les utilisateurs rejoignant un canal
-   */
-  onUserJoinedChannel(callback: (data: { UserId: string, ChannelId: string }) => void): void {
-    this.callbacks.userJoinedChannel = callback;
-  }
-
-  /**
-   * Définit le callback pour les utilisateurs quittant un canal
-   */
-  onUserLeftChannel(callback: (data: { UserId: string, ChannelId: string }) => void): void {
-    this.callbacks.userLeftChannel = callback;
-  }
-
-  /**
-   * Définit le callback pour la fermeture de connexion
-   */
-  onConnectionClosed(callback: (error: Error | undefined) => void): void {
-    this.callbacks.connectionClosed = callback;
-  }
-
-  /**
-   * Définit le callback pour la reconnexion
-   */
-  onConnectionReconnected(callback: () => void): void {
-    this.callbacks.connectionReconnected = callback;
-  }
-
-  /**
-   * Rejoint un canal
+   * Rejoindre un canal
    */
   async joinChannel(channelId: string): Promise<boolean> {
-    return await SignalRManager.joinChannel(channelId);
-  }
-
-  /**
-   * Quitte un canal
-   */
-  async leaveChannel(channelId: string): Promise<boolean> {
-    return await SignalRManager.leaveChannel(channelId);
-  }
-
-  /**
-   * Envoie un message
-   */
-  async sendMessage(messageDto: CreateMessageDto): Promise<boolean> {
     try {
-      console.log('Envoi de message:', messageDto);
-      await SignalRManager.invoke('SendMessage', messageDto);
-      console.log('Message envoyé avec succès');
-      return true;
-    } catch (err) {
-      console.error('Erreur lors de l\'envoi du message:', err);
-      
-      // Tentative de reconnexion et nouvel essai
-      try {
-        const reconnected = await SignalRManager.ensureConnected();
-        if (reconnected) {
-          await SignalRManager.invoke('SendMessage', messageDto);
-          console.log('Message envoyé après reconnexion');
-          return true;
-        }
-      } catch (retryErr) {
-        console.error('Échec de la tentative de réenvoi:', retryErr);
+      if (!this._isInitialized) {
+        await this.initialize();
       }
       
+      console.log(`[ChatService] Rejoindre le canal: ${channelId}`);
+      return await SignalRManager.joinChannel(channelId);
+    } catch (error) {
+      console.error(`[ChatService] Erreur en rejoignant le canal ${channelId}:`, error);
       return false;
     }
   }
-  
+
   /**
-   * Vérifie si la connexion est établie
+   * Quitter un canal
+   */
+  async leaveChannel(channelId: string): Promise<boolean> {
+    try {
+      console.log(`[ChatService] Quitter le canal: ${channelId}`);
+      return await SignalRManager.leaveChannel(channelId);
+    } catch (error) {
+      console.error(`[ChatService] Erreur en quittant le canal ${channelId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Envoyer un message
+   */
+  async sendMessage(message: CreateMessageDto): Promise<boolean> {
+    try {
+      if (!this._isInitialized) {
+        await this.initialize();
+      }
+      
+      console.log(`[ChatService] Envoi d'un message au canal ${message.channelId}`);
+      await SignalRManager.invoke('SendMessage', message);
+      return true;
+    } catch (error) {
+      console.error('[ChatService] Erreur d\'envoi de message:', error);
+      
+      // Essayer de se reconnecter et réessayer une fois
+      try {
+        console.log('[ChatService] Tentative de reconnexion et nouvel essai');
+        await this.initialize();
+        await SignalRManager.invoke('SendMessage', message);
+        return true;
+      } catch (retryError) {
+        console.error('[ChatService] Échec du second essai:', retryError);
+        return false;
+      }
+    }
+  }
+
+  /**
+   * Ajouter une réaction à un message
+   */
+  async addReaction(messageId: string, emoji: string): Promise<boolean> {
+    try {
+      if (!this._isInitialized) {
+        await this.initialize();
+      }
+      
+      await SignalRManager.invoke('AddReaction', messageId, emoji);
+      return true;
+    } catch (error) {
+      console.error('[ChatService] Erreur d\'ajout de réaction:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Supprimer une réaction d'un message
+   */
+  async removeReaction(messageId: string, emoji: string): Promise<boolean> {
+    try {
+      if (!this._isInitialized) {
+        await this.initialize();
+      }
+      
+      await SignalRManager.invoke('RemoveReaction', messageId, emoji);
+      return true;
+    } catch (error) {
+      console.error('[ChatService] Erreur de suppression de réaction:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Marquer les messages d'un canal comme lus
+   */
+  async markAsRead(channelId: string): Promise<boolean> {
+    try {
+      if (!this._isInitialized) {
+        await this.initialize();
+      }
+      
+      await SignalRManager.invoke('MarkAsRead', channelId);
+      return true;
+    } catch (error) {
+      console.error('[ChatService] Erreur lors du marquage comme lu:', error);
+      return false;
+    }
+  }
+
+  /**
+   * S'abonner à la réception des messages
+   */
+  onMessageReceived(callback: (message: any) => void): () => void {
+    return SignalRManager.on(SignalREvents.MESSAGE_RECEIVED, callback);
+  }
+
+  /**
+   * S'abonner aux notifications d'utilisateur rejoignant un canal
+   */
+  onUserJoinedChannel(callback: (data: any) => void): () => void {
+    return SignalRManager.on(SignalREvents.USER_JOINED, callback);
+  }
+
+  /**
+   * S'abonner aux notifications d'utilisateur quittant un canal
+   */
+  onUserLeftChannel(callback: (data: any) => void): () => void {
+    return SignalRManager.on(SignalREvents.USER_LEFT, callback);
+  }
+
+  /**
+   * S'abonner aux notifications de reconnexion
+   */
+  onReconnected(callback: () => void): () => void {
+    return SignalRManager.on(SignalREvents.RECONNECTED, callback);
+  }
+
+  /**
+   * S'abonner aux notifications de déconnexion
+   */
+  onDisconnected(callback: (error?: Error) => void): () => void {
+    return SignalRManager.on(SignalREvents.DISCONNECTED, callback);
+  }
+
+  /**
+   * S'abonner aux notifications d'erreur
+   */
+  onError(callback: (error: any) => void): () => void {
+    return SignalRManager.on(SignalREvents.ERROR, callback);
+  }
+
+  /**
+   * Vérifier si le service est connecté
    */
   isConnected(): boolean {
-    const state = SignalRManager.getConnectionState();
-    return state === 'Connected';
+    return this._isInitialized && SignalRManager.isConnected();
   }
 }
 
-// Exporte une instance par défaut pour faciliter l'utilisation
+// Exporte une instance singleton
 export default new ChatService();

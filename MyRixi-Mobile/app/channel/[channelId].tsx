@@ -1,345 +1,201 @@
-import { ChannelHeader } from "@/components/channel/channel-header";
-import { MessageInput } from "@/components/channel/message-input";
-import { MessageList } from "@/components/channel/message-list";
-import useChannel from "@/hooks/useChannel";
-import useMessages from "@/hooks/useMessages";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  KeyboardAvoidingView, 
-  Platform, 
-  TouchableOpacity, 
-  ActivityIndicator 
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, StyleSheet, ActivityIndicator, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
+import { useChannel } from '@/hooks/useChannel';
+import { ChannelHeader } from '@/components/channel/channel-header';
+import { MessageList } from '@/components/channel/message-list';
+import { MessageInput } from '@/components/channel/message-input';
+import { CreateMessageDto, Message } from '@/types/message';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ChannelScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { channelId } = useLocalSearchParams();
-  const id = Array.isArray(channelId) ? channelId[0] : channelId || '';
+  // Récupérer l'ID du canal depuis les paramètres d'URL
+  const { channelId } = useLocalSearchParams<{ channelId: string }>();
   
-  // États pour gérer l'affichage
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [isReconnecting, setIsReconnecting] = useState(false);
+  // État local pour les messages et l'état de la page
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Hooks pour la gestion des canaux et messages
-  const { 
-    loading: channelLoading, 
-    error: channelError, 
-    currentChannel,
-    loadChannel, 
-    joinChannel, 
-    leaveChannel,
+  // Utiliser le hook useChannel
+  const {
     chatService,
-    isSignalRConnected,
-    connectSignalR,
-    onConnectionClosed,
-    onConnectionReconnected
+    currentChannel,
+    loadChannel,
+    joinChannel,
+    leaveChannel,
+    isSignalRConnected
   } = useChannel();
 
-  const { 
-    loading: messagesLoading, 
-    error: messagesError,
-    messages,
-    loadMoreMessages,
-    refreshMessages,
-    sendMessage
-  } = useMessages({ 
-    channelId: id, 
-    chatService 
-  });
-  
-  // Vérifier et restaurer la connexion si nécessaire
-  const checkConnection = useCallback(async () => {
-    if (!isSignalRConnected) {
-      console.log("SignalR déconnecté, tentative de reconnexion...");
-      setIsReconnecting(true);
-      const reconnected = await connectSignalR();
-      
-      if (reconnected) {
-        console.log("Reconnecté! Réintégration du canal...");
-        const joined = await joinChannel(id);
-        setIsReconnecting(false);
-        return joined;
-      }
-      
-      setIsReconnecting(false);
-      return false;
-    }
-    return true;
-  }, [isSignalRConnected, connectSignalR, joinChannel, id]);
-  
-  // Gérer la réessai quand la connexion échoue
-  const handleRetry = useCallback(async () => {
-    setConnectionError(null);
-    setIsInitializing(true);
-    
-    try {
-      // Tentative de reconnexion à SignalR
-      const reconnected = await connectSignalR();
-      if (!reconnected) {
-        throw new Error("Impossible de se connecter au serveur de chat");
-      }
-      
-      // Rechargement des données du canal
-      await loadChannel(id);
-      
-      // Réintégration du canal
-      const joined = await joinChannel(id);
-      if (!joined) {
-        throw new Error("Impossible de rejoindre le canal");
-      }
-      
-      // Rafraîchissement des messages
-      await refreshMessages();
-      
-      setIsInitializing(false);
-    } catch (err) {
-      console.error("Erreur pendant la réessai:", err);
-      setConnectionError((err as Error).message || "Échec de la connexion");
-      setIsInitializing(false);
-    }
-  }, [connectSignalR, loadChannel, joinChannel, id, refreshMessages]);
-  
-  // Initialisation du canal
+  // Charger les détails du canal et rejoindre le canal
   useEffect(() => {
-    if (!id) {
-      setConnectionError("ID de canal manquant");
-      setIsInitializing(false);
-      return;
-    }
-
-    let mounted = true;
+    let isMounted = true;
     
-    async function initializeChannel() {
+    const initializeChannel = async () => {
+      if (!channelId) return;
+      
       try {
-        // Chargement des détails du canal d'abord
-        const channelDetails = await loadChannel(id);
-        if (!mounted) return;
+        setLoading(true);
         
-        if (!channelDetails) {
-          throw new Error("Canal introuvable");
+        // Charger les détails du canal
+        const channelDetails = await loadChannel(channelId);
+        
+        if (!channelDetails && isMounted) {
+          setError("Canal non trouvé");
+          setLoading(false);
+          return;
+        }
+
+        // Rejoindre le canal via SignalR
+        const joined = await joinChannel(channelId);
+        if (!joined && isMounted) {
+          setError("Impossible de rejoindre le canal");
         }
         
-        // Établir la connexion SignalR si nécessaire
-        if (!isSignalRConnected) {
-          await connectSignalR();
-          if (!mounted) return;
-        }
-        
-        // Rejoindre le canal
-        const joinSuccess = await joinChannel(id);
-        if (!mounted) return;
-        
-        if (!joinSuccess) {
-          throw new Error("Impossible de rejoindre le canal");
+        // Simuler le chargement des messages (à remplacer par votre API)
+        // Dans une vraie application, appelez votre service de messages ici
+        if (isMounted) {
+          setMessages([]);  // Chargement de messages réels à implémenter
+          setLoading(false);
         }
       } catch (err) {
-        if (!mounted) return;
-        console.error("Erreur d'initialisation du canal:", err);
-        setConnectionError((err as Error).message || "Échec d'initialisation du canal");
-      } finally {
-        if (mounted) {
-          setIsInitializing(false);
+        console.error("Erreur lors de l'initialisation du canal:", err);
+        if (isMounted) {
+          setError("Une erreur est survenue lors du chargement du canal");
+          setLoading(false);
         }
       }
-    }
+    };
 
     initializeChannel();
-    
-    // Configuration des gestionnaires d'événements pour la connexion
-    const handleConnectionClosed = (error?: Error) => {
-      if (mounted) {
-        console.log("Connexion fermée dans ChannelScreen:", error);
-        setIsReconnecting(true);
-      }
-    };
-    
-    const handleConnectionReconnected = () => {
-      if (mounted) {
-        console.log("Reconnexion réussie dans ChannelScreen");
-        setIsReconnecting(false);
-        // Réintégrer le canal
-        joinChannel(id).catch(console.error);
-      }
-    };
-    
-    onConnectionClosed(handleConnectionClosed);
-    onConnectionReconnected(handleConnectionReconnected);
 
-    // Fonction de nettoyage
+    // Nettoyage lors de la sortie
     return () => {
-      mounted = false;
-      if (id) {
-        leaveChannel(id).catch(err => console.error("Erreur lors du départ du canal:", err));
+      isMounted = false;
+      if (channelId) {
+        leaveChannel(channelId).catch(err => {
+          console.error("Erreur lors de la sortie du canal:", err);
+        });
       }
     };
-  }, [
-    id, 
-    loadChannel, 
-    joinChannel, 
-    leaveChannel, 
-    connectSignalR, 
-    isSignalRConnected, 
-    onConnectionClosed, 
-    onConnectionReconnected
-  ]);
-  
-  // Vérification périodique de la connexion
-  useEffect(() => {
-    if (connectionError || isInitializing) return;
-    
-    const interval = setInterval(() => {
-      checkConnection().catch(err => 
-        console.error("Erreur pendant la vérification de connexion:", err)
-      );
-    }, 30000); // Vérification toutes les 30 secondes
-    
-    return () => clearInterval(interval);
-  }, [checkConnection, connectionError, isInitializing]);
+  }, [channelId, loadChannel, joinChannel, leaveChannel]);
 
-  // États de l'interface utilisateur
-  if (isInitializing || channelLoading) {
+  // Gérer les messages en temps réel
+  useEffect(() => {
+    if (!channelId) return;
+    
+    // Écouter les nouveaux messages
+    const messageListener = chatService.onMessageReceived((newMessage) => {
+      if (newMessage.channelId === channelId) {
+        setMessages(prevMessages => [newMessage, ...prevMessages]);
+      }
+    });
+
+    // Nettoyage des écouteurs
+    return () => {
+      messageListener();
+    };
+  }, [channelId, chatService]);
+
+  // Gérer l'envoi d'un message
+  const handleSendMessage = useCallback(async (content: string, channelId: string): Promise<boolean> => {
+    if (!content.trim()) return false;
+    
+    try {
+      const messageDto: CreateMessageDto = {
+        content: content.trim(),
+        channelId,
+        attachmentIds: []
+      };
+      
+      return await chatService.sendMessage(messageDto);
+    } catch (error) {
+      console.error("Erreur lors de l'envoi du message:", error);
+      return false;
+    }
+  }, [chatService]);
+
+  // Gérer le bouton retour
+  const handleBackPress = useCallback(() => {
+    router.back();
+  }, []);
+
+  // Gérer le chargement de plus de messages
+  const handleLoadMoreMessages = useCallback(() => {
+    // Implémenter le chargement de messages plus anciens ici
+    console.log("Chargement de plus de messages...");
+  }, []);
+
+  // Afficher un indicateur de chargement
+  if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+      <SafeAreaView style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#7289da" />
         <Text style={styles.loadingText}>Chargement du canal...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
-  // Écran d'erreur avec bouton de réessai
-  if (connectionError || channelError?.message || messagesError?.message) {
-    const errorMessage = connectionError || channelError?.message || messagesError?.message || "Erreur inconnue";
+  // Afficher un message d'erreur
+  if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <View style={styles.centerContent}>
-          <Ionicons name="alert-circle-outline" size={48} color="#e57373" />
-          <Text style={styles.errorTitle}>Erreur de connexion</Text>
-          <Text style={styles.errorText}>{errorMessage}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-            <Text style={styles.retryButtonText}>Réessayer</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <SafeAreaView style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={[styles.container]} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={-insets.bottom}
-    >
-      <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
-        <ChannelHeader
-          channel={currentChannel}
-          onBackPress={() => {
-            leaveChannel(id).catch(err => console.error("Erreur lors du départ du canal:", err));
-            router.back();
-          }}
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoid} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
+        <ChannelHeader 
+          channel={currentChannel} 
+          onBackPress={handleBackPress} 
         />
-        
-        {isReconnecting && (
-          <View style={styles.reconnectingBanner}>
-            <Ionicons name="wifi" size={16} color="#fff" />
-            <Text style={styles.reconnectingText}>Reconnexion en cours...</Text>
-          </View>
-        )}
         
         <MessageList
           messages={messages}
-          loading={messagesLoading}
-          onLoadMore={loadMoreMessages}
-          //onRefresh={refreshMessages}
+          loading={false}
+          onLoadMore={handleLoadMoreMessages}
         />
         
         <MessageInput
-          channelId={id}
-          onSend={async (content) => {
-            // Vérifier la connexion avant d'envoyer
-            const connected = await checkConnection();
-            if (connected) {
-              return sendMessage(content);
-            } else {
-              // Permettre d'envoyer même hors ligne - le message sera mis en file d'attente
-              return sendMessage(content);
-            }
-          }}
-          disabled={!isSignalRConnected && !isReconnecting}
+          channelId={channelId || ''}
+          onSend={handleSendMessage}
+          disabled={!isSignalRConnected}
         />
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', 
+    backgroundColor: '#f5f5f5',
   },
-  loadingContainer: {
+  keyboardAvoid: {
+    flex: 1,
+  },
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
-    gap: 12,
+    padding: 20,
   },
   loadingText: {
+    marginTop: 16,
     color: '#424242',
     fontSize: 16,
   },
-  errorContainer: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    gap: 12,
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 8,
-  },
   errorText: {
-    color: '#666',
+    color: '#e53935',
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  retryButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  reconnectingBanner: {
-    backgroundColor: '#f59e0b',
-    padding: 8,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  reconnectingText: {
-    color: '#fff',
-    fontWeight: '500',
-  },
+  }
 });

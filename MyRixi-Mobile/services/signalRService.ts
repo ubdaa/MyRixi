@@ -1,34 +1,47 @@
 import * as signalR from '@microsoft/signalr';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+
+// Événements disponibles
+export const SignalREvents = {
+  CONNECTED: 'connected',
+  DISCONNECTED: 'disconnected', 
+  RECONNECTING: 'reconnecting',
+  RECONNECTED: 'reconnected',
+  ERROR: 'error',
+  MESSAGE_RECEIVED: 'message_received',
+  USER_JOINED: 'user_joined',
+  USER_LEFT: 'user_left'
+};
 
 /**
- * Gestionnaire de connexion SignalR centralisé utilisant un Singleton
- * pour assurer une seule connexion à travers l'application
+ * Configuration de l'environnement
+ */
+export const getApiBaseUrl = () => {
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:5000/v1';
+  }
+  return 'http://172.20.10.2:5000/v1';
+};
+
+type EventCallback = (...args: any[]) => void;
+
+/**
+ * Gestionnaire de connexion SignalR singleton
+ * Gère une seule connexion pour toute l'application, avec reconnexion automatique
  */
 class SignalRManager {
   private static instance: SignalRManager;
   private connection: signalR.HubConnection | null = null;
   private connectionUrl: string | null = null;
-  private reconnectAttempts: number = 0;
-  private maxReconnectAttempts: number = 10;
-  private eventListeners: Map<string, Set<Function>> = new Map();
+  private eventListeners: Map<string, Set<EventCallback>> = new Map();
   private isConnecting: boolean = false;
   private activeChannels: Set<string> = new Set();
-  
-  // Définition des événements internes
-  public readonly events = {
-    CONNECTED: 'connected',
-    DISCONNECTED: 'disconnected',
-    ERROR: 'error',
-    RECONNECTING: 'reconnecting',
-    RECONNECTED: 'reconnected'
-  };
+  private reconnectTimer: NodeJS.Timeout | null = null;
+  private connectionStartTime: number = 0;
   
   private constructor() {}
   
-  /**
-   * Récupère l'instance unique du gestionnaire
-   */
   public static getInstance(): SignalRManager {
     if (!SignalRManager.instance) {
       SignalRManager.instance = new SignalRManager();
@@ -37,303 +50,369 @@ class SignalRManager {
   }
 
   /**
-   * Ajoute un écouteur d'événement
+   * Ajoute un écouteur pour un événement
    */
-  public addEventListener(event: string, callback: Function): () => void {
+  public on(event: string, callback: EventCallback): () => void {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, new Set());
     }
+    
     this.eventListeners.get(event)?.add(callback);
     
-    // Retourne une fonction de nettoyage
-    return () => {
+    return () => this.off(event, callback);
+  }
+
+  /**
+   * Supprime un écouteur d'événement spécifique
+   */
+  public off(event: string, callback?: EventCallback): void {
+    if (!callback) {
+      this.eventListeners.delete(event);
+    } else if (this.eventListeners.has(event)) {
       this.eventListeners.get(event)?.delete(callback);
-    };
+    }
   }
 
   /**
-   * Déclenche un événement pour tous les écouteurs abonnés
+   * Déclenche un événement
    */
-  private emitEvent(event: string, ...args: any[]): void {
-    this.eventListeners.get(event)?.forEach(callback => {
-      callback(...args);
-    });
+  private emit(event: string, ...args: any[]): void {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      listeners.forEach(callback => {
+        try {
+          callback(...args);
+        } catch (error) {
+          console.error(`Erreur dans un écouteur d'événement ${event}:`, error);
+        }
+      });
+    }
   }
 
   /**
-   * Ajoute un canal à la liste des canaux actifs
+   * Connecte au hub SignalR
    */
-  public addActiveChannel(channelId: string): void {
-    this.activeChannels.add(channelId);
-  }
-
-  /**
-   * Supprime un canal de la liste des canaux actifs
-   */
-  public removeActiveChannel(channelId: string): void {
-    this.activeChannels.delete(channelId);
-  }
-
-  /**
-   * Établit la connexion au hub SignalR
-   */
-  public async connect(url: string): Promise<boolean> {
-    // Évite les connexions simultanées
+  public async connect(hubUrl: string): Promise<boolean> {
+    // Éviter les connexions parallèles
     if (this.isConnecting) {
-      console.log('SignalR: connexion déjà en cours');
+      console.log('[SignalR] Connexion déjà en cours');
       return false;
     }
     
-    // Enregistre l'URL pour les reconnexions
-    this.connectionUrl = url;
     this.isConnecting = true;
-
+    this.connectionUrl = hubUrl;
+    
     try {
-      // Ferme la connexion existante si nécessaire
-      await this.disconnect();
+      // Si une connexion existe déjà, la fermer proprement
+      await this.closeConnection();
       
-      console.log('SignalR: création d\'une nouvelle connexion');
+      console.log('[SignalR] Création d\'une nouvelle connexion');
       
-      // Crée une nouvelle connexion avec des paramètres robustes
+      // Création d'une nouvelle connexion avec des paramètres optimisés
       this.connection = new signalR.HubConnectionBuilder()
-        .withUrl(url, {
-          accessTokenFactory: async () => await AsyncStorage.getItem('token') || '',
-          transport: signalR.HttpTransportType.WebSockets,
-          skipNegotiation: true
+        .withUrl(hubUrl, {
+          accessTokenFactory: async () => {
+            const token = await AsyncStorage.getItem('token');
+            return token || '';
+          },
+          skipNegotiation: true,
+          transport: signalR.HttpTransportType.WebSockets
+        })
+        .withAutomaticReconnect({
+          nextRetryDelayInMilliseconds: this.getRetryDelayStrategy()
         })
         .configureLogging(signalR.LogLevel.Information)
-        .withAutomaticReconnect({
-          // Stratégie de backoff exponentiel avec jitter pour éviter la surcharge
-          nextRetryDelayInMilliseconds: (retryContext) => {
-            if (retryContext.previousRetryCount > 10) {
-              // Retourne null pour arrêter les tentatives après 10 essais
-              return null;
-            }
-            
-            // Backoff exponentiel avec jitter (0-3s) pour éviter les reconnexions simultanées
-            const jitter = Math.floor(Math.random() * 3000);
-            const delay = Math.min(30000, 1000 * Math.pow(2, retryContext.previousRetryCount)) + jitter;
-            console.log(`SignalR: tentative de reconnexion dans ${delay}ms (essai ${retryContext.previousRetryCount + 1})`);
-            return delay;
-          }
-        })
         .build();
-
-      // Configuration des gestionnaires d'événements de reconnexion
-      this.connection.onreconnecting(error => {
-        console.log('SignalR: reconnexion en cours', error);
-        this.emitEvent(this.events.RECONNECTING, error);
-      });
-
-      this.connection.onreconnected(connectionId => {
-        console.log('SignalR: reconnecté', connectionId);
-        this.reconnectAttempts = 0;
-        this.emitEvent(this.events.RECONNECTED, connectionId);
-        
-        // Réintégration automatique aux canaux actifs
-        this.rejoinActiveChannels();
-      });
-
-      this.connection.onclose(error => {
-        console.log('SignalR: connexion fermée', error);
-        this.emitEvent(this.events.DISCONNECTED, error);
-        
-        // Logique de reconnexion manuelle si la reconnexion automatique échoue
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
-          this.reconnectAttempts++;
-          console.log(`SignalR: tentative manuelle ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
-          this.isConnecting = false;
-          setTimeout(() => {
-            // Vérification supplémentaire pour éviter les reconnexions inutiles
-            if (this.connection?.state !== signalR.HubConnectionState.Connected) {
-              this.connect(this.connectionUrl!);
-            }
-          }, 5000);
-        }
-      });
       
-      // Démarre la connexion
+      // Configuration des gestionnaires d'événements de base
+      this.setupConnectionEventHandlers();
+      
+      // Configuration des méthodes du hub
+      this.setupHubMethods();
+      
+      // Démarrage de la connexion
       await this.connection.start();
-      console.log('SignalR: connecté avec succès');
-      this.reconnectAttempts = 0;
-      this.emitEvent(this.events.CONNECTED);
+      this.connectionStartTime = Date.now();
+      console.log('[SignalR] Connecté avec succès');
+      this.emit(SignalREvents.CONNECTED);
+      
+      // Rejoindre à nouveau les canaux actifs si reconnexion
+      this.rejoinActiveChannels();
+      
       this.isConnecting = false;
       return true;
       
     } catch (error) {
-      console.error('SignalR: erreur de connexion:', error);
-      this.emitEvent(this.events.ERROR, error);
+      console.error('[SignalR] Erreur de connexion:', error);
+      this.emit(SignalREvents.ERROR, error);
       this.isConnecting = false;
       
-      // Nouvelle tentative automatique en cas d'échec initial
-      if (this.reconnectAttempts < this.maxReconnectAttempts) {
-        this.reconnectAttempts++;
-        console.log(`SignalR: nouvelle tentative ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
-        setTimeout(() => {
-          this.connect(url);
-        }, 3000);
-      }
+      // Programmer une nouvelle tentative
+      this.scheduleReconnection();
       
       return false;
     }
   }
 
   /**
-   * Ferme la connexion
+   * Configuration des gestionnaires d'événements pour la connexion
    */
-  public async disconnect(): Promise<void> {
-    if (this.connection) {
+  private setupConnectionEventHandlers(): void {
+    if (!this.connection) return;
+    
+    this.connection.onreconnecting((error) => {
+      console.log('[SignalR] Tentative de reconnexion en cours', error);
+      this.emit(SignalREvents.RECONNECTING, error);
+    });
+    
+    this.connection.onreconnected((connectionId) => {
+      console.log('[SignalR] Reconnexion réussie', connectionId);
+      this.emit(SignalREvents.RECONNECTED, connectionId);
+      this.rejoinActiveChannels();
+    });
+    
+    this.connection.onclose((error) => {
+      console.log('[SignalR] Connexion fermée', error);
+      this.emit(SignalREvents.DISCONNECTED, error);
+      
+      // Si la connexion n'a pas duré plus de 10 secondes, attendre plus longtemps avant de réessayer
+      const connectionDuration = Date.now() - this.connectionStartTime;
+      if (connectionDuration < 10000) {
+        console.log('[SignalR] La connexion était instable (< 10s), attente plus longue avant nouvelle tentative');
+        setTimeout(() => this.scheduleReconnection(), 5000);
+      } else {
+        this.scheduleReconnection();
+      }
+    });
+  }
+
+  /**
+   * Configure les méthodes du hub SignalR
+   */
+  private setupHubMethods(): void {
+    if (!this.connection) return;
+    
+    // Configuration des méthodes du hub
+    this.connection.on('ReceiveMessage', (message) => {
+      this.emit(SignalREvents.MESSAGE_RECEIVED, message);
+    });
+    
+    this.connection.on('UserJoinedChannel', (data) => {
+      this.emit(SignalREvents.USER_JOINED, data);
+    });
+    
+    this.connection.on('UserLeftChannel', (data) => {
+      this.emit(SignalREvents.USER_LEFT, data);
+    });
+    
+    // Autres méthodes du hub peuvent être ajoutées ici
+  }
+
+  /**
+   * Programme une reconnexion automatique
+   */
+  private scheduleReconnection(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+    }
+    
+    const delay = this.calculateReconnectDelay();
+    console.log(`[SignalR] Nouvelle tentative dans ${delay}ms`);
+    
+    this.reconnectTimer = setTimeout(async () => {
+      if (this.connection?.state === signalR.HubConnectionState.Connected) {
+        return;
+      }
+      
+      if (this.connectionUrl) {
+        try {
+          await this.connect(this.connectionUrl);
+        } catch (error) {
+          console.error('[SignalR] Échec de la reconnexion programmée:', error);
+        }
+      }
+    }, delay);
+  }
+
+  /**
+   * Calcule un délai de reconnexion avec backoff exponentiel et jitter
+   */
+  private calculateReconnectDelay(): number {
+    // Calcule un délai entre 2-10 secondes
+    const baseDelay = 2000;
+    const maxJitter = 8000;
+    return baseDelay + Math.floor(Math.random() * maxJitter);
+  }
+
+  /**
+   * Définit la stratégie de délai pour les tentatives de reconnexion automatique
+   */
+  private getRetryDelayStrategy(): (retryContext: signalR.RetryContext) => number | null {
+    return (retryContext: signalR.RetryContext) => {
+      // Arrêter après 10 tentatives automatiques
+      if (retryContext.previousRetryCount >= 10) {
+        return null;
+      }
+      
+      // Backoff exponentiel avec jitter
+      const baseDelay = Math.min(1000 * Math.pow(2, retryContext.previousRetryCount), 30000);
+      const jitter = Math.floor(Math.random() * 3000);
+      return baseDelay + jitter;
+    };
+  }
+
+  /**
+   * Ferme proprement la connexion
+   */
+  private async closeConnection(): Promise<void> {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    
+    if (this.connection && this.connection.state !== signalR.HubConnectionState.Disconnected) {
       try {
         await this.connection.stop();
-        console.log('SignalR: déconnecté');
-      } catch (err) {
-        console.error('SignalR: erreur lors de la déconnexion:', err);
+        console.log('[SignalR] Connexion arrêtée');
+      } catch (error) {
+        console.warn('[SignalR] Erreur lors de l\'arrêt de la connexion:', error);
       }
-      this.connection = null;
     }
   }
 
   /**
-   * Invoque une méthode sur le hub SignalR
+   * Déconnecte du hub et nettoie les ressources
    */
-  public async invoke(methodName: string, ...args: any[]): Promise<any> {
-    if (!this.connection || this.connection.state !== signalR.HubConnectionState.Connected) {
-      console.warn(`SignalR: impossible d'invoquer ${methodName}: non connecté`);
-      
-      // Essaie de se reconnecter avant d'échouer
-      const connected = await this.ensureConnected();
-      if (!connected) {
-        throw new Error(`Échec de l'invocation de ${methodName}: connexion indisponible`);
-      }
-    }
+  public async disconnect(): Promise<void> {
+    await this.closeConnection();
+    this.activeChannels.clear();
+    this.eventListeners.clear();
+  }
 
+  /**
+   * Rejoindre un canal chat
+   */
+  public async joinChannel(channelId: string): Promise<boolean> {
     try {
-      return await this.connection!.invoke(methodName, ...args);
+      if (!(await this.ensureConnected())) {
+        return false;
+      }
+      
+      await this.connection!.invoke('JoinChannel', channelId);
+      this.activeChannels.add(channelId);
+      console.log(`[SignalR] Canal rejoint: ${channelId}`);
+      return true;
     } catch (error) {
-      console.error(`SignalR: erreur lors de l'invocation de ${methodName}:`, error);
+      console.error(`[SignalR] Erreur lors de la jointure du canal ${channelId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Quitter un canal chat
+   */
+  public async leaveChannel(channelId: string): Promise<boolean> {
+    try {
+      if (this.connection?.state === signalR.HubConnectionState.Connected) {
+        await this.connection.invoke('LeaveChannel', channelId);
+        console.log(`[SignalR] Canal quitté: ${channelId}`);
+      }
+      
+      this.activeChannels.delete(channelId);
+      return true;
+    } catch (error) {
+      console.error(`[SignalR] Erreur lors de la sortie du canal ${channelId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Invoque une méthode sur le hub
+   */
+  public async invoke<T = any>(methodName: string, ...args: any[]): Promise<T> {
+    if (!(await this.ensureConnected())) {
+      throw new Error(`[SignalR] Impossible d'invoquer ${methodName}: non connecté`);
+    }
+    
+    try {
+      return await this.connection!.invoke<T>(methodName, ...args);
+    } catch (error) {
+      console.error(`[SignalR] Erreur lors de l'invocation de ${methodName}:`, error);
+      
+      // Si l'erreur est due à une connexion perdue, essayer de se reconnecter et réessayer
+      if (this.connection?.state !== signalR.HubConnectionState.Connected) {
+        if (await this.ensureConnected(true)) {
+          return await this.connection!.invoke<T>(methodName, ...args);
+        }
+      }
+      
       throw error;
     }
   }
 
   /**
-   * Enregistre un gestionnaire pour un événement du hub
+   * S'assure que la connexion est active
    */
-  public on(methodName: string, callback: (...args: any[]) => void): void {
-    if (this.connection) {
-      this.connection.on(methodName, callback);
-    } else {
-      console.error(`SignalR: impossible d'enregistrer un gestionnaire pour ${methodName}: non initialisé`);
-    }
-  }
-
-  /**
-   * Supprime un gestionnaire d'événement
-   */
-  public off(methodName: string, callback?: (...args: any[]) => void): void {
-    if (this.connection) {
-      if (!callback) {
-        this.connection.off(methodName);
-      } else {
-        this.connection.off(methodName, callback);
-      }
-    }
-  }
-
-  /**
-   * Récupère l'état actuel de la connexion
-   */
-  public getConnectionState(): signalR.HubConnectionState | null {
-    return this.connection?.state || null;
-  }
-
-  /**
-   * S'assure que la connexion est établie
-   */
-  public async ensureConnected(): Promise<boolean> {
+  public async ensureConnected(forceReconnect: boolean = false): Promise<boolean> {
     if (!this.connectionUrl) return false;
     
-    if (this.connection?.state === signalR.HubConnectionState.Connected) {
+    if (this.connection?.state === signalR.HubConnectionState.Connected && !forceReconnect) {
       return true;
     }
     
-    if (this.connection?.state === signalR.HubConnectionState.Disconnected) {
-      try {
-        await this.connection.start();
-        console.log('SignalR: reconnecté avec succès');
+    if (this.isConnecting) {
+      // Attendre que la connexion en cours se termine
+      return new Promise<boolean>((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (!this.isConnecting) {
+            clearInterval(checkInterval);
+            resolve(this.connection?.state === signalR.HubConnectionState.Connected);
+          }
+        }, 100);
         
-        // Réintégration automatique aux canaux actifs
-        this.rejoinActiveChannels();
-        return true;
-      } catch (error) {
-        console.error('SignalR: erreur de reconnexion:', error);
-        return false;
-      }
+        // Timeout après 5 secondes
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          resolve(this.connection?.state === signalR.HubConnectionState.Connected);
+        }, 5000);
+      });
     }
     
-    return this.isConnecting;
-  }
-
-  /**
-   * Rejoint un canal
-   */
-  public async joinChannel(channelId: string): Promise<boolean> {
-    try {
-      await this.ensureConnected();
-      await this.invoke('JoinChannel', channelId);
-      console.log(`SignalR: canal rejoint: ${channelId}`);
-      this.addActiveChannel(channelId);
-      return true;
-    } catch (err) {
-      console.error(`SignalR: erreur lors du join du canal ${channelId}:`, err);
-      return false;
-    }
-  }
-
-  /**
-   * Quitte un canal
-   */
-  public async leaveChannel(channelId: string): Promise<boolean> {
-    try {
-      if (this.connection?.state === signalR.HubConnectionState.Connected) {
-        await this.invoke('LeaveChannel', channelId);
-        console.log(`SignalR: canal quitté: ${channelId}`);
-      }
-      this.removeActiveChannel(channelId);
-      return true;
-    } catch (err) {
-      console.error(`SignalR: erreur lors du leave du canal ${channelId}:`, err);
-      return false;
-    }
+    return await this.connect(this.connectionUrl);
   }
 
   /**
    * Rejoint tous les canaux actifs (utile après reconnexion)
    */
   private async rejoinActiveChannels(): Promise<void> {
-    if (this.activeChannels.size > 0) {
-      console.log(`SignalR: réintégration de ${this.activeChannels.size} canaux actifs`);
-      const promises = Array.from(this.activeChannels).map(async (channelId) => {
-        try {
-          await this.invoke('JoinChannel', channelId);
-          console.log(`SignalR: réintégration du canal ${channelId} réussie`);
-        } catch (err) {
-          console.error(`SignalR: échec de la réintégration du canal ${channelId}:`, err);
-        }
-      });
-      
-      await Promise.allSettled(promises);
+    if (this.activeChannels.size === 0) return;
+    
+    console.log(`[SignalR] Réintégration de ${this.activeChannels.size} canaux actifs`);
+    
+    const channelIds = Array.from(this.activeChannels);
+    for (const channelId of channelIds) {
+      try {
+        await this.joinChannel(channelId);
+      } catch (error) {
+        console.error(`[SignalR] Échec de réintégration du canal ${channelId}:`, error);
+      }
     }
+  }
+
+  /**
+   * Retourne l'état actuel de la connexion
+   */
+  public getConnectionState(): signalR.HubConnectionState | null {
+    return this.connection?.state || null;
+  }
+
+  /**
+   * Vérifie si la connexion est active
+   */
+  public isConnected(): boolean {
+    return this.connection?.state === signalR.HubConnectionState.Connected;
   }
 }
 
-// Export des constantes d'événements pour faciliter l'utilisation
-export const SignalREvents = {
-  CONNECTED: 'connected',
-  DISCONNECTED: 'disconnected',
-  ERROR: 'error',
-  RECONNECTING: 'reconnecting',
-  RECONNECTED: 'reconnected',
-};
-
-// Exporte l'instance unique
+// Exporte l'instance singleton
 export default SignalRManager.getInstance();
