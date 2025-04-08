@@ -18,12 +18,13 @@ export default function CommunityMembersScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [totalMembers, setTotalMembers] = useState(0);
 
   const loadMembers = useCallback(async (reset: boolean = false) => {
     if (!id || Array.isArray(id)) return;
     
-    if (reset) {
+    if (reset && !isSearching) {
       setLoading(true);
       setPage(1);
       setMembers([]);
@@ -60,13 +61,14 @@ export default function CommunityMembersScreen() {
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     loadMembers(true);
+    setIsSearching(false);
   }, [loadMembers]);
 
   const handleSearch = useCallback((text: string) => {
     setSearchQuery(text);
+    setIsSearching(true);
     setPage(1);
     setMembers([]);
-    setLoading(true);
   }, []);
 
   const loadMore = useCallback(() => {
