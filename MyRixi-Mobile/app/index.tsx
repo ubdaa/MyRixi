@@ -3,6 +3,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { apiGetRequest } from '@/services/api';
 
+interface TokenCheckResponse {
+  message?: string;
+}
+
 export default function Index() {
   const { isLoading, token } = useAuth();
 
@@ -11,16 +15,12 @@ export default function Index() {
   useEffect(() => {
     const checkToken = async () => {
       try {
-        const reponse = await apiGetRequest('/auth/check-token', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const reponse = await apiGetRequest<TokenCheckResponse>('/auth/check-token', {});
 
-        if ((reponse as { message?: string }).message) {
+        console.log('Token check response:', reponse);
+        if (reponse.message) {
           router.replace('/home');
+          return;
         }
 
         router.replace('/login');
