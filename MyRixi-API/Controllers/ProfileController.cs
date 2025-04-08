@@ -123,6 +123,44 @@ public class ProfileController : Controller
         }
     }
     
+    #region EDITION DU PROFIL
+    
+    [Authorize]
+    [HttpPut("/{profileId}/edit")]
+    public async Task<IActionResult> EditProfile(Guid profileId, [FromForm] UpdateProfileDto profileDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var userId = GetCurrentUserId();
+            var profile = await _userProfileRepository.GetByUserIdAsync(userId);
+            if (profile == null)
+            {
+                return NotFound();
+            }
+
+            if (profile.Id != profileId)
+            {
+                return Forbid();
+            }
+
+            // ajouter toute la logique pour l'édition du profil
+            
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while updating profile");
+            return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+    
+    #endregion
+    
     private Guid GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
