@@ -44,8 +44,6 @@ export const MembersList = ({
     return <LoadingIndicator size="small" />;
   };
 
-  console.log('MembersList', members);
-
   return (
     <FlatList
       data={members}
