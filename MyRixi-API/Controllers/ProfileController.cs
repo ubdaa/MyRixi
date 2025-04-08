@@ -130,7 +130,7 @@ public class ProfileController : Controller
     #region EDITION DU PROFIL
     
     [Authorize]
-    [HttpPut("/{profileId}/edit")]
+    [HttpPut("{profileId}/edit")]
     public async Task<IActionResult> EditProfile(Guid profileId, [FromForm] UpdateProfileDto profileDto)
     {
         if (!ModelState.IsValid)

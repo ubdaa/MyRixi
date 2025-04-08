@@ -11,18 +11,14 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
+import * as FileSystem from 'expo-file-system';
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { GlassInput } from "@/components/ui/GlassInput";
 import { NeoButton } from "@/components/ui/NeoButton";
-import { fetchProfileById } from "@/services/profileService";
+import { fetchProfileById, updateProfile, UpdateProfile } from "@/services/profileService";
 import { ProfileImageSection } from "@/components/profile/ProfileImageSection";
-
-const updateUserProfile = async (userId: string, profileData: any) => {
-  // This would be replaced with actual API call
-  console.log("Updating profile for user", userId, profileData);
-  return true;
-};
+import { ReactNativeFile } from "@/services/postService";
 
 export default function EditProfile() {
   const router = useRouter();
@@ -34,7 +30,9 @@ export default function EditProfile() {
     displayName: "",
     bio: "",
     profilePicture: "",
-    banner: ""
+    banner: "",
+    profilePictureFile: null as ReactNativeFile | null,
+    bannerFile: null as ReactNativeFile | null
   });
 
   useEffect(() => {
@@ -45,8 +43,10 @@ export default function EditProfile() {
           setFormData({
             displayName: profile.displayName || profile.pseudonym || "",
             bio: profile.bio || "",
-            profilePicture: profile.profilePicture.url || "",
-            banner: profile.coverPicture.url || ""
+            profilePicture: profile.profilePicture?.url || "",
+            banner: profile.coverPicture?.url || "",
+            profilePictureFile: null,
+            bannerFile: null
           });
         } catch (error) {
           console.error("Failed to load profile", error);
@@ -63,12 +63,47 @@ export default function EditProfile() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleBannerSelected = (uri: string) => {
-    setFormData(prev => ({ ...prev, banner: uri }));
+  const createFileFromUri = async (uri: string, fieldName: string): Promise<ReactNativeFile | null> => {
+    // Only process URIs that are local files (not network URLs from existing images)
+    if (!uri || uri.startsWith('http')) return null;
+    
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      if (!fileInfo.exists) return null;
+      
+      // Get file name from the URI
+      const fileName = uri.split('/').pop() || `${fieldName}_${Date.now()}.jpg`;
+      
+      // Get mime type (assuming images for simplicity)
+      const mimeType = uri.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      
+      return {
+        uri,
+        name: fileName,
+        type: mimeType
+      } as ReactNativeFile;
+    } catch (error) {
+      console.error('Error creating file from URI:', error);
+      return null;
+    }
   };
 
-  const handleProfilePictureSelected = (uri: string) => {
-    setFormData(prev => ({ ...prev, profilePicture: uri }));
+  const handleBannerSelected = async (uri: string) => {
+    const bannerFile = await createFileFromUri(uri, 'banner');
+    setFormData(prev => ({ 
+      ...prev, 
+      banner: uri,
+      bannerFile: bannerFile
+    }));
+  };
+
+  const handleProfilePictureSelected = async (uri: string) => {
+    const profileFile = await createFileFromUri(uri, 'profile');
+    setFormData(prev => ({ 
+      ...prev, 
+      profilePicture: uri,
+      profilePictureFile: profileFile
+    }));
   };
 
   const handleSave = async () => {
@@ -79,7 +114,19 @@ export default function EditProfile() {
 
     setIsLoading(true);
     try {
-      await updateUserProfile(id as string, formData);
+      // Create an UpdateProfile object with the correct data format
+      const profileData: UpdateProfile = {
+        name: formData.displayName.trim(),
+        bio: formData.bio.trim(),
+        profileFile: formData.profilePictureFile || undefined,
+        coverFile: formData.bannerFile || undefined
+      };
+
+      // Call the actual API method
+      await updateProfile(id as string, profileData);
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
       Alert.alert(
         "Succès", 
         "Votre profil a été mis à jour avec succès.",
@@ -87,6 +134,7 @@ export default function EditProfile() {
       );
     } catch (error) {
       console.error("Failed to update profile", error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Erreur", "Échec de la mise à jour du profil.");
     } finally {
       setIsLoading(false);

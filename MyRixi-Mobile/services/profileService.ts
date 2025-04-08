@@ -1,5 +1,6 @@
 import { Profile, ProfileDto } from "@/types/profile";
-import { apiGetRequest } from "./api";
+import { apiGetRequest, apiPutRequest } from "./api";
+import { ReactNativeFile } from "./postService";
 
 export const fetchProfileById = async (id: string): Promise<ProfileDto> => {
   try {
@@ -36,6 +37,40 @@ export const fetchUserProfileById = async (userId: string): Promise<ProfileDto> 
     throw error;
   }
 };
+
+export interface UpdateProfile {
+  name: string;
+  bio?: string;
+  profileFile?: ReactNativeFile;
+  coverFile?: ReactNativeFile;
+}
+
+export const updateProfile = async (profileId: string, profileData: UpdateProfile): Promise<ProfileDto> => {
+  try {
+    const formData = new FormData();
+    formData.append('name', profileData.name);
+    if (profileData.bio) {
+      formData.append('bio', profileData.bio);
+    }
+    if (profileData.profileFile) {
+      // @ts-ignore - Le typage de FormData dans React Native est différent
+      formData.append('profileFile', profileData.profileFile);
+    }
+    if (profileData.coverFile) {
+      // @ts-ignore - Le typage de FormData dans React Native est différent
+      formData.append('coverFile', profileData.coverFile);
+    }
+
+    return await apiPutRequest<ProfileDto>(`/profile/${profileId}/edit`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  } catch (error) {
+    console.error(`Failed to update user profile with ID ${profileId}:`, error);
+    throw error;
+  }
+}
 
 export const determineProfileType = (id: string): 'user' | 'community' => {
   // This is a placeholder implementation. In a real app, you might:
