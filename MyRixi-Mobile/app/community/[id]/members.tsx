@@ -36,8 +36,6 @@ export default function CommunityMembersScreen() {
       const currentPage = reset ? 1 : page;
       const response = await fetchCommunityMembers(id, currentPage, 15, searchQuery);
 
-      console.log('Community Members:', response.members);
-      
       if (reset) {
         setMembers(response.members);
       } else {
