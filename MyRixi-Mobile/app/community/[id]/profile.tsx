@@ -40,9 +40,8 @@ export default function CommunityProfileScreen() {
   }, [id]);
 
   const handleEditProfile = () => {
-    // Navigate to edit community profile if user has permission
     if (profile?.isOwner) {
-      router.push(`/profile/${id}/edit`);
+      router.push(`/profile/${profile.id}/edit`);
     }
   };
   
