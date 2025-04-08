@@ -7,15 +7,16 @@ import { GlassInput } from '@/components/ui/GlassInput';
 interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
+  placeholder?: string;
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({ value, onChangeText }) => {
+export function SearchBar ({ value, onChangeText, placeholder = "Rechercher..." }: SearchBarProps) {
   const { theme } = useTheme();
   
   return (
     <View style={styles.searchContainer}>
       <GlassInput
-        placeholder="Rechercher..."
+        placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
         containerStyle={{ marginBottom: 0 }}
