@@ -71,7 +71,7 @@ export const fetchCommunityMembers = async (
       items: ProfileDto[],
       totalCount: number,
       page: number,
-      pageSize: number,
+      size: number,
       totalPages: number
     }>(url, {});
     

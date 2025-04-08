@@ -26,7 +26,7 @@ export const MemberItem = ({ member, isLast }: MemberItemProps) => {
         />
         <View style={styles.memberInfo}>
           <Text style={[styles.memberName, { color: theme.colors.textPrimary }]}>
-            {member.displayName}
+            {member.pseudonym || member.displayName}
           </Text>
           <Text style={[styles.memberHandle, { color: theme.colors.textSecondary }]}>
             @{member.username}
