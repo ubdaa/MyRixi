@@ -20,8 +20,8 @@ import * as Haptics from "expo-haptics";
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { GlassInput } from "@/components/ui/GlassInput";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { NeoButton } from "@/components/ui/NeoButton";
+import { fetchProfileById } from "@/services/profileService";
 
 // Placeholder for actual profile service - replace with your actual API calls
 const fetchUserProfile = async (userId: string) => {
@@ -57,16 +57,17 @@ export default function EditProfile() {
     const loadUserProfile = async () => {
       if (id) {
         try {
-          const profile = await fetchUserProfile(id);
+          const profile = await fetchProfileById(id);
           setFormData({
-            displayName: profile.displayName || "",
+            displayName: profile.displayName || profile.pseudonym || "",
             bio: profile.bio || "",
-            profilePicture: profile.profilePicture || "",
-            banner: profile.banner || ""
+            profilePicture: profile.profilePicture.url || "",
+            banner: profile.coverPicture.url || ""
           });
         } catch (error) {
           console.error("Failed to load profile", error);
-          Alert.alert("Error", "Failed to load profile data.");
+          Alert.alert("Erreur", "Échec du chargement du profil.");
+          router.back();
         }
       }
     };
@@ -84,8 +85,8 @@ export default function EditProfile() {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
       Alert.alert(
-        "Permission Required", 
-        "You need to grant access to your photo library to change your images."
+        "Permissions Requis",
+        "Vous devez autoriser l'accès à la bibliothèque d'images pour sélectionner une image.",
       );
       return;
     }
@@ -107,7 +108,7 @@ export default function EditProfile() {
 
   const handleSave = async () => {
     if (!formData.displayName.trim()) {
-      Alert.alert("Error", "Display name cannot be empty.");
+      Alert.alert("Erreur", "Le nom est requis.");
       return;
     }
 
@@ -115,13 +116,13 @@ export default function EditProfile() {
     try {
       await updateUserProfile(id as string, formData);
       Alert.alert(
-        "Success", 
-        "Your profile has been updated successfully.",
+        "Succès", 
+        "Votre profil a été mis à jour avec succès.",
         [{ text: "OK", onPress: () => router.back() }]
       );
     } catch (error) {
       console.error("Failed to update profile", error);
-      Alert.alert("Error", "Failed to update your profile. Please try again.");
+      Alert.alert("Erreur", "Échec de la mise à jour du profil.");
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +139,7 @@ export default function EditProfile() {
           contentContainerStyle={styles.contentContainer}
         >
           <Text style={[styles.pageTitle, {color: theme.colors.textPrimary}]}>
-            Edit Profile
+            Édition du profil
           </Text>
 
           {/* Banner Image */}
@@ -170,21 +171,10 @@ export default function EditProfile() {
                   styles.placeholderText,
                   {color: theme.colors.textSecondary}
                 ]}>
-                  Add Banner Image
+                  Ajouter une bannière
                 </Text>
               </LinearGradient>
             )}
-            
-            <View style={[
-              styles.editBadge, 
-              {backgroundColor: theme.colors.background2}
-            ]}>
-              <Ionicons 
-                name="camera" 
-                size={16} 
-                color={theme.colors.textPrimary} 
-              />
-            </View>
           </TouchableOpacity>
 
           {/* Profile Picture */}
@@ -217,24 +207,13 @@ export default function EditProfile() {
                 />
               </View>
             )}
-            
-            <View style={[
-              styles.editProfileBadge, 
-              {backgroundColor: theme.colors.background2}
-            ]}>
-              <Ionicons 
-                name="camera" 
-                size={16} 
-                color={theme.colors.textPrimary} 
-              />
-            </View>
           </TouchableOpacity>
 
           <View style={styles.formContainer}>
             {/* Display Name / Pseudonym Input */}
             <GlassInput
-              label="Display Name"
-              placeholder="Your public display name"
+              label="Nom du profil"
+              placeholder="Ton nom de profil sur la plateforme"
               value={formData.displayName}
               onChangeText={(text) => handleChange("displayName", text)}
               accentColor={theme.colors.cyberPink}
@@ -243,8 +222,8 @@ export default function EditProfile() {
 
             {/* Biography Input */}
             <GlassInput
-              label="Bio"
-              placeholder="Tell people a little about yourself..."
+              label="Biographie"
+              placeholder="A propos de toi..."
               value={formData.bio}
               onChangeText={(text) => handleChange("bio", text)}
               accentColor={theme.colors.technoBlue}
@@ -254,28 +233,20 @@ export default function EditProfile() {
               inputStyle={styles.bioInput}
             />
 
-            <GlassCard style={styles.infoCard}>
-              <Text style={[styles.infoTitle, {color: theme.colors.textPrimary}]}>
-                Profile Visibility
-              </Text>
-              <Text style={[styles.infoText, {color: theme.colors.textSecondary}]}>
-                Your profile is public by default. Your display name and bio will be visible to all users.
-              </Text>
-            </GlassCard>
-
             <View style={styles.buttonContainer}>
               <NeoButton
-                title="Cancel"
+                title="Annuler"
                 onPress={() => router.back()}
                 variant="outline"
                 style={styles.cancelButton}
               />
               <NeoButton
-                title="Save Changes"
+                title="Sauvegarder"
                 onPress={handleSave}
                 loading={isLoading}
                 disabled={!formData.displayName.trim()}
                 accentColor={theme.colors.cyberPink}
+                variant="primary"
                 style={styles.saveButton}
               />
             </View>
@@ -306,7 +277,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     position: "relative",
-    marginBottom: 60,
   },
   bannerImage: {
     width: "100%",
