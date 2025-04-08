@@ -4,10 +4,14 @@ import { useChannel } from '@/hooks/useChannel';
 import ChannelItem from './channel-item';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/contexts/ThemeContext';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { NeoButton } from '@/components/ui/NeoButton';
 
 export default function CommunityChannels() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { theme, colorMode } = useTheme();
 
   const { 
     loading, 
@@ -30,35 +34,37 @@ export default function CommunityChannels() {
   
   if (loading && communityChannels.length === 0) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View style={[styles.centered, { backgroundColor: theme.colors.background1 }]}>
+        <ActivityIndicator size="large" color={theme.colors.technoBlue} />
       </View>
     );
   }
   
   if (error && communityChannels.length === 0) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>Erreur lors du chargement des canaux</Text>
+      <View style={[styles.centered, { backgroundColor: theme.colors.background1 }]}>
+        <Text style={[styles.errorText, { color: theme.colors.neoRed }]}>Erreur lors du chargement des canaux</Text>
         <TouchableOpacity onPress={() => loadCommunityChannels(Array.isArray(id) ? id[0] : id)}>
-          <Text style={styles.retryButton}>Réessayer</Text>
+          <Text style={[styles.retryButton, { color: theme.colors.technoBlue }]}>Réessayer</Text>
         </TouchableOpacity>
       </View>
     );
   }
   
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Chats</Text>
+    <View style={[styles.container, { backgroundColor: theme.colors.background1 }]}>
+      <View style={[styles.header, { backgroundColor: theme.colors.background1, borderBottomColor: theme.colors.divider }]}>
+        <Text style={[styles.headerText, { color: theme.colors.textPrimary }]}>Chats</Text>
         <Link href={{ 
           pathname: "/channel/create",
           params: { communityId: Array.isArray(id) ? id[0] : id }
-        }} asChild>
-          <TouchableOpacity style={styles.createButton}>
-            <Ionicons name="add" size={24} color="#fff" />
-            <Text style={styles.createButtonText}>Create</Text>
-          </TouchableOpacity>
+        }}>
+          <NeoButton 
+            title='Créer un canal'
+            size='small'
+            onPress={() => {}}
+            style={{flex: 1}}
+          />
         </Link>
       </View>
       <FlatList
@@ -78,7 +84,11 @@ export default function CommunityChannels() {
         onRefresh={() => loadCommunityChannels(Array.isArray(id) ? id[0] : id)}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Aucun canal disponible</Text>
+            <GlassCard style={styles.emptyGlassCard}>
+              <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+                Aucun canal disponible
+              </Text>
+            </GlassCard>
           </View>
         }
       />
@@ -89,7 +99,6 @@ export default function CommunityChannels() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centered: {
     flex: 1,
@@ -101,9 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
   },
   headerText: {
     fontSize: 24,
@@ -112,7 +119,6 @@ const styles = StyleSheet.create({
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4c669f',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -123,69 +129,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   errorText: {
-    color: 'red',
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    color: 'blue',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  channelItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  channelInfo: {
-    flex: 1,
-  },
-  channelName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  channelDescription: {
-    fontSize: 14,
-    color: '#666',
-  },
-  badgeContainer: {
-    backgroundColor: '#ff3b30',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  badge: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-    paddingHorizontal: 6,
   },
   emptyContainer: {
-    padding: 40,
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyGlassCard: {
+    padding: 24,
+    width: '90%',
     alignItems: 'center',
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
-  },
-  addButton: {
-    backgroundColor: '#007aff',
-    padding: 16,
-    alignItems: 'center',
-    margin: 16,
-    borderRadius: 8,
-  },
-  addButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
   },
 });
