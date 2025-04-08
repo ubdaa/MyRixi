@@ -16,6 +16,7 @@ interface PostsSectionProps {
   showCommunity?: boolean; // New prop to show community name
   nestedScroll?: boolean; // New prop to handle nested scroll scenario
   style?: object; // Optional style prop for custom styling
+  showSeeMore?: boolean; // Optional prop to show "See More" button
 }
 
 export function PostsSection ({
@@ -29,6 +30,7 @@ export function PostsSection ({
   showCommunity = false,
   nestedScroll = false,
   style = {},
+  showSeeMore = true,
 }: PostsSectionProps) {
   const { theme } = useTheme();
   
@@ -42,7 +44,7 @@ export function PostsSection ({
 
   return (
     <View style={[styles.sectionContainer, style]}>
-      <SectionHeader title={title} />
+      <SectionHeader title={title} showSeeAll={showSeeMore} />
       
       {posts.length === 0 ? (
         <View style={styles.emptyContainer}>

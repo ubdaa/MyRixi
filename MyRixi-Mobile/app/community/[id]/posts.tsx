@@ -1,5 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
-import { View, Text, StyleSheet, RefreshControl, ScrollView } from 'react-native';
+import { View, StyleSheet, RefreshControl, ScrollView, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Post } from '@/types/post';
@@ -17,7 +18,7 @@ export default function CommunityPostsScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const pageSize = 10;
-  const { theme } = useTheme();
+  const { theme, colorMode } = useTheme();
 
   useEffect(() => {
     if (communityId) {
@@ -73,39 +74,48 @@ export default function CommunityPostsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background1 }]}>
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[theme.colors.cyberPink]}
-            tintColor={theme.colors.cyberPink}
-          />
-        }
-      >
-        <View style={styles.content}>
-          <PostsSection 
-            posts={posts} 
-            loading={loading} 
-            loadMore={loadMorePosts}
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            title="Publications récentes"
-            emptyMessage="Aucun post dans cette communauté"
-            nestedScroll={true}
-          />
-        </View>
-      </ScrollView>
-
-      <FloatingActionButton
-        icon="pencil"
-        onPress={navigateToDrafts}
-        accentColor={theme.colors.cyberPink}
-        position="bottomRight"
-        style={{ marginBottom: 20 }}
-        size="medium"
-        withHaptics
+      <StatusBar
+        translucent 
+        backgroundColor="transparent"
+        barStyle={colorMode === 'dark' ? 'light-content' : 'dark-content'}
       />
+      
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[theme.colors.cyberPink]}
+              tintColor={theme.colors.cyberPink}
+            />
+          }
+        >
+          <View style={styles.content}>
+            <PostsSection 
+              posts={posts} 
+              loading={loading} 
+              loadMore={loadMorePosts}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              title="Publications récentes"
+              emptyMessage="Aucun post dans cette communauté"
+              nestedScroll={true}
+              showSeeMore={false}
+            />
+          </View>
+        </ScrollView>
+
+        <FloatingActionButton
+          icon="pencil"
+          onPress={navigateToDrafts}
+          accentColor={theme.colors.cyberPink}
+          position="bottomRight"
+          style={{ marginBottom: 20 }}
+          size="medium"
+          withHaptics
+        />
+      </SafeAreaView>
     </View>
   );
 }
@@ -114,9 +124,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  safeArea: {
+    flex: 1,
+  },
   content: {
     flex: 1,
-    padding: 16,
     paddingBottom: 100,
   },
 });

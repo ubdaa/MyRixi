@@ -14,11 +14,11 @@ interface SectionHeaderProps {
   showSeeAll?: boolean;
 }
 
-export const SectionHeader: React.FC<SectionHeaderProps> = ({
+export function SectionHeader ({
   title,
   onPress,
   showSeeAll = true,
-}) => {
+}: SectionHeaderProps) {
   const { theme } = useTheme();
   
   return (
