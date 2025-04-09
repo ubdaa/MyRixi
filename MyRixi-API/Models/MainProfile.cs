@@ -22,4 +22,5 @@ public abstract class MainProfile
     public bool AllowDirectMessages { get; set; } = true;
     
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    public ICollection<Comment> ProfileComments { get; set; } = new List<Comment>();
 }
