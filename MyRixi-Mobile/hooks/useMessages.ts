@@ -279,7 +279,8 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
       }
     };
     
-    chatServiceRef.current.onConnectionReconnected(handleReconnection);
+    // Utiliser onReconnected au lieu de onConnectionReconnected
+    chatServiceRef.current.onReconnected(handleReconnection);
     
     return () => {
       isMounted = false;

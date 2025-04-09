@@ -2,18 +2,17 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text, KeyboardAvoidingView, Platform } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useChannel } from '@/hooks/useChannel';
+import { useMessages } from '@/hooks/useMessages';
 import { ChannelHeader } from '@/components/channel/channel-header';
 import { MessageList } from '@/components/channel/message-list';
 import { MessageInput } from '@/components/channel/message-input';
-import { CreateMessageDto, Message } from '@/types/message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ChannelScreen() {
   // Récupérer l'ID du canal depuis les paramètres d'URL
   const { channelId } = useLocalSearchParams<{ channelId: string }>();
   
-  // État local pour les messages et l'état de la page
-  const [messages, setMessages] = useState<Message[]>([]);
+  // État local pour l'état de la page
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,6 +25,16 @@ export default function ChannelScreen() {
     leaveChannel,
     isSignalRConnected
   } = useChannel();
+
+  // Utiliser le hook useMessages
+  const {
+    messages,
+    loading: messagesLoading,
+    error: messagesError,
+    hasMoreMessages,
+    loadMoreMessages,
+    sendMessage,
+  } = useMessages({ channelId, chatService });
 
   // Charger les détails du canal et rejoindre le canal
   useEffect(() => {
@@ -52,10 +61,7 @@ export default function ChannelScreen() {
           setError("Impossible de rejoindre le canal");
         }
         
-        // Simuler le chargement des messages (à remplacer par votre API)
-        // Dans une vraie application, appelez votre service de messages ici
         if (isMounted) {
-          setMessages([]);  // Chargement de messages réels à implémenter
           setLoading(false);
         }
       } catch (err) {
@@ -80,40 +86,10 @@ export default function ChannelScreen() {
     };
   }, [channelId, loadChannel, joinChannel, leaveChannel]);
 
-  // Gérer les messages en temps réel
-  useEffect(() => {
-    if (!channelId) return;
-    
-    // Écouter les nouveaux messages
-    const messageListener = chatService.onMessageReceived((newMessage) => {
-      if (newMessage.channelId === channelId) {
-        setMessages(prevMessages => [newMessage, ...prevMessages]);
-      }
-    });
-
-    // Nettoyage des écouteurs
-    return () => {
-      messageListener();
-    };
-  }, [channelId, chatService]);
-
   // Gérer l'envoi d'un message
   const handleSendMessage = useCallback(async (content: string, channelId: string): Promise<boolean> => {
-    if (!content.trim()) return false;
-    
-    try {
-      const messageDto: CreateMessageDto = {
-        content: content.trim(),
-        channelId,
-        attachmentIds: []
-      };
-      
-      return await chatService.sendMessage(messageDto);
-    } catch (error) {
-      console.error("Erreur lors de l'envoi du message:", error);
-      return false;
-    }
-  }, [chatService]);
+    return await sendMessage(content);
+  }, [sendMessage]);
 
   // Gérer le bouton retour
   const handleBackPress = useCallback(() => {
@@ -122,9 +98,8 @@ export default function ChannelScreen() {
 
   // Gérer le chargement de plus de messages
   const handleLoadMoreMessages = useCallback(() => {
-    // Implémenter le chargement de messages plus anciens ici
-    console.log("Chargement de plus de messages...");
-  }, []);
+    loadMoreMessages();
+  }, [loadMoreMessages]);
 
   // Afficher un indicateur de chargement
   if (loading) {
@@ -159,7 +134,7 @@ export default function ChannelScreen() {
         
         <MessageList
           messages={messages}
-          loading={false}
+          loading={messagesLoading}
           onLoadMore={handleLoadMoreMessages}
         />
         

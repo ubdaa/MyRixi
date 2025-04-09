@@ -11,7 +11,7 @@ import { NeoButton } from '@/components/ui/NeoButton';
 export default function CommunityChannels() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { theme, colorMode } = useTheme();
+  const { theme } = useTheme();
 
   const { 
     loading, 

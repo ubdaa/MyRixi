@@ -4,7 +4,7 @@ import SignalRManager, { SignalREvents, getApiBaseUrl } from './signalRService';
 /**
  * Service de chat pour gérer les communications via SignalR
  */
-class ChatService {
+export class ChatService {
   private _isInitialized: boolean = false;
   
   /**
@@ -170,6 +170,15 @@ class ChatService {
    */
   onDisconnected(callback: (error?: Error) => void): () => void {
     return SignalRManager.on(SignalREvents.DISCONNECTED, callback);
+  }
+
+  /**
+   * Pour assurer la compatibilité avec l'ancien code
+   * @deprecated Utiliser onReconnected à la place
+   */
+  onConnectionReconnected(callback: () => void): () => void {
+    console.warn("[ChatService] onConnectionReconnected est déprécié, utiliser onReconnected à la place");
+    return this.onReconnected(callback);
   }
 
   /**
