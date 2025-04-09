@@ -7,8 +7,10 @@ import { ChannelHeader } from '@/components/channel/channel-header';
 import { MessageList } from '@/components/channel/message-list';
 import { MessageInput } from '@/components/channel/message-input';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function ChannelScreen() {
+  const { theme } = useTheme();
   // Récupérer l'ID du canal depuis les paramètres d'URL
   const { channelId } = useLocalSearchParams<{ channelId: string }>();
   
@@ -105,9 +107,9 @@ export default function ChannelScreen() {
   // Afficher un indicateur de chargement
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#7289da" />
-        <Text style={styles.loadingText}>Chargement du canal...</Text>
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: theme.colors.background1 }]}>
+        <ActivityIndicator size="large" color={theme.colors.neoPurple} />
+        <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Chargement du canal...</Text>
       </SafeAreaView>
     );
   }
@@ -115,14 +117,14 @@ export default function ChannelScreen() {
   // Afficher un message d'erreur
   if (error) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
-        <Text style={styles.errorText}>{error}</Text>
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: theme.colors.background1 }]}>
+        <Text style={[styles.errorText, { color: theme.colors.neoRed }]}>{error}</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background1 }]} edges={['top', 'bottom']}>
       <KeyboardAvoidingView 
         style={styles.keyboardAvoid} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -152,7 +154,6 @@ export default function ChannelScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   keyboardAvoid: {
     flex: 1,
@@ -161,16 +162,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   loadingText: {
     marginTop: 16,
-    color: '#424242',
     fontSize: 16,
   },
   errorText: {
-    color: '#e53935',
     fontSize: 16,
     textAlign: 'center',
   }

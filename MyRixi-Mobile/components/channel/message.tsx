@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 import { Message as MessageType } from '@/types/message';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useTheme } from '@/contexts/ThemeContext';
 
 type MessageProps = {
   message: MessageType;
@@ -10,8 +11,35 @@ type MessageProps = {
 };
 
 export function Message({ message, showAvatar }: MessageProps) {
+  const { theme } = useTheme();
   const formattedTime = format(new Date(message.sentAt), 'HH:mm', { locale: fr });
   const formattedDate = format(new Date(message.sentAt), 'dd MMMM yyyy', { locale: fr });
+  
+  // Define styles with theme colors
+  const themedStyles = StyleSheet.create({
+    username: {
+      fontWeight: 'bold',
+      fontSize: 16,
+      color: theme.colors.textPrimary,
+      marginRight: 8,
+    },
+    date: {
+      fontSize: 12,
+      color: theme.colors.textSecondary,
+    },
+    messageText: {
+      color: theme.colors.textPrimary,
+      fontSize: 15,
+    },
+    time: {
+      fontSize: 10,
+      color: theme.colors.textSecondary,
+      marginLeft: 6,
+    },
+    bubble: {
+      flex: 1,
+    },
+  });
   
   return (
     <View style={[styles.container, !showAvatar && styles.continuedMessage]}>
@@ -25,16 +53,16 @@ export function Message({ message, showAvatar }: MessageProps) {
       <View style={[styles.messageContent, !showAvatar && styles.continuedMessageContent]}>
         {showAvatar && (
           <View style={styles.header}>
-            <Text style={styles.username}>{message.sender?.userName}</Text>
-            <Text style={styles.date}>{formattedDate}</Text>
+            <Text style={themedStyles.username}>{message.sender?.userName}</Text>
+            <Text style={themedStyles.date}>{formattedDate}</Text>
           </View>
         )}
         
         <View style={styles.bubbleContainer}>
-          <View style={styles.bubble}>
-            <Text style={styles.messageText}>{message.content}</Text>
+          <View style={themedStyles.bubble}>
+            <Text style={themedStyles.messageText}>{message.content}</Text>
           </View>
-          <Text style={styles.time}>{formattedTime}</Text>
+          <Text style={themedStyles.time}>{formattedTime}</Text>
         </View>
       </View>
     </View>
@@ -67,30 +95,8 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
     marginBottom: 4,
   },
-  username: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    color: '#424242',
-    marginRight: 8,
-  },
-  date: {
-    fontSize: 12,
-    color: '#757575',
-  },
   bubbleContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-  },
-  bubble: {
-    flex: 1,
-  },
-  messageText: {
-    color: '#424242',
-    fontSize: 15,
-  },
-  time: {
-    fontSize: 10,
-    color: '#757575',
-    marginLeft: 6,
   },
 });
