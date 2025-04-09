@@ -18,23 +18,21 @@ export default function Index() {
         const reponse = await apiGetRequest<TokenCheckResponse>('/auth/check-token', {});
 
         console.log('Token check response:', reponse);
-        if (reponse.message) {
-          router.replace('/home');
-          return;
-        }
-
-        router.replace('/login');
+        if (reponse.message)
+          return true;
+        return false;
       } catch (error) {
-        router.replace('/login');
+        return false;
       }
     };
 
-    if (token) {
-      checkToken();
-    } else if (!isLoading) {
-      router.replace('/login');
+    if (!isLoading) {
+      checkToken().then(isValidToken => {
+        router.replace(isValidToken ? '/home' : '/login');
+      });
     }
-  }, [token]);
+
+  }, [isLoading, token]);
 
   return null;
 }
