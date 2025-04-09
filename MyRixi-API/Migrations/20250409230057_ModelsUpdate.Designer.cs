@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyRixiApi.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyRixiApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250409230057_ModelsUpdate")]
+    partial class ModelsUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -238,6 +241,12 @@ namespace MyRixiApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid?>("ParentCommentId")
                         .HasColumnType("uuid");
 
@@ -250,6 +259,9 @@ namespace MyRixiApi.Migrations
                     b.Property<Guid?>("ProfileId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ParentCommentId");
@@ -257,6 +269,8 @@ namespace MyRixiApi.Migrations
                     b.HasIndex("PostId");
 
                     b.HasIndex("ProfileId");
+
+                    b.HasIndex("SenderId");
 
                     b.ToTable("Comments");
                 });
@@ -370,6 +384,30 @@ namespace MyRixiApi.Migrations
                     b.HasIndex("CommunityId");
 
                     b.ToTable("CommunityRules");
+                });
+
+            modelBuilder.Entity("MyRixiApi.Models.Like", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Like");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.MainProfile", b =>
@@ -916,15 +954,23 @@ namespace MyRixiApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("MyRixiApi.Models.MainProfile", "Profile")
-                        .WithMany("Comments")
+                        .WithMany("ProfileComments")
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("MyRixiApi.Models.MainProfile", "Sender")
+                        .WithMany("Comments")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("ParentComment");
 
                     b.Navigation("Post");
 
                     b.Navigation("Profile");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.Community", b =>
@@ -985,6 +1031,25 @@ namespace MyRixiApi.Migrations
                         .IsRequired();
 
                     b.Navigation("Community");
+                });
+
+            modelBuilder.Entity("MyRixiApi.Models.Like", b =>
+                {
+                    b.HasOne("MyRixiApi.Models.Post", "Post")
+                        .WithMany("Likes")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyRixiApi.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.MainProfile", b =>
@@ -1215,6 +1280,8 @@ namespace MyRixiApi.Migrations
             modelBuilder.Entity("MyRixiApi.Models.MainProfile", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("ProfileComments");
                 });
 
             modelBuilder.Entity("MyRixiApi.Models.Message", b =>
@@ -1234,6 +1301,8 @@ namespace MyRixiApi.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("Comments");
+
+                    b.Navigation("Likes");
 
                     b.Navigation("Tags");
                 });
