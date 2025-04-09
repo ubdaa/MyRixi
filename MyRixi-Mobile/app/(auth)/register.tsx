@@ -1,21 +1,22 @@
 import React, { useState } from "react";
 import {
   View,
-  TextInput,
-  TouchableOpacity,
   Text,
   StyleSheet,
   Image,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import { register } from "@/services/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { GlassInput } from "@/components/ui/GlassInput";
+import { NeoButton } from "@/components/ui/NeoButton";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -25,6 +26,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const router = useRouter();
+  const { theme, colorMode } = useTheme();
 
   const handleRegister = async () => {
     if (!email || !password || !username) {
@@ -47,7 +49,7 @@ export default function Register() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background1 }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
@@ -62,95 +64,69 @@ export default function Register() {
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.title}>Créer un compte</Text>
-            <Text style={styles.subtitle}>
-              Rejoigner vos amis et connectez vous à vos intérêts
+            <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Créer un compte</Text>
+            <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+              Rejoignez vos amis et connectez vous à vos intérêts
             </Text>
           </View>
 
           <View style={styles.formContainer}>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="mail-outline"
-                size={20}
-                color="#666"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-            </View>
+            <GlassInput
+              label="Email"
+              placeholder="Entrez votre email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              rightIcon={<Ionicons name="mail-outline" size={20} color={theme.colors.textSecondary} />}
+            />
 
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="person-outline"
-                size={20}
-                color="#666"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Nom d'utilisateur"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-              />
-            </View>
+            <GlassInput
+              label="Nom d'utilisateur"
+              placeholder="Choisissez un nom d'utilisateur"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              rightIcon={<Ionicons name="person-outline" size={20} color={theme.colors.textSecondary} />}
+            />
 
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={20}
-                color="#666"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Mot de passe"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={secureTextEntry}
-              />
-              <TouchableOpacity
-                style={styles.visibilityIcon}
-                onPress={() => setSecureTextEntry(!secureTextEntry)}
-              >
-                <Ionicons
-                  name={secureTextEntry ? "eye-outline" : "eye-off-outline"}
-                  size={20}
-                  color="#666"
-                />
-              </TouchableOpacity>
-            </View>
+            <GlassInput
+              label="Mot de passe"
+              placeholder="Créez un mot de passe sécurisé"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={secureTextEntry}
+              rightIcon={
+                <TouchableOpacity onPress={() => setSecureTextEntry(!secureTextEntry)}>
+                  <Ionicons
+                    name={secureTextEntry ? "eye-outline" : "eye-off-outline"}
+                    size={20}
+                    color={theme.colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              }
+            />
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text style={[styles.error, { color: theme.colors.neoRed }]}>{error}</Text> : null}
 
-            <TouchableOpacity
-              style={styles.button}
+            <NeoButton
+              title="S'inscrire"
               onPress={handleRegister}
+              loading={loading}
               disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="white" size="small" />
-              ) : (
-                <Text style={styles.buttonText}>S'inscrire</Text>
-              )}
-            </TouchableOpacity>
+              style={styles.registerButton}
+              size="large"
+            />
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Vous avez déjà un compte? </Text>
+            <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>Vous avez déjà un compte? </Text>
             <TouchableOpacity onPress={() => router.replace("/login")}>
-              <Text style={styles.footerLink}>Se connecter</Text>
+              <Text style={[styles.footerLink, { color: theme.colors.technoBlue }]}>Se connecter</Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.terms}>
+          <Text style={[styles.terms, { color: theme.colors.textSecondary + '99' }]}>
             En vous inscrivant, vous acceptez nos conditions d'utilisation et
             notre politique de confidentialité
           </Text>
@@ -163,7 +139,6 @@ export default function Register() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FB",
   },
   scrollContainer: {
     flexGrow: 1,
@@ -182,63 +157,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#333",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
   },
   formContainer: {
     paddingHorizontal: 25,
     marginBottom: 20,
   },
-  inputContainer: {
-    backgroundColor: "white",
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#EAEAEA",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  inputIcon: {
-    marginLeft: 15,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    color: "#333",
-    fontSize: 16,
-  },
-  visibilityIcon: {
-    padding: 10,
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    shadowColor: "#007AFF",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
+  registerButton: {
     marginTop: 10,
   },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
   error: {
-    color: "#FF3B30",
     marginBottom: 15,
     textAlign: "center",
   },
@@ -249,17 +180,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   footerText: {
-    color: "#666",
     fontSize: 15,
   },
   footerLink: {
-    color: "#007AFF",
     fontSize: 15,
     fontWeight: "600",
   },
   terms: {
     textAlign: "center",
-    color: "#999",
     fontSize: 12,
     paddingHorizontal: 30,
   },

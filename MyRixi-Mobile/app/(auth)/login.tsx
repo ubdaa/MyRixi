@@ -1,20 +1,21 @@
 import React, { useState } from "react";
 import {
   View,
-  TextInput,
-  TouchableOpacity,
   Text,
   StyleSheet,
   Image,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { login } from "@/services/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { GlassInput } from "@/components/ui/GlassInput";
+import { NeoButton } from "@/components/ui/NeoButton";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -23,6 +24,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const router = useRouter();
+  const { theme, colorMode } = useTheme();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -45,7 +47,7 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background1 }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
@@ -56,77 +58,63 @@ export default function Login() {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.title}>Bienvenue</Text>
-          <Text style={styles.subtitle}>Connectez-vous pour continuer</Text>
+          <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Bienvenue</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>Connectez-vous pour continuer</Text>
         </View>
 
         <View style={styles.formContainer}>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="mail-outline"
-              size={20}
-              color="#666"
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-          </View>
+          <GlassInput
+            label="Email"
+            placeholder="Entrez votre email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            rightIcon={<Ionicons name="mail-outline" size={20} color={theme.colors.textSecondary} />}
+          />
 
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={20}
-              color="#666"
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Mot de passe"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={secureTextEntry}
-            />
-            <TouchableOpacity
-              style={styles.visibilityIcon}
-              onPress={() => setSecureTextEntry(!secureTextEntry)}
-            >
-              <Ionicons
-                name={secureTextEntry ? "eye-outline" : "eye-off-outline"}
-                size={20}
-                color="#666"
-              />
-            </TouchableOpacity>
-          </View>
+          <GlassInput
+            label="Mot de passe"
+            placeholder="Entrez votre mot de passe"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={secureTextEntry}
+            rightIcon={
+              <TouchableOpacity onPress={() => setSecureTextEntry(!secureTextEntry)}>
+                <Ionicons
+                  name={secureTextEntry ? "eye-outline" : "eye-off-outline"}
+                  size={20}
+                  color={theme.colors.textSecondary}
+                />
+              </TouchableOpacity>
+            }
+          />
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? <Text style={[styles.error, { color: theme.colors.neoRed }]}>{error}</Text> : null}
 
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>Mot de passe oublié?</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleLogin}
-            disabled={loading}
+          <TouchableOpacity 
+            style={styles.forgotPassword}
+            onPress={() => {/* Navigation vers récupération mot de passe */}}
           >
-            {loading ? (
-              <ActivityIndicator color="white" size="small" />
-            ) : (
-              <Text style={styles.buttonText}>Se connecter</Text>
-            )}
+            <Text style={[styles.forgotPasswordText, { color: theme.colors.technoBlue }]}>
+              Mot de passe oublié?
+            </Text>
           </TouchableOpacity>
+
+          <NeoButton
+            title="Se connecter"
+            onPress={handleLogin}
+            loading={loading}
+            disabled={loading}
+            style={styles.loginButton}
+            size="large"
+          />
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Vous n'avez pas de compte? </Text>
+          <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>Vous n'avez pas de compte? </Text>
           <TouchableOpacity onPress={() => router.replace("/register")}>
-            <Text style={styles.footerLink}>S'inscrire</Text>
+            <Text style={[styles.footerLink, { color: theme.colors.technoBlue }]}>S'inscrire</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -137,7 +125,6 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FB",
   },
   logoContainer: {
     alignItems: "center",
@@ -152,72 +139,28 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#333",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
   },
   formContainer: {
     paddingHorizontal: 25,
     marginBottom: 30,
-  },
-  inputContainer: {
-    backgroundColor: "white",
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#EAEAEA",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  inputIcon: {
-    marginLeft: 15,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    color: "#333",
-    fontSize: 16,
-  },
-  visibilityIcon: {
-    padding: 10,
   },
   forgotPassword: {
     alignSelf: "flex-end",
     marginBottom: 25,
   },
   forgotPasswordText: {
-    color: "#007AFF",
     fontSize: 14,
   },
-  button: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    shadowColor: "#007AFF",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
   error: {
-    color: "#FF3B30",
     marginBottom: 15,
     textAlign: "center",
+  },
+  loginButton: {
+    marginTop: 10,
   },
   footer: {
     flexDirection: "row",
@@ -226,11 +169,9 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   footerText: {
-    color: "#666",
     fontSize: 15,
   },
   footerLink: {
-    color: "#007AFF",
     fontSize: 15,
     fontWeight: "600",
   },
