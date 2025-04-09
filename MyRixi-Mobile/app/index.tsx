@@ -25,16 +25,16 @@ export default function Index() {
 
         router.replace('/login');
       } catch (error) {
-        console.error('Error checking token:', error);
-        // Si le token est invalide, on redirige vers /login
         router.replace('/login');
       }
     };
 
     if (token) {
       checkToken();
+    } else if (!isLoading) {
+      router.replace('/login');
     }
   }, [token]);
 
-  return null; // ou un composant de chargement
+  return null;
 }
