@@ -29,6 +29,7 @@ export default function ChannelScreen() {
   // Utiliser le hook useMessages
   const {
     messages,
+    fetchMessages,
     loading: messagesLoading,
     error: messagesError,
     hasMoreMessages,

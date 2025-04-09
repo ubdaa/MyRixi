@@ -4,6 +4,7 @@ import { getChannelDetail } from '@/services/channelService';
 import { CreateMessageDto, Message } from '@/types/message';
 import { ChatService } from '@/services/chatService';
 import SignalRManager from '@/services/signalRService';
+import { useAuth } from '@/contexts/AuthContext'; // Ajout de l'import useAuth
 
 interface UseMessagesProps {
   channelId?: string;
@@ -63,6 +64,9 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
     chatServiceRef.current = chatService;
   }, [chatService]);
   
+  // Ajout du hook useAuth pour accéder aux informations de l'utilisateur courant
+  const { user } = useAuth();
+
   // Gestionnaire d'erreur centralisé
   const handleError = useCallback((err: any, action: string) => {
     const errorMessage = err instanceof Error ? err.message : 'Une erreur inattendue est survenue';
@@ -145,17 +149,21 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
         attachmentIds: [],
       };
 
-      // Optimistic UI update - ajoute le message immédiatement
+      // Optimistic UI update - ajoute le message immédiatement avec les données de l'utilisateur courant
       const optimisticMessage: Message = {
         id: tempId,
         content,
-        sentAt: new Date(), // Using Date object instead of string
+        sentAt: new Date(),
         isRead: false,
         channelId: channelIdRef.current,
-        sender: { id: 'current-user', userName: 'Moi', avatar: "" }, // Sera remplacé par le vrai message
+        sender: {
+          id: user?.id || 'current-user',
+          userName: user?.userName || 'Moi',
+          avatar: user?.avatar || "",
+        },
         attachments: [],
         reactions: [],
-        isPending: true // Indicateur visuel que le message est en attente d'envoi
+        isPending: true
       };
       
       setMessages(prev => [optimisticMessage, ...prev]);
@@ -196,7 +204,7 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
       setError(err instanceof Error ? err : new Error('Une erreur est survenue lors de l\'envoi du message.'));
       return false;
     }
-  }, []);
+  }, [user]);
 
   // Normalise un message pour garantir la cohérence entre les propriétés
   const normalizeMessage = (messageDto: any): Message => {
@@ -244,25 +252,38 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
         console.log('Message reçu dans useMessages:', normalizedMessage);
         
         setMessages(prev => {
-          // Vérifier si le message existe déjà (pour éviter les doublons)
-          const messageExists = prev.some(m => 
-            m.id === normalizedMessage.id ||
-            (m.id.startsWith('temp-') && 
-             pendingMessagesRef.current.has(m.id) && 
-             m.content === normalizedMessage.content)
+          // Recherche d'un message temporaire correspondant
+          const tempMessageIndex = prev.findIndex(m => 
+            m.isPending && 
+            pendingMessagesRef.current.has(m.id) && 
+            m.content === normalizedMessage.content
           );
           
-          if (messageExists) {
-            // Remplacer le message temporaire par le message réel
-            return prev.map(m => 
-              (m.id.startsWith('temp-') && 
-               pendingMessagesRef.current.has(m.id) && 
-               m.content === normalizedMessage.content)
-                ? { ...normalizedMessage, isPending: false }
-                : m
-            );
+          if (tempMessageIndex !== -1) {
+            // Si un message temporaire correspondant est trouvé, on le remplace
+            // mais en préservant certains détails de l'expéditeur si nécessaire
+            const prevSender = prev[tempMessageIndex].sender || { id: '', userName: '', avatar: '' };
+            const normalizedSender = normalizedMessage.sender || { id: '', userName: '', avatar: '' };
+            
+            const mergedMessage: Message = {
+              ...normalizedMessage,
+              isPending: false,
+              sender: {
+                id: normalizedSender.id || prevSender.id || '',
+                userName: normalizedSender.userName || prevSender.userName || '',
+                avatar: normalizedSender.avatar || prevSender.avatar || '',
+              }
+            };
+            
+            const newMessages = [...prev];
+            newMessages[tempMessageIndex] = mergedMessage;
+            
+            // On nettoie la référence des messages en attente
+            pendingMessagesRef.current.delete(prev[tempMessageIndex].id);
+            
+            return newMessages;
           } else {
-            // Ajouter le nouveau message
+            // Si c'est un nouveau message (pas un remplacement de temporaire)
             return [normalizedMessage, ...prev];
           }
         });
@@ -279,12 +300,10 @@ export const useMessages = ({ channelId, chatService }: UseMessagesProps): UseMe
       }
     };
     
-    // Utiliser onReconnected au lieu de onConnectionReconnected
     chatServiceRef.current.onReconnected(handleReconnection);
     
     return () => {
       isMounted = false;
-      // Pas besoin de nettoyer les callbacks car ChatService conserve une seule référence
     };
   }, [channelId, refreshMessages]);
 
