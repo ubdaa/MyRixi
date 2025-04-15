@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Text,
   StyleSheet,
@@ -11,6 +11,7 @@ import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Community } from '@/types/community';
+import { fetchCommunityMembers } from '@/services/communityService';
 
 interface CommunityCardProps {
   community: Community;
@@ -20,6 +21,27 @@ interface CommunityCardProps {
 export function CommunityCard ({ community, index }: CommunityCardProps) {
   const { theme } = useTheme();
   const animatedValue = useRef(new Animated.Value(0)).current;
+  const [totalMembers, setTotalMembers] = useState(0);
+  
+    const loadMembers = useCallback(
+      async () => {
+        if (!community.id || Array.isArray(community.id)) return;
+  
+        try {
+          const response = await fetchCommunityMembers(community.id, 1, 1, "");
+  
+          setTotalMembers(response.totalCount);
+        } catch (error) {
+          console.error("Failed to load community members:", error);
+        } finally {
+        }
+      },
+      [community.id]
+    );
+  
+    useEffect(() => {
+      loadMembers();
+    }, []);
   
   // Animation d'entrée échelonnée
   useEffect(() => {
@@ -65,7 +87,7 @@ export function CommunityCard ({ community, index }: CommunityCardProps) {
           >
             <Text style={styles.communityName}>{community.name}</Text>
             <Text style={styles.communityMembers}>
-              0 membres
+              {totalMembers} membres
             </Text>
           </BlurView>
         </ImageBackground>
