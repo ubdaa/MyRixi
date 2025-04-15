@@ -42,7 +42,8 @@ export default function Register() {
       await AsyncStorage.setItem("token", response.token);
       router.replace("/home");
     } catch (err) {
-      setError("Cette adresse email est déjà utilisée");
+      const errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue lors de l\'inscription';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
