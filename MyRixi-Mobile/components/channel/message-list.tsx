@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { FlatList, StyleSheet, View, Text } from 'react-native';
 import { Message as MessageType } from '@/types/message';
 import { Message } from './message';
+import { useTheme } from '@/contexts/ThemeContext';
 
 type MessageListProps = {
   messages: MessageType[];
@@ -14,6 +15,7 @@ export function MessageList ({
   loading,
   onLoadMore
 }: MessageListProps) {
+  const { theme } = useTheme();
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
@@ -24,17 +26,23 @@ export function MessageList ({
 
   if (loading && messages.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>Chargement des messages...</Text>
+      <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background1 }]}>
+        <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+          Chargement des messages...
+        </Text>
       </View>
     );
   }
 
   if (messages.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>Pas encore de messages</Text>
-        <Text style={styles.emptySubText}>Soyez le premier à envoyer un message !</Text>
+      <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background1 }]}>
+        <Text style={[styles.emptyText, { color: theme.colors.textPrimary }]}>
+          Pas encore de messages
+        </Text>
+        <Text style={[styles.emptySubText, { color: theme.colors.textSecondary }]}>
+          Soyez le premier à envoyer un message !
+        </Text>
       </View>
     );
   }
@@ -42,7 +50,7 @@ export function MessageList ({
   return (
     <FlatList
       ref={flatListRef}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.colors.background1 }]}
       data={messages}
       keyExtractor={(item) => item.id}
       renderItem={({ item, index }) => (
@@ -62,7 +70,6 @@ export function MessageList ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', 
   },
   listContent: {
     paddingVertical: 16,
@@ -72,17 +79,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   emptyText: {
-    color: '#424242',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   emptySubText: {
-    color: '#757575',
     fontSize: 14,
     textAlign: 'center',
   },

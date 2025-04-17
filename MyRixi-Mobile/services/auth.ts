@@ -1,22 +1,21 @@
-import { BASE_URL } from '@/hooks/useChannel';
-import axios from 'axios';
-import { Platform } from 'react-native';
+import { apiPostRequest } from '@/services/api';
 
-const API_URL = Platform.OS === "android" ? 'http://10.0.2.2:5000/v1' : BASE_URL;
+interface AuthResponse {
+  token: string;
+}
 
 export const login = async (email: string, password: string) => {
-  const response = await axios.post(`${API_URL}/auth/login`, {
-    email,
-    password,
-  });
-  return response.data;
+  const response = await apiPostRequest<AuthResponse>('/auth/login', 
+    { email, password } as any, 
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  return response;
 };
 
 export const register = async (email: string, password: string, username: string) => {
-  const response = await axios.post(`${API_URL}/auth/register`, {
-    email,
-    password,
-    username,
-  });
-  return response.data;
+  const response = await apiPostRequest<AuthResponse>('/auth/register', 
+    { email, password, username } as any, 
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  return response;
 };

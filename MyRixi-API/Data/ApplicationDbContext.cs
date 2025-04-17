@@ -132,8 +132,13 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                 .HasForeignKey(c => c.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            entity.HasOne(c => c.Profile)
+            entity.HasOne(c => c.Sender)
                 .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(c => c.Profile)
+                .WithMany(p => p.ProfileComments)
                 .HasForeignKey(c => c.ProfileId)
                 .OnDelete(DeleteBehavior.Restrict);
         });

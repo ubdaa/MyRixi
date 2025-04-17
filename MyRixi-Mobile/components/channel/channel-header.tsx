@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Channel } from '@/types/channel';
+import { useTheme } from '@/contexts/ThemeContext';
+import { BlurView } from 'expo-blur';
 
 type ChannelHeaderProps = {
   channel: Channel | null;
@@ -9,65 +11,84 @@ type ChannelHeaderProps = {
 };
 
 export function ChannelHeader ({ channel, onBackPress }: ChannelHeaderProps) {
+  const { theme, colorMode } = useTheme();
+
   return (
-    <View style={styles.header}>
-      <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={24} color="#424242" />
-      </TouchableOpacity>
-      
-      <View style={styles.headerInfo}>
-        <Text style={styles.channelName}>#{channel?.name || 'Loading...'}</Text>
-        <Text style={styles.channelDescription} numberOfLines={1}>
-          {channel?.description || ''}
-        </Text>
-      </View>
-      
-      <View style={styles.headerActions}>
-        <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="people" size={22} color="#424242" />
+    <BlurView 
+      intensity={theme.glassmorphism.blur / 2}
+      tint={colorMode === 'dark' ? 'dark' : 'light'}
+      style={styles.blurContainer}
+    >
+      <View style={[styles.header, { 
+        backgroundColor: colorMode === 'dark' 
+          ? 'rgba(26, 27, 31, 0.7)'
+          : 'rgba(250, 250, 250, 0.7)',
+        borderBottomColor: theme.colors.divider 
+      }]}>
+        <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.memberCount}>{channel?.participantCount || 0}</Text>
+        
+        <View style={styles.headerInfo}>
+          <Text style={[styles.channelName, { color: theme.colors.textPrimary }]}>
+            #{channel?.name || 'Loading...'}
+          </Text>
+          <Text style={[styles.channelDescription, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+            {channel?.description || ''}
+          </Text>
+        </View>
+        
+        <View style={styles.headerActions}>
+          <TouchableOpacity 
+            style={[styles.iconButton, { backgroundColor: theme.colors.technoBlue + '20' }]}
+          >
+            <Ionicons name="people" size={20} color={theme.colors.technoBlue} />
+          </TouchableOpacity>
+          <Text style={[styles.memberCount, { color: theme.colors.textSecondary }]}>
+            {channel?.participantCount || 0}
+          </Text>
+        </View>
       </View>
-    </View>
+    </BlurView>
   );
 };
 
 const styles = StyleSheet.create({
+  blurContainer: {
+    borderBottomWidth: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: '#f5f5f5',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingVertical: 12,
   },
   backButton: {
     padding: 4,
     marginRight: 8,
+    borderRadius: 20,
   },
   headerInfo: {
     flex: 1,
   },
   channelName: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    color: '#424242',
   },
   channelDescription: {
-    fontSize: 12,
-    color: '#757575',
+    fontSize: 13,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconButton: {
-    padding: 6,
+    padding: 8,
+    borderRadius: 18,
   },
   memberCount: {
-    color: '#424242',
     fontSize: 14,
-    marginLeft: 2,
+    marginLeft: 4,
+    fontWeight: '500',
   },
 });

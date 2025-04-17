@@ -1,6 +1,7 @@
 import * as signalR from '@microsoft/signalr';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import { BASE_URL } from './api';
 
 // Événements disponibles
 export const SignalREvents = {
@@ -21,7 +22,7 @@ export const getApiBaseUrl = () => {
   if (Platform.OS === 'android') {
     return 'http://10.0.2.2:5000/v1';
   }
-  return 'http://172.20.10.2:5000/v1';
+  return BASE_URL;
 };
 
 type EventCallback = (...args: any[]) => void;

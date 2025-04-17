@@ -171,7 +171,7 @@ export default function CommunityScreen() {
           <Pressable 
             style={[styles.actionButton, { borderColor: theme.colors.divider }]}
             android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
-            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/community/${communityId}/rules`); }}
           >
             <Ionicons name="document-text-outline" size={22} color={theme.colors.technoBlue} />
             <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Règles</Text>
@@ -180,7 +180,7 @@ export default function CommunityScreen() {
           <Pressable 
             style={[styles.actionButton, { borderColor: theme.colors.divider }]}
             android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
-            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/community/${communityId}/members`); }}
           >
             <Ionicons name="people-outline" size={22} color={theme.colors.synthGreen} />
             <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Membres</Text>
@@ -189,10 +189,10 @@ export default function CommunityScreen() {
           <Pressable 
             style={[styles.actionButton, { borderRightWidth: 0, borderColor: theme.colors.divider }]}
             android_ripple={{ color: 'rgba(0, 0, 0, 0.1)' }}
-            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push(`/community/${communityId}/profile`); }}
           >
-            <Ionicons name="bookmark-outline" size={22} color={theme.colors.solarGold} />
-            <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Enregistrés</Text>
+            <Ionicons name="person-outline" size={22} color={theme.colors.solarGold} />
+            <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Profile</Text>
           </Pressable>
         </View>
         
