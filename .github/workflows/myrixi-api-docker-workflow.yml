@@ -25,7 +25,7 @@ jobs:
           dotnet-version: '8.0.x'
           
       - name: Restore dependencies
-        run: dotnet restore MyRixi-Api/MyRixi-Api.csproj
+        run: dotnet restore MyRixi-API/MyRixi-API.csproj
         
       - name: Build and test
         run: |
@@ -57,7 +57,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./MyRixi-Api/Dockerfile
+          file: ./MyRixi-API/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
