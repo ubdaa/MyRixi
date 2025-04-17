@@ -3,12 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 // Définissez une URL de base cohérente
-export const BASE_URL = 'http://192.168.1.168:5000/v1';
+export const BASE_URL = 'https://api.myrixi.com/v1';
 // export const BASE_URL = 'http://172.20.10.2:5000/v1';
 //export const BASE_URL = 'http://192.168.1.162:5000/v1';
-const API_URL = Platform.OS === "android" 
-  ? 'http://10.0.2.2:5000/v1' 
-  : BASE_URL;
+const API_URL = 'https://api.myrixi.com/v1';
 
 const api = axios.create({
   baseURL: API_URL,
