@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -133,6 +134,12 @@ builder.Services.AddAutoMapper(typeof(ProfileMappingProfile));
 builder.Services.AddAutoMapper(typeof(CommunityRoleMappingProfile));
 builder.Services.AddAutoMapper(typeof(PostMappingProfile));
 
+// support pour le reverse proxy
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
+
 var app = builder.Build();
 
 // ensure database is created
@@ -163,7 +170,10 @@ using (var scope = app.Services.CreateScope())
     await PermissionService.SeedPermissionsAsync(context);
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    //app.UseHttpsRedirection();
+}
 app.UseCors("AllowAll");
 app.UseAuthentication(); // Ajoutez cette ligne pour gérer l'authentification
 app.UseAuthorization();  // Puis l'autorisation
