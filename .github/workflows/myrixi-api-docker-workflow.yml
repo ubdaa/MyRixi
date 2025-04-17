@@ -71,14 +71,14 @@ jobs:
     needs: build-and-push
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    
     steps:
       - name: Trigger Coolify deployment
         run: |
           curl -X POST ${{ secrets.COOLIFY_WEBHOOK_URL }} \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
             -d '{
-              "repository": "MyRixi", 
+              "repository": "MyRixi",
               "branch": "${{ github.ref_name }}",
               "image": "ghcr.io/${{ github.repository_owner }}/myrixi-api:sha-${{ github.sha }}"
             }'
