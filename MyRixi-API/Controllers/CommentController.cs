@@ -13,14 +13,14 @@ public class CommentController : Controller
 {
     private readonly ICommentRepository _commentRepository;
     private readonly IPostRepository _postRepository;
-    private readonly IProfileRepository _profileRepository;
+    private readonly ICommunityProfileRepository _profileRepository;
     private readonly IUserProfileRepository _userProfileRepository;
     private readonly ILogger<CommentController> _logger;
 
     public CommentController(
         ICommentRepository commentRepository,
         IPostRepository postRepository,
-        IProfileRepository profileRepository,
+        ICommunityProfileRepository profileRepository,
         IUserProfileRepository userProfileRepository,
         ILogger<CommentController> logger)
     {
@@ -117,25 +117,16 @@ public class CommentController : Controller
     [HttpPost("post/{postId}")]
     public async Task<IActionResult> CreatePostComment(Guid postId, [FromBody] CreateCommentDto commentDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
+        if (!ModelState.IsValid) return BadRequest(ModelState);
 
         try
         {
             var userId = GetCurrentUserId();
             var userProfile = await _userProfileRepository.GetByUserIdAsync(userId);
-            if (userProfile == null)
-            {
-                return BadRequest("User profile not found");
-            }
+            if (userProfile == null) return BadRequest("User profile not found");
 
             var post = await _postRepository.GetByIdAsync(postId);
-            if (post == null)
-            {
-                return NotFound("Post not found");
-            }
+            if (post == null) return NotFound("Post not found");
 
             var comment = new Comment
             {
@@ -148,14 +139,11 @@ public class CommentController : Controller
             if (commentDto.ParentCommentId.HasValue)
             {
                 var parentComment = await _commentRepository.GetByIdAsync(commentDto.ParentCommentId.Value);
-                if (parentComment == null)
-                {
-                    return NotFound("Parent comment not found");
-                }
+                if (parentComment == null) return NotFound("Parent comment not found");
                 comment.ParentCommentId = commentDto.ParentCommentId;
             }
 
-            await _commentRepository.AddAsync(comment);
+            await _commentRepository.CreateAsync(comment);
             return CreatedAtAction(nameof(GetCommentById), new { commentId = comment.Id }, comment);
         }
         catch (Exception ex)
@@ -170,25 +158,16 @@ public class CommentController : Controller
     [HttpPost("profile/{profileId}")]
     public async Task<IActionResult> CreateProfileComment(Guid profileId, [FromBody] CreateCommentDto commentDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
+        if (!ModelState.IsValid) return BadRequest(ModelState);
 
         try
         {
             var userId = GetCurrentUserId();
             var userProfile = await _userProfileRepository.GetByUserIdAsync(userId);
-            if (userProfile == null)
-            {
-                return BadRequest("User profile not found");
-            }
+            if (userProfile == null) return BadRequest("User profile not found");
 
             var profile = await _profileRepository.GetByIdAsync(profileId);
-            if (profile == null)
-            {
-                return NotFound("Profile not found");
-            }
+            if (profile == null) return NotFound("Profile not found");
 
             var comment = new Comment
             {
@@ -201,14 +180,11 @@ public class CommentController : Controller
             if (commentDto.ParentCommentId.HasValue)
             {
                 var parentComment = await _commentRepository.GetByIdAsync(commentDto.ParentCommentId.Value);
-                if (parentComment == null)
-                {
-                    return NotFound("Parent comment not found");
-                }
+                if (parentComment == null) return NotFound("Parent comment not found");
                 comment.ParentCommentId = commentDto.ParentCommentId;
             }
 
-            await _commentRepository.AddAsync(comment);
+            await _commentRepository.CreateAsync(comment);
             return CreatedAtAction(nameof(GetCommentById), new { commentId = comment.Id }, comment);
         }
         catch (Exception ex)
@@ -225,10 +201,7 @@ public class CommentController : Controller
         try
         {
             var comment = await _commentRepository.GetByIdAsync(commentId);
-            if (comment == null)
-            {
-                return NotFound();
-            }
+            if (comment == null) return NotFound();
             return Ok(comment);
         }
         catch (Exception ex)
@@ -243,30 +216,18 @@ public class CommentController : Controller
     [HttpPut("{commentId}")]
     public async Task<IActionResult> UpdateComment(Guid commentId, [FromBody] UpdateCommentDto commentDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
+        if (!ModelState.IsValid) return BadRequest(ModelState);
 
         try
         {
             var userId = GetCurrentUserId();
             var userProfile = await _userProfileRepository.GetByUserIdAsync(userId);
-            if (userProfile == null)
-            {
-                return BadRequest("User profile not found");
-            }
+            if (userProfile == null) return BadRequest("User profile not found");
 
             var comment = await _commentRepository.GetByIdAsync(commentId);
-            if (comment == null)
-            {
-                return NotFound();
-            }
+            if (comment == null) return NotFound();
 
-            if (comment.ProfileId != userProfile.Id)
-            {
-                return Forbid();
-            }
+            if (comment.ProfileId != userProfile.Id) return Forbid();
 
             comment.Content = commentDto.Content;
             await _commentRepository.UpdateAsync(comment);
@@ -288,23 +249,14 @@ public class CommentController : Controller
         {
             var userId = GetCurrentUserId();
             var userProfile = await _userProfileRepository.GetByUserIdAsync(userId);
-            if (userProfile == null)
-            {
-                return BadRequest("User profile not found");
-            }
+            if (userProfile == null) return BadRequest("User profile not found");
 
             var comment = await _commentRepository.GetByIdAsync(commentId);
-            if (comment == null)
-            {
-                return NotFound();
-            }
+            if (comment == null) return NotFound();
 
-            if (comment.ProfileId != userProfile.Id)
-            {
-                return Forbid();
-            }
+            if (comment.ProfileId != userProfile.Id) return Forbid();
 
-            await _commentRepository.DeleteAsync(comment);
+            await _commentRepository.DeleteAsync(comment.Id);
             return NoContent();
         }
         catch (Exception ex)
