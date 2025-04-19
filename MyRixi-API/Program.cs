@@ -150,12 +150,9 @@ using (var scope = app.Services.CreateScope())
     context.Database.EnsureCreated();
 }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// swagger.
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // Ajouter les rôles au démarrage
 using (var scope = app.Services.CreateScope())
