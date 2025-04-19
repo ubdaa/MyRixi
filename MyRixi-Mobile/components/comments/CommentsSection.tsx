@@ -1,22 +1,43 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import CommentInput from './CommentInput';
 import EmptyCommentsPlaceholder from './EmptyCommentsPlaceholder';
+import { useComments } from '@/hooks/useComments';
+import CommentItem from './CommentItem';
 
 interface CommentsSectionProps {
-  commentsCount: number;
-  onSendComment: (text: string) => void;
+  postId?: string;
+  profileId?: string;
 }
 
-export default function CommentsSection({ commentsCount, onSendComment }: CommentsSectionProps) {
+export default function CommentsSection({ postId, profileId }: CommentsSectionProps) {
   const { theme } = useTheme();
   const [commentText, setCommentText] = useState('');
+  
+  const {
+    comments,
+    loading,
+    error,
+    hasMore,
+    totalCount,
+    loadMore,
+    addComment
+  } = useComments({
+    postId,
+    profileId,
+    autoLoad: true
+  });
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (commentText.trim()) {
-      onSendComment(commentText);
-      setCommentText('');
+      try {
+        await addComment(commentText);
+        setCommentText('');
+      } catch (error) {
+        console.error('Error sending comment:', error);
+        // You could show an error message to the user here
+      }
     }
   };
 
@@ -28,7 +49,7 @@ export default function CommentsSection({ commentsCount, onSendComment }: Commen
     >
       <View style={[styles.commentsSection, { backgroundColor: theme.colors.background2 }]}>
         <Text style={[styles.commentsTitle, { color: theme.colors.textPrimary }]}>
-          Commentaires ({commentsCount})
+          Commentaires ({totalCount})
         </Text>
         
         <CommentInput
@@ -37,7 +58,23 @@ export default function CommentsSection({ commentsCount, onSendComment }: Commen
           onSend={handleSend}
         />
         
-        {commentsCount === 0 && <EmptyCommentsPlaceholder />}
+        {loading && comments.length === 0 ? (
+          <Text style={{ color: theme.colors.textSecondary, textAlign: 'center' }}>Chargement...</Text>
+        ) : error ? (
+          <Text style={{ color: theme.colors.neoRed, textAlign: 'center' }}>Erreur: {error}</Text>
+        ) : comments.length === 0 ? (
+          <EmptyCommentsPlaceholder />
+        ) : (
+          <FlatList
+            data={comments}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <CommentItem comment={item} />
+            )}
+            onEndReached={hasMore ? loadMore : undefined}
+            onEndReachedThreshold={0.5}
+          />
+        )}
       </View>
     </KeyboardAvoidingView>
   );
