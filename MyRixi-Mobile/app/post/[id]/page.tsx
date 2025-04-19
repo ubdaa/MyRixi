@@ -116,10 +116,7 @@ export default function PostPage() {
         </View>
 
         {/* Comments Section */}
-        <CommentsSection 
-          commentsCount={post.commentsCount}
-          onSendComment={handleSendComment}
-        />
+        <CommentsSection postId={post.id} />
       </ScrollView>
     </SafeAreaView>
   );

@@ -114,6 +114,7 @@ builder.Services.AddScoped<IChannelRepository, ChannelRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<ICommunityRoleRepository, CommunityRoleRepository>(); 
 builder.Services.AddScoped<ICommunityRepository, CommunityRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<ICommunityProfileRepository, CommunityProfileRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
