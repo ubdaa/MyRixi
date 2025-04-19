@@ -74,11 +74,12 @@ jobs:
     steps:
       - name: Trigger Coolify deployment
         run: |
-          curl -X POST ${{ secrets.COOLIFY_WEBHOOK_URL }} \
+          curl -X POST "${{ secrets.COOLIFY_WEBHOOK_URL }}&tag=sha-${{ github.sha }}" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
             -d '{
               "repository": "MyRixi",
               "branch": "${{ github.ref_name }}",
+              "tag": "sha-${{ github.sha }}"
               "image": "ghcr.io/${{ github.repository_owner }}/myrixi-api:sha-${{ github.sha }}"
             }'
