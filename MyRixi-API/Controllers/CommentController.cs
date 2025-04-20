@@ -15,6 +15,7 @@ public class CommentController : Controller
     private readonly IPostRepository _postRepository;
     private readonly ICommunityProfileRepository _profileRepository;
     private readonly IUserProfileRepository _userProfileRepository;
+    private readonly IProfileService _profileService;
     private readonly ILogger<CommentController> _logger;
 
     public CommentController(
@@ -22,12 +23,14 @@ public class CommentController : Controller
         IPostRepository postRepository,
         ICommunityProfileRepository profileRepository,
         IUserProfileRepository userProfileRepository,
+        IProfileService profileService,
         ILogger<CommentController> logger)
     {
         _commentRepository = commentRepository;
         _postRepository = postRepository;
         _profileRepository = profileRepository;
         _userProfileRepository = userProfileRepository;
+        _profileService = profileService;
         _logger = logger;
     }
 
@@ -132,10 +135,10 @@ public class CommentController : Controller
             {
                 Content = commentDto.Content,
                 PostId = postId,
-                ProfileId = userProfile.Id,
+                SenderId = userProfile.Id,
                 PostedAt = DateTime.UtcNow
             };
-
+            
             if (commentDto.ParentCommentId.HasValue)
             {
                 var parentComment = await _commentRepository.GetByIdAsync(commentDto.ParentCommentId.Value);
@@ -172,9 +175,9 @@ public class CommentController : Controller
             var comment = new Comment
             {
                 Content = commentDto.Content,
-                ProfileId = profileId,
+                SenderId = userProfile.Id,
                 PostedAt = DateTime.UtcNow,
-                Profile = userProfile
+                Sender = userProfile,
             };
 
             if (commentDto.ParentCommentId.HasValue)
@@ -227,7 +230,7 @@ public class CommentController : Controller
             var comment = await _commentRepository.GetByIdAsync(commentId);
             if (comment == null) return NotFound();
 
-            if (comment.ProfileId != userProfile.Id) return Forbid();
+            if (comment.SenderId != userProfile.Id) return Forbid();
 
             comment.Content = commentDto.Content;
             await _commentRepository.UpdateAsync(comment);

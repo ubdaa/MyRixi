@@ -22,7 +22,7 @@ public class CommentRepository : GenericRepository<Comment>, ICommentRepository
             .FirstOrDefaultAsync(c => c.Id == commentId);
     }
 
-    public Task<List<CommentDto>> GetCommentsByPostIdAsync(Guid postId, int page = 0, int pageSize = 10)
+    public Task<List<CommentDto>> GetCommentsByPostIdAsync(Guid postId, int page = 1, int pageSize = 10)
     {
         return _context.Comments
             .Include(s => s.Sender)
@@ -41,12 +41,12 @@ public class CommentRepository : GenericRepository<Comment>, ICommentRepository
                 RepliesCount = c.Replies.Count(),
                 IsOwner = false
             })
-            .Skip(page * pageSize)
+            .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
     }
 
-    public Task<List<CommentDto>> GetCommentsByProfileIdAsync(Guid profileId, int page = 0, int pageSize = 10)
+    public Task<List<CommentDto>> GetCommentsByProfileIdAsync(Guid profileId, int page = 1, int pageSize = 10)
     {
         return _context.Comments
             .Include(s => s.Sender)
@@ -65,12 +65,12 @@ public class CommentRepository : GenericRepository<Comment>, ICommentRepository
                 RepliesCount = c.Replies.Count(),
                 IsOwner = false
             })
-            .Skip(page * pageSize)
+            .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
     }
 
-    public Task<List<CommentDto>> GetRepliesByCommentIdAsync(Guid commentId, int page = 0, int pageSize = 10)
+    public Task<List<CommentDto>> GetRepliesByCommentIdAsync(Guid commentId, int page = 1, int pageSize = 10)
     {
         return _context.Comments
             .Include(s => s.Sender)
@@ -89,7 +89,7 @@ public class CommentRepository : GenericRepository<Comment>, ICommentRepository
                 RepliesCount = c.Replies.Count(),
                 IsOwner = false
             })
-            .Skip(page * pageSize)
+            .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
     }
