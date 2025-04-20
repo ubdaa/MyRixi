@@ -44,7 +44,7 @@ export default function CommentsSection({ postId, profileId, nestedScrollEnabled
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={'height'}
       keyboardVerticalOffset={0}
       style={styles.keyboardAvoidingView}
     >
