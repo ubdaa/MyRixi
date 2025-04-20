@@ -96,22 +96,16 @@ export function useComments({
     }
     
     try {
-      let newComment;
       if (postId) {
-        newComment = await createPostComment(postId, content, parentCommentId);
+        await createPostComment(postId, content, parentCommentId);
       } else if (profileId) {
-        newComment = await createProfileComment(profileId, content, parentCommentId);
+        await createProfileComment(profileId, content, parentCommentId);
       } else {
         throw new Error("Either postId or profileId must be provided to add a comment");
       }
+      refresh();
 
-      setState(prev => ({
-        ...prev,
-        comments: [newComment, ...prev.comments],
-        totalCount: prev.totalCount + 1
-      }));
-
-      return newComment;
+      return;
     } catch (error) {
       throw error;
     }

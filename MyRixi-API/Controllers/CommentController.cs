@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyRixiApi.Dto.Comment;
+using MyRixiApi.Dto.Comments;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
 
@@ -11,6 +13,8 @@ namespace MyRixiApi.Controllers;
 [Route("v1/[controller]")]
 public class CommentController : Controller
 {
+    private readonly IMapper _mapper;
+    
     private readonly ICommentRepository _commentRepository;
     private readonly IPostRepository _postRepository;
     private readonly ICommunityProfileRepository _profileRepository;
@@ -19,6 +23,7 @@ public class CommentController : Controller
     private readonly ILogger<CommentController> _logger;
 
     public CommentController(
+        IMapper mapper,
         ICommentRepository commentRepository,
         IPostRepository postRepository,
         ICommunityProfileRepository profileRepository,
@@ -26,6 +31,7 @@ public class CommentController : Controller
         IProfileService profileService,
         ILogger<CommentController> logger)
     {
+        _mapper = mapper;
         _commentRepository = commentRepository;
         _postRepository = postRepository;
         _profileRepository = profileRepository;
@@ -146,8 +152,9 @@ public class CommentController : Controller
                 comment.ParentCommentId = commentDto.ParentCommentId;
             }
 
-            await _commentRepository.CreateAsync(comment);
-            return CreatedAtAction(nameof(GetCommentById), new { commentId = comment.Id }, comment);
+            comment = await _commentRepository.CreateAsync(comment);
+            
+            return CreatedAtAction(nameof(GetCommentById), new { commentId = comment.Id }, _mapper.Map<CommentResponseDto>(comment));
         }
         catch (Exception ex)
         {

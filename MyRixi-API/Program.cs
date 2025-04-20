@@ -130,6 +130,7 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 // ajout des mapper
 builder.Services.AddAutoMapper(typeof(CommunityMappingProfile));
 builder.Services.AddAutoMapper(typeof(ChannelMappingProfile));
+builder.Services.AddAutoMapper(typeof(CommentMappingProfile));
 builder.Services.AddAutoMapper(typeof(MessageMappingProfile));
 builder.Services.AddAutoMapper(typeof(ProfileMappingProfile));
 builder.Services.AddAutoMapper(typeof(CommunityRoleMappingProfile));
