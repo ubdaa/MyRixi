@@ -116,7 +116,7 @@ export default function PostPage() {
         </View>
 
         {/* Comments Section */}
-        <CommentsSection postId={post.id} />
+        <CommentsSection postId={post.id} nestedScrollEnabled={true} />
       </ScrollView>
     </SafeAreaView>
   );

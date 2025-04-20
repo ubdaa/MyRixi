@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, FlatList, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import CommentInput from './CommentInput';
 import EmptyCommentsPlaceholder from './EmptyCommentsPlaceholder';
@@ -9,9 +9,10 @@ import CommentItem from './CommentItem';
 interface CommentsSectionProps {
   postId?: string;
   profileId?: string;
+  nestedScrollEnabled?: boolean; // New prop to indicate if nested in ScrollView
 }
 
-export default function CommentsSection({ postId, profileId }: CommentsSectionProps) {
+export default function CommentsSection({ postId, profileId, nestedScrollEnabled = false }: CommentsSectionProps) {
   const { theme } = useTheme();
   const [commentText, setCommentText] = useState('');
   
@@ -64,6 +65,20 @@ export default function CommentsSection({ postId, profileId }: CommentsSectionPr
           <Text style={{ color: theme.colors.neoRed, textAlign: 'center' }}>Erreur: {error}</Text>
         ) : comments.length === 0 ? (
           <EmptyCommentsPlaceholder />
+        ) : nestedScrollEnabled ? (
+          // Use regular View instead of FlatList when nested in ScrollView
+          <View>
+            {comments.map(item => (
+              <CommentItem key={item.id} comment={item} />
+            ))}
+            {hasMore && (
+              <TouchableOpacity onPress={loadMore} style={styles.loadMoreButton}>
+                <Text style={{ color: theme.colors.technoBlue, textAlign: 'center' }}>
+                  Charger plus de commentaires
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         ) : (
           <FlatList
             data={comments}
@@ -94,4 +109,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
   },
+  loadMoreButton: {
+    padding: 10,
+    marginVertical: 8,
+  }
 });
