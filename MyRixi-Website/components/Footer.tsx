@@ -174,7 +174,7 @@ const Footer = () => {
           whileInView="show"
           viewport={{ once: true }}
           variants={containerVariants}
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 py-10 border-t border-divider"
+          className="grid grid-cols-1 md:grid-cols-4 gap-8 py-10 border-t border-divider"
         >
           {/* Navigation */}
           <motion.div variants={itemVariants}>
