@@ -44,6 +44,7 @@
 }
 
 :root {
+  /* Existing variables */
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -76,6 +77,13 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  
+  /* MyRixi theme variables with oklch */
+  --primary-cyber: oklch(0.75 0.25 140); /* Green neon */
+  --secondary-cyber: oklch(0.65 0.3 250); /* Blue neon */
+  --accent-cyber: oklch(0.7 0.25 320); /* Purple neon */
+  --background-cyber: oklch(0.1 0.01 240); /* Dark blue-black */
+  --foreground-cyber: oklch(0.95 0.01 0); /* Almost white */
 }
 
 .dark {
@@ -110,6 +118,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  
+  /* MyRixi dark theme variables - already in dark mode */
+  --primary-cyber: oklch(0.78 0.26 140); /* Brighter green neon in dark mode */
+  --secondary-cyber: oklch(0.68 0.32 250); /* Brighter blue neon in dark mode */
+  --accent-cyber: oklch(0.73 0.27 320); /* Brighter purple neon in dark mode */
 }
 
 @layer base {
@@ -119,4 +132,103 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* MyRixi theme additions */
+
+/* Radial gradient background */
+.bg-cyber-gradient {
+  background: radial-gradient(ellipse at top, oklch(0.15 0.03 240), oklch(0.08 0.01 220));
+}
+
+/* Glassmorphism */
+.glass {
+  background: oklch(0.1 0.01 240 / 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid oklch(1 0 0 / 0.1);
+  border-radius: 10px;
+}
+
+/* Neomorphism */
+.neomorph {
+  box-shadow: 
+    5px 5px 15px oklch(0 0 0 / 0.5),
+    -5px -5px 15px oklch(1 0 0 / 0.05);
+  border-radius: 10px;
+}
+
+/* Neon glow effects */
+.neon-glow-primary {
+  text-shadow: 
+    0 0 5px oklch(var(--primary-cyber) / 0.8),
+    0 0 10px oklch(var(--primary-cyber) / 0.4),
+    0 0 20px oklch(var(--primary-cyber) / 0.2);
+}
+
+.neon-glow-secondary {
+  text-shadow: 
+    0 0 5px oklch(var(--secondary-cyber) / 0.8),
+    0 0 10px oklch(var(--secondary-cyber) / 0.4),
+    0 0 20px oklch(var(--secondary-cyber) / 0.2);
+}
+
+/* Animated background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(oklch(0.15 0.02 240 / 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.15 0.02 240 / 0.8) 1px, transparent 1px);
+  background-size: 30px 30px;
+  background-position: center center;
+  animation: grid-move 20s linear infinite;
+}
+
+@keyframes grid-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 30px 30px;
+  }
+}
+
+/* Additional utility classes */
+.bg-gradient-cyber {
+  background: linear-gradient(135deg, 
+    oklch(var(--primary-cyber) / 0.7) 0%, 
+    oklch(var(--secondary-cyber) / 0.7) 50%, 
+    oklch(var(--accent-cyber) / 0.7) 100%);
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(135deg, 
+    oklch(var(--primary-cyber)) 0%, 
+    oklch(var(--secondary-cyber)) 100%);
+}
+
+.border-glow {
+  box-shadow: 
+    0 0 5px oklch(var(--primary-cyber) / 0.8),
+    0 0 10px oklch(var(--primary-cyber) / 0.4);
+}
+
+/* Animation effects */
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s infinite;
 }
