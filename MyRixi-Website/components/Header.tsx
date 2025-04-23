@@ -42,7 +42,7 @@ const Header = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <Image src="/logo.svg" alt="MyRixi Logo" width={40} height={40} />
+            <Image src="/myrixi_icon.png" alt="MyRixi Logo" width={40} height={40} className='rounded-md' />
           </motion.div>
           <span className="text-2xl font-cyber font-bold text-gradient">MyRixi</span>
         </Link>

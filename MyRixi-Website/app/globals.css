@@ -3,51 +3,99 @@
 @tailwind utilities;
 
 :root {
-  --primary: 130, 100%, 50%;
-  --secondary: 250, 100%, 60%;
-  --accent: 320, 100%, 60%;
-  --background: 220, 10%, 5%;
-  --foreground: 210, 20%, 98%;
+  /* Couleurs principales alignées avec l'application mobile */
+  --background1: 270, 8%, 8%;      /* #141316 */
+  --background2: 228, 13%, 12%;    /* #1A1B1F */
+  --foreground: 0, 0%, 95%;        /* #F2F2F2 */
+  --foreground-secondary: 0, 0%, 72%; /* #B8B8B8 */
+  --divider: 240, 7%, 17%;         /* #2A2A2E */
+  
+  /* Couleurs d'accent de l'app mobile */
+  --cyber-pink: 336, 100%, 65%;    /* #FF4F9A */
+  --neo-purple: 265, 100%, 59%;    /* #8A2EFF */
+  --techno-blue: 206, 96%, 54%;    /* #18A0FB */
+  --synth-green: 157, 100%, 42%;   /* #00D67D */
+  --solar-gold: 43, 96%, 58%;      /* #FBC02D */
+  --holo-turquoise: 166, 100%, 63%; /* #42FFD6 */
+  --neo-red: 0, 100%, 65%;         /* #FF4F4F */
+  
+  /* Couleurs pour la compatibilité avec le code existant */
+  --primary: var(--synth-green);
+  --secondary: var(--neo-purple);
+  --accent: var(--cyber-pink);
+  --background: var(--background1);
+}
+
+/* Mode clair */
+.light {
+  --background1: 240, 20%, 98%;    /* #F8F8FA */
+  --background2: 0, 0%, 100%;      /* #FFFFFF */
+  --foreground: 0, 0%, 13%;        /* #202020 */
+  --foreground-secondary: 0, 0%, 38%; /* #606060 */
+  --divider: 0, 0%, 89%;          /* #E2E2E2 */
+  
+  /* Les couleurs d'accent restent les mêmes en mode clair */
 }
 
 body {
-  background: radial-gradient(ellipse at top, hsl(220, 30%, 10%), hsl(220, 10%, 5%));
+  background: radial-gradient(ellipse at top, hsl(240, 11%, 15%), hsl(var(--background1)));
   color: hsl(var(--foreground));
 }
 
 /* Glassmorphism */
 .glass {
-  background: rgba(10, 10, 15, 0.7);
+  background: hsla(var(--background2), 0.7);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border: 1px solid hsla(var(--foreground), 0.1);
+  border-radius: 16px; /* Roundness from theme */
+  box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.25); /* Dark theme shadow */
+}
+
+.light .glass {
+  box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.08); /* Light theme shadow */
 }
 
 /* Neomorphism */
 .neomorph {
   box-shadow: 
-    5px 5px 15px rgba(0, 0, 0, 0.5),
-    -5px -5px 15px rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+    4px 4px 8px rgba(0, 0, 0, 0.3),
+    -4px -4px 8px rgba(255, 255, 255, 0.05);
+  border-radius: 16px; /* Roundness from theme */
+}
+
+.light .neomorph {
+  box-shadow: 
+    4px 4px 8px rgba(0, 0, 0, 0.08),
+    -4px -4px 8px rgba(255, 255, 255, 0.6);
 }
 
 /* Neon glow effects */
 .neon-glow-primary {
-  text-shadow: 0 0 5px rgba(hsl(var(--primary)), 0.8),
-               0 0 10px rgba(hsl(var(--primary)), 0.4),
-               0 0 20px rgba(hsl(var(--primary)), 0.2);
+  text-shadow: 
+    0 0 5px hsla(var(--primary), 0.8),
+    0 0 10px hsla(var(--primary), 0.4),
+    0 0 20px hsla(var(--primary), 0.2);
 }
 
 .neon-glow-secondary {
-  text-shadow: 0 0 5px rgba(hsl(var(--secondary)), 0.8),
-               0 0 10px rgba(hsl(var(--secondary)), 0.4),
-               0 0 20px rgba(hsl(var(--secondary)), 0.2);
+  text-shadow: 
+    0 0 5px hsla(var(--secondary), 0.8),
+    0 0 10px hsla(var(--secondary), 0.4),
+    0 0 20px hsla(var(--secondary), 0.2);
+}
+
+.neon-glow-pink {
+  text-shadow: 
+    0 0 5px hsla(var(--cyber-pink), 0.8),
+    0 0 10px hsla(var(--cyber-pink), 0.4),
+    0 0 20px hsla(var(--cyber-pink), 0.2);
 }
 
 /* Animated background */
 .cyber-grid {
-  background-image: linear-gradient(rgba(20, 20, 30, 0.8) 1px, transparent 1px),
-                   linear-gradient(90deg, rgba(20, 20, 30, 0.8) 1px, transparent 1px);
+  background-image: 
+    linear-gradient(hsla(var(--foreground-secondary), 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, hsla(var(--foreground-secondary), 0.1) 1px, transparent 1px);
   background-size: 30px 30px;
   background-position: center center;
   animation: grid-move 20s linear infinite;
@@ -70,6 +118,25 @@ body {
     hsla(var(--accent), 0.7) 100%);
 }
 
+/* Nouveaux dégradés basés sur les couleurs de l'app mobile */
+.bg-gradient-future {
+  background: linear-gradient(135deg,
+    hsla(var(--neo-purple), 0.7) 0%,
+    hsla(var(--techno-blue), 0.7) 100%);
+}
+
+.bg-gradient-sunset {
+  background: linear-gradient(135deg,
+    hsla(var(--cyber-pink), 0.7) 0%,
+    hsla(var(--solar-gold), 0.7) 100%);
+}
+
+.bg-gradient-cyber-green {
+  background: linear-gradient(135deg,
+    hsla(var(--synth-green), 0.7) 0%,
+    hsla(var(--holo-turquoise), 0.7) 100%);
+}
+
 .text-gradient {
   background-clip: text;
   -webkit-background-clip: text;
@@ -77,7 +144,48 @@ body {
   background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
 }
 
+.text-gradient-pink {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(135deg, hsl(var(--cyber-pink)) 0%, hsl(var(--neo-purple)) 100%);
+}
+
+.text-gradient-blue {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(135deg, hsl(var(--techno-blue)) 0%, hsl(var(--holo-turquoise)) 100%);
+}
+
 .border-glow {
-  box-shadow: 0 0 5px rgba(hsl(var(--primary)), 0.8),
-              0 0 10px rgba(hsl(var(--primary)), 0.4);
+  box-shadow: 
+    0 0 5px hsla(var(--primary), 0.8),
+    0 0 10px hsla(var(--primary), 0.4);
+}
+
+.border-glow-pink {
+  box-shadow: 
+    0 0 5px hsla(var(--cyber-pink), 0.8),
+    0 0 10px hsla(var(--cyber-pink), 0.4);
+}
+
+.border-glow-purple {
+  box-shadow: 
+    0 0 5px hsla(var(--neo-purple), 0.8),
+    0 0 10px hsla(var(--neo-purple), 0.4);
+}
+
+/* Card styles */
+.card-neon {
+  background: hsla(var(--background2), 0.6);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid hsla(var(--foreground), 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-neon:hover {
+  border-color: hsla(var(--primary), 0.4);
+  box-shadow: 0 0 15px hsla(var(--primary), 0.3);
 }

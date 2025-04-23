@@ -17,8 +17,8 @@ public class PostRepository : GenericRepository<Post>, IPostRepository
         {
             CommunityId = communityId,
             CommunityProfileId = communityProfileId,
-            Title = "New Post",
-            Content = "Write your content here...",
+            Title = "Nouveau Brouillon",
+            Content = "Ecrire votre contenu ici...",
             State = PostState.Draft
         };
 
