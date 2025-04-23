@@ -9,8 +9,10 @@ import {
   PaintBucket, 
   Globe, 
   Smartphone,
-  Zap
+  Zap,
+  BookOpen
 } from 'lucide-react';
+import Link from 'next/link';
 
 // Palette de couleurs par fonctionnalité
 const featureColors = {
@@ -74,18 +76,9 @@ const Features = () => {
   return (
     <section 
       id="fonctionnalites" 
-      className="py-24 relative overflow-hidden bg-background1"
+      className="py-24 relative overflow-hidden bg-background1 bg-cyber-shapes"
       ref={containerRef}
     >
-      {/* Éléments décoratifs subtils */}
-      <div className="absolute inset-0 cyber-grid opacity-5 -z-50"></div>
-      
-      {/* Lignes de circuit cybernétiques */}
-      <div className="absolute top-0 left-0 h-px w-2/3 bg-gradient-to-r from-synth-green/20 to-transparent"></div>
-      <div className="absolute top-0 right-0 h-40 w-px bg-gradient-to-b from-cyber-pink/20 to-transparent"></div>
-      <div className="absolute bottom-0 right-0 h-px w-2/3 bg-gradient-to-l from-techno-blue/20 to-transparent"></div>
-      <div className="absolute bottom-0 left-10 h-40 w-px bg-gradient-to-t from-neo-purple/20 to-transparent"></div>
-      
       <div className="container mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -107,6 +100,12 @@ const Features = () => {
           <p className="text-foreground-secondary text-lg max-w-2xl mx-auto">
             Découvrez ce qui fait de MyRixi une application de communauté unique avec son interface futuriste et ses fonctionnalités innovantes.
           </p>
+          
+          {/* Documentation button */}
+          <Link href="/documentation" className="doc-button mt-6">
+            <BookOpen className="w-4 h-4" />
+            <span>Documentation développeur</span>
+          </Link>
         </motion.div>
 
         <div className="flex flex-col lg:flex-row gap-12 items-center">
