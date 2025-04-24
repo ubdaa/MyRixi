@@ -117,7 +117,7 @@ const Hero = () => {
             className="text-center md:text-left"
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-background2/50 glass rounded-full mb-6">
-              <div className="w-2 h-2 rounded-full bg-synth-green animate-pulse"></div>
+              <div className="w-2 h-2 rounded-full bg-[#00D67D] animate-pulse"></div>
               <span className="text-sm font-medium text-foreground">Nouvelle expérience communautaire</span>
             </div>
             
