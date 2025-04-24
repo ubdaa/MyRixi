@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, MonitorSmartphone } from 'lucide-react';
+import { Bubbles, ChevronLeft, ChevronRight, Group, Home, MonitorSmartphone, PersonStanding, Settings } from 'lucide-react';
 
 const Screenshots = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -14,31 +14,36 @@ const Screenshots = () => {
       src: "/images/screenshot-1.png", 
       alt: "Écran d'accueil MyRixi", 
       caption: "Page d'accueil avec découverte communautaire",
-      color: "#00D67D" // synth-green
+      color: "#00D67D", // synth-green
+      icon: <Home className="w-8 h-8 text-synth-green" />
     },
     { 
       src: "/images/screenshot-2.png", 
       alt: "Profil utilisateur MyRixi", 
       caption: "Profil personnalisable avec thème cybernétique",
-      color: "#FF4F9A" // cyber-pink
+      color: "#FF4F9A", // cyber-pink
+      icon: <PersonStanding className="w-8 h-8 text-cyber-pink" />
     },
     { 
       src: "/images/screenshot-3.png", 
       alt: "Page communauté MyRixi", 
       caption: "Interface de communauté avec flux de contenu",
-      color: "#8A2EFF" // neo-purple
+      color: "#8A2EFF", // neo-purple
+      icon: <Group className="w-8 h-8 text-neo-purple" />
     },
     { 
       src: "/images/screenshot-4.png", 
       alt: "Messagerie MyRixi", 
       caption: "Système de messagerie avec design néon",
-      color: "#18A0FB" // techno-blue
+      color: "#18A0FB", // techno-blue
+      icon: <Bubbles className="w-8 h-8 text-techno-blue" />
     },
     { 
       src: "/images/screenshot-5.png", 
       alt: "Paramètres MyRixi", 
       caption: "Page de personnalisation et paramètres",
-      color: "#FBC02D" // solar-gold
+      color: "#FBC02D", // solar-gold
+      icon: <Settings className="w-8 h-8 text-solar-gold" />
     },
   ];
 
@@ -123,7 +128,7 @@ const Screenshots = () => {
 
         <div className="relative max-w-4xl mx-auto">
           {/* Slider principal */}
-          <div className="relative h-[500px] sm:h-[600px] overflow-hidden mb-4">
+          <div className="relative h-[600px] overflow-hidden mb-4">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -188,7 +193,7 @@ const Screenshots = () => {
             </AnimatePresence>
 
             {/* Boutons de navigation */}
-            <div className="absolute -left-5 sm:left-10 top-1/2 transform -translate-y-1/2">
+            <div className="absolute left-10 top-1/2 transform -translate-y-1/2">
               <button 
                 onClick={prevSlide}
                 className="glass p-3 rounded-full border border-divider hover:border-cyber-pink transition-all"
@@ -198,7 +203,7 @@ const Screenshots = () => {
               </button>
             </div>
             
-            <div className="absolute -right-5 sm:right-10 top-1/2 transform -translate-y-1/2">
+            <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
               <button 
                 onClick={nextSlide}
                 className="glass p-3 rounded-full border border-divider hover:border-cyber-pink transition-all"
@@ -219,30 +224,20 @@ const Screenshots = () => {
                 aria-label={`Aller à la capture d'écran ${index + 1}: ${screenshot.alt}`}
               >
                 <div 
-                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all flex justify-center items-center ${
                     currentIndex === index 
                       ? 'border-[color:var(--cyber-pink)]' 
                       : 'border-divider group-hover:border-foreground-secondary'
                   }`}
                 >
-                  <div className="absolute inset-0 bg-background2 flex items-center justify-center">
-                    <div className="w-6 h-6 border-2 border-t-synth-green border-r-cyber-pink border-b-neo-purple border-l-techno-blue rounded-full animate-spin"></div>
-                  </div>
-                  <Image
-                    src={screenshot.src}
-                    alt={`Miniature: ${screenshot.alt}`}
-                    fill
-                    sizes="80px"
-                    style={{ objectFit: "cover" }}
-                    className={`transition-all ${currentIndex === index ? 'brightness-100' : 'brightness-50 group-hover:brightness-75'}`}
-                  />
+                  {screenshot.icon}
                 </div>
                 
                 {/* Indicateur actif */}
                 {currentIndex === index && (
                   <motion.div 
                     layoutId="activeScreenshot"
-                    className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-1 rounded-full"
+                    className="absolute -bottom-2 left-1/3 transform -translate-x-1/2 w-4 h-1 rounded-full"
                     style={{ backgroundColor: screenshot.color }}
                   />
                 )}
