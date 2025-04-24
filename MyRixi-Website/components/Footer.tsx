@@ -144,7 +144,7 @@ const Footer = () => {
                 placeholder="Votre email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-background2/50 border border-divider rounded-lg py-3 px-4 pr-12 focus:outline-none focus:border-synth-green transition-all"
+                className="w-full bg-background2/50 border border-divider rounded-lg py-3 px-4 pr-12 focus:outline-none text-[#1A1B1F] focus:border-[#00D67D] transition-all"
                 required
               />
               <button
