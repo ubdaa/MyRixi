@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const DevDocButton = () => {
   const [isHovered, setIsHovered] = useState(false);
@@ -15,10 +16,12 @@ const DevDocButton = () => {
         className="border border-white/10 bg-black/30 backdrop-blur-sm hover:bg-white/10 transition-all"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={() => window.open('/developpeurs', '_blank')}
-      >
-        <FileText className="w-5 h-5 mr-2" />
-        Documentation
+        asChild
+        >
+        <Link href={"/docs"} className="flex items-center text-gray-300 hover:text-white transition-colors">
+          <FileText className="w-5 h-5 mr-2" />
+          Documentation
+        </Link>
       </Button>
 
       <AnimatePresence>
