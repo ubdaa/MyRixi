@@ -18,7 +18,7 @@ export default function DocsPage() {
   }, []);
 
   return (
-    <main className="min-h-screen w-full bg-cyber-shapes">
+    <div className="min-h-screen w-full bg-cyber-shapes">
       {/* Formes cyberpunk en arrière-plan */}
       <div className="cyber-shape cyber-shape-1"></div>
       <div className="cyber-shape cyber-shape-2"></div>
@@ -33,14 +33,14 @@ export default function DocsPage() {
           </p>
         </div>
         
-        <div className="glass p-4 md:p-6 mb-8">
+        <div className="glass p-4 md:p-6 mb-8 pt-14">
           {isLoading ? (
             <LoadingDocs />
           ) : (
-            <ApiDocumentation swaggerUrl="https://api.myrixi.com/swagger/v1/swagger.json" />
+            <ApiDocumentation />
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }
