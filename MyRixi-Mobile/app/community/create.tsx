@@ -295,7 +295,7 @@ export default function CreateCommunityScreen() {
                     <View>
                       <Text style={styles.label}>Communauté privée</Text>
                       <Text style={styles.switchDescription}>
-                        La communauté n'est pas référencée publiquement
+                        La communauté n'est pas publique
                       </Text>
                     </View>
                     <Switch
@@ -311,7 +311,7 @@ export default function CreateCommunityScreen() {
                     <View>
                       <Text style={styles.label}>Sur invitation uniquement</Text>
                       <Text style={styles.switchDescription}>
-                        Les nouveaux membres ont besoin d'invitations
+                        Pour rejoindre uniquement sur invitation
                       </Text>
                     </View>
                     <Switch
