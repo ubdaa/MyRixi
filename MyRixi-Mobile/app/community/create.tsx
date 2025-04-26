@@ -242,7 +242,7 @@ export default function CreateCommunityScreen() {
                     style={styles.bannerPlaceholder}
                   >
                     <Ionicons name="image-outline" size={36} color="#888" />
-                    <Text style={styles.pickerText}>Add Banner Image</Text>
+                    <Text style={styles.pickerText}>Ajouter une bannière</Text>
                   </LinearGradient>
                 )}
               </TouchableOpacity>
@@ -273,7 +273,7 @@ export default function CreateCommunityScreen() {
                   label="Nom de la communauté"
                   value={name}
                   onChangeText={setName}
-                  placeholder="Ex: Design Enthusiasts"
+                  placeholder="Ex: Passionnés de Design"
                   accentColor={theme.colors.cyberPink}
                 />
 
@@ -293,9 +293,9 @@ export default function CreateCommunityScreen() {
                 <View style={styles.switchGroup}>
                   <View style={styles.switchContainer}>
                     <View>
-                      <Text style={styles.label}>Private Community</Text>
+                      <Text style={styles.label}>Communauté privée</Text>
                       <Text style={styles.switchDescription}>
-                        The community is not referenced publicly
+                        La communauté n'est pas référencée publiquement
                       </Text>
                     </View>
                     <Switch
@@ -309,9 +309,9 @@ export default function CreateCommunityScreen() {
 
                   <View style={styles.switchContainer}>
                     <View>
-                      <Text style={styles.label}>Invite only</Text>
+                      <Text style={styles.label}>Sur invitation uniquement</Text>
                       <Text style={styles.switchDescription}>
-                        New members need invitations
+                        Les nouveaux membres ont besoin d'invitations
                       </Text>
                     </View>
                     <Switch
@@ -327,12 +327,12 @@ export default function CreateCommunityScreen() {
                 <View style={styles.divider} />
 
                 <View style={styles.rulesSection}>
-                  <Text style={styles.sectionTitle}>Community Rules</Text>
+                  <Text style={styles.sectionTitle}>Règles de la communauté</Text>
 
                   {rules.map((rule, index) => (
                     <View key={index} style={styles.ruleContainer}>
                       <View style={styles.ruleView}>
-                        <Text style={styles.ruleTitle}>Rule {index + 1}</Text>
+                        <Text style={styles.ruleTitle}>Règle {index + 1}</Text>
                         <TouchableOpacity
                           style={styles.removeButton}
                           onPress={() => removeRule(index)}
@@ -350,7 +350,7 @@ export default function CreateCommunityScreen() {
                         onChangeText={(value) =>
                           updateRule(index, "title", value)
                         }
-                        placeholder="Rule title"
+                        placeholder="Titre de la règle"
                         placeholderTextColor="#aaa"
                       />
                       <GlassInput
@@ -359,7 +359,7 @@ export default function CreateCommunityScreen() {
                         onChangeText={(value) =>
                           updateRule(index, "description", value)
                         }
-                        placeholder="Rule description"
+                        placeholder="Description de la règle"
                         placeholderTextColor="#aaa"
                         multiline
                         numberOfLines={3}
@@ -377,7 +377,7 @@ export default function CreateCommunityScreen() {
                       size={22}
                       color="#4a7fe0"
                     />
-                    <Text style={styles.addRuleButtonText}>Add Rule</Text>
+                    <Text style={styles.addRuleButtonText}>Ajouter une règle</Text>
                   </TouchableOpacity>
                 </View>
               </View>
