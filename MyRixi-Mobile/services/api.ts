@@ -6,8 +6,8 @@ import { Platform } from 'react-native';
 export const BASE_URL = 'https://api.myrixi.com/v1';
 // export const BASE_URL = 'http://172.20.10.2:5000/v1';
 //export const BASE_URL = 'http://192.168.1.162:5000/v1';
-//const API_URL = 'https://api.myrixi.com/v1';
-const API_URL = 'http://172.20.10.2:5000/v1';
+const API_URL = 'https://api.myrixi.com/v1';
+//const API_URL = 'http://172.20.10.2:5000/v1';
 
 const api = axios.create({
   baseURL: API_URL,

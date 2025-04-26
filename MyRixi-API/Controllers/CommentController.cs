@@ -49,6 +49,7 @@ public class CommentController : Controller
         try
         {
             var comments = await _commentRepository.GetCommentsByPostIdAsync(postId, page, size);
+            
             var totalCount = await _commentRepository.GetCommentsCountByPostIdAsync(postId);
             
             return Ok(new
