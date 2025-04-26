@@ -36,8 +36,8 @@ export default function PostPage() {
         const postData = await fetchPostById(id);
         setPost(postData);
       } catch (err) {
-        console.error('Failed to load post:', err);
-        setError('Failed to load the post. Please try again later.');
+        console.error('Échec du chargement du post:', err);
+        setError('Impossible de charger la publication. Veuillez réessayer plus tard.');
       } finally {
         setLoading(false);
       }
@@ -56,7 +56,7 @@ export default function PostPage() {
 
   const handleSendComment = (text: string) => {
     // Ici, vous pouvez implémenter la logique d'envoi de commentaire
-    console.log('Sending comment:', text);
+    console.log('Envoi du commentaire:', text);
     // Exemple: postComment(id, text);
   };
 
@@ -74,13 +74,13 @@ export default function PostPage() {
         <View style={[styles.errorContainer, { backgroundColor: theme.colors.background2 }]}>
           <Ionicons name="alert-circle-outline" size={48} color={theme.colors.neoRed} />
           <Text style={[styles.errorText, { color: theme.colors.textPrimary }]}>
-            {error || "Post not found"}
+            {error || "Publication introuvable"}
           </Text>
           <TouchableOpacity 
             style={[styles.button, { backgroundColor: theme.colors.technoBlue }]}
             onPress={() => router.back()}
           >
-            <Text style={styles.buttonText}>Go Back</Text>
+            <Text style={styles.buttonText}>Retour</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
