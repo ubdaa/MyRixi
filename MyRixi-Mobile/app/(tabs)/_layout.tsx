@@ -63,16 +63,6 @@ function MyTabs() {
       screenOptions={screenOptions}
     >
       <Tabs.Screen
-        name="debug"
-        options={({ navigation }) => ({
-          title: "Debug",
-          ...getTabAnimation(navigation.isFocused()),
-          tabBarIcon: ({ size, color }) => (
-            <TabBarIcon name="dice" size={size} color={color} />
-          ),
-        })}
-      />
-      <Tabs.Screen
         name="discovery"
         options={({ navigation }) => ({
           title: "Découverte",

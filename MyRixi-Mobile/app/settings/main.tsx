@@ -19,8 +19,8 @@ export default function SettingsScreen() {
   
   // Mock user data (remplacer par les données réelles de l'utilisateur)
   const user = {
-    username: 'JohnDoe',
-    email: 'john.doe@example.com',
+    username: '',
+    email: '',
   };
   
   // État pour les toggles
