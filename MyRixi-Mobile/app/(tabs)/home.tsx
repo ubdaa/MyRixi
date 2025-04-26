@@ -18,6 +18,7 @@ import { useCommunity } from '@/contexts/CommunityContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { fetchRecentPosts } from '@/services/postService';
 import { Post } from '@/types/post';
+import { useRouter } from 'expo-router';
 
 export default function HomePage() {
   const { theme, colorMode, toggleColorMode } = useTheme();
@@ -25,6 +26,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   
   const { communities, loading, fetchCommunities } = useCommunity();
+  const router = useRouter();
 
   useEffect(() => {
     fetchCommunities();
@@ -75,7 +77,7 @@ export default function HomePage() {
         scrollY={scrollY} 
         username={profile?.displayName ?? "John Doe"}
         avatarUrl={profile?.profilePicture.url ?? require('@/assets/images/default-avatar.jpg')}
-        onProfilePress={toggleColorMode}
+        onProfilePress={() => router.push("/settings/main")}
       />
       
       {/* Contenu principal */}
