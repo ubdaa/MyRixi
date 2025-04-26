@@ -11,6 +11,7 @@ import { SettingsSection } from '@/components/settings/SettingsSection';
 import { SettingsItem } from '@/components/settings/SettingsItem';
 import { NeoButton } from '@/components/ui/NeoButton';
 import { Text, Switch } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function SettingsScreen() {
   const { theme, colorMode, toggleColorMode } = useTheme();
@@ -26,6 +27,8 @@ export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   
+  const router = useRouter();
+
   // Fonction pour gérer la déconnexion
   const handleLogout = () => {
     Alert.alert(
@@ -39,7 +42,7 @@ export default function SettingsScreen() {
         {
           text: "Déconnexion",
           style: "destructive",
-          onPress: () => logout()
+          onPress: () => { logout(); router.push("/(auth)/login"); }
         }
       ]
     );
