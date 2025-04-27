@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { Post } from '@/types/post';
 import { fetchCommunityPosts } from '@/services/postService';
 import { PostsSection } from '@/components/home/PostsSection';
+import { NeoButton } from '@/components/ui/NeoButton';
 
 export default function CommunityScreen() {
   const { id } = useLocalSearchParams();
@@ -195,6 +196,15 @@ export default function CommunityScreen() {
             <Text style={[styles.actionText, { color: theme.colors.textPrimary }]}>Profile</Text>
           </Pressable>
         </View>
+
+        {/* Vue avec uin bouton pour accéder aux paramètres */}
+        <NeoButton
+          title="Accéder aux paramètres"
+          onPress={() => router.push(`/settings/${communityId}/`)}
+          accentColor={theme.colors.cyberPink}
+          variant="outline"
+          style={{ margin: 16, backgroundColor: theme.colors.background2 }}
+        />
         
         <View style={styles.feedContent}>
           <PostsSection 
