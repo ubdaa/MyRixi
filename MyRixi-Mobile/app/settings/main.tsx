@@ -179,19 +179,19 @@ export default function SettingsScreen() {
             icon={<Ionicons name="help-circle-outline" size={20} color="white" />}
             title="Centre d'aide"
             tint={theme.colors.technoBlue}
-            onPress={() => console.log('Navigate to help center')}
+            onPress={() => router.push("/settings/faq")}
           />
           <SettingsItem
             icon={<Ionicons name="document-text-outline" size={20} color="white" />}
             title="Conditions d'utilisation"
             tint={theme.colors.technoBlue}
-            onPress={() => console.log('Navigate to terms')}
+            onPress={() => router.push("/settings/terms")}
           />
           <SettingsItem
-            icon={<Ionicons name="shield-checkmark-outline" size={20} color="white" />}
-            title="Politique de confidentialité"
+            icon={<Ionicons name="mail-outline" size={20} color="white" />}
+            title="Nous contacter"
             tint={theme.colors.technoBlue}
-            onPress={() => console.log('Navigate to privacy policy')}
+            onPress={() => router.push("/settings/contact")}
           />
         </SettingsSection>
         
