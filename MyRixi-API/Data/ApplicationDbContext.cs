@@ -165,8 +165,8 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
     {
         if (!optionsBuilder.IsConfigured)
         {
-            // Récupérez la chaîne de connexion d'une façon sécurisée
-            optionsBuilder.UseNpgsql("Host=109.199.107.134;Port=5432;Database=postgres;Username=postgres;Password=EQikFXVrMtyP2G0mi1gmEyN4HBxNJPj3WO8a2CRE7RGgIhaFj4zoX4YGXMy3aEXc");
+            string? connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+            optionsBuilder.UseNpgsql(connectionString);
         }
     }
 }

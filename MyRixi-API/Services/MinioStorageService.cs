@@ -14,17 +14,23 @@ public class MinioStorageService : IStorageService
     
     public MinioStorageService(IConfiguration configuration)
     {
+        string? endpoint = Environment.GetEnvironmentVariable("Minio__Endpoint") 
+                           ?? configuration["Minio:Endpoint"];
+        string? accessKey = Environment.GetEnvironmentVariable("Minio__AccessKey") 
+                            ?? configuration["Minio:AccessKey"];
+        string? secretKey = Environment.GetEnvironmentVariable("Minio__SecretKey") 
+                            ?? configuration["Minio:SecretKey"];
+        string? bucketName = Environment.GetEnvironmentVariable("Minio__BucketName") 
+                             ?? configuration["Minio:BucketName"];
+
         _minioClient = new MinioClient()
-            .WithEndpoint(configuration["Minio:Endpoint"])
-            .WithCredentials(
-                configuration["Minio:AccessKey"],
-                configuration["Minio:SecretKey"]
-            )
-            .WithSSL(false) // Selon votre configuration
+            .WithEndpoint(endpoint)
+            .WithCredentials(accessKey, secretKey)
+            .WithSSL(false)
             .Build();
-        
-        _bucketName = configuration["Minio:BucketName"]!;
-        _storageUrl = configuration["Minio:Endpoint"]!;
+    
+        _bucketName = bucketName!;
+        _storageUrl = endpoint!;
     }
     
     public async Task<string> UploadFileAsync(IFormFile file, string prefix)
