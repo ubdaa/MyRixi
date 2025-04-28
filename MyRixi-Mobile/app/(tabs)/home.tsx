@@ -69,14 +69,11 @@ export default function HomePage() {
         translucent
       />
       
-      {/* Fond animé avec effet parallaxe */}
-      <AnimatedBackground scrollY={scrollY} />
-      
       {/* Header flottant avec effet parallaxe */}
       <Header 
         scrollY={scrollY} 
         username={profile?.displayName ?? "John Doe"}
-        avatarUrl={profile?.profilePicture.url ?? require('@/assets/images/default-avatar.jpg')}
+        avatarUrl={profile?.profilePicture.url ?? ""}
         onProfilePress={() => router.push("/settings/main")}
       />
       
