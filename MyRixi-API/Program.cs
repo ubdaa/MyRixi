@@ -25,9 +25,30 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Modification ici pour utiliser IdentityRole<Guid>
-builder.Services.AddIdentity<User, IdentityRole<Guid>>()
+builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
+    {
+        options.SignIn.RequireConfirmedEmail = true;
+        options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";
+
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 6;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = true;
+
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+
+        options.User.RequireUniqueEmail = true;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddTokenProvider<EmailConfirmationTokenProvider<User>>("emailconfirmation");
+
+builder.Services.Configure<EmailConfirmationTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromDays(3); // ou tout autre durée
+});
 
 // Configuration JWT
 builder.Services.AddAuthentication(options =>
@@ -75,9 +96,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 
-builder.Services.AddTransient<IEmailSender, EmailSender>();
-
 // Configuration du service d'envoi d'emails
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // Logging
