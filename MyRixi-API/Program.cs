@@ -95,14 +95,9 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-
 // Configuration du service d'envoi d'emails
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-
-// on write dans la console la configuration d'email settings
-var emailSettings = builder.Configuration.GetSection("EmailSettings");
-Console.WriteLine($"Email Settings: {emailSettings["Host"]}, {emailSettings["Port"]}, {emailSettings["Username"]}, {emailSettings["Password"]}");
 
 // Logging
 builder.Services.AddLogging(logging =>
