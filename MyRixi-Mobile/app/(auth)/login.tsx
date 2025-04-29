@@ -42,9 +42,11 @@ export default function Login() {
         setError(response.message);
         return;
       }
-
-      await AsyncStorage.setItem("token", response.token);
-      router.replace("/home");
+      
+      if (response.token) {
+        await AsyncStorage.setItem("token", response.token);
+        router.replace("/home");
+      }
     } catch (err) {
       setError("Email ou mot de passe incorrect");
     } finally {

@@ -141,7 +141,7 @@ public class AuthController : ControllerBase
         // Vérifier si l'email est confirmé
         if (!user.EmailConfirmed)
         {
-            return Unauthorized(new { 
+            return Ok(new { 
                 Message = "Votre compte n'est pas encore activé. Veuillez vérifier votre email pour confirmer votre compte.",
                 RequiresEmailConfirmation = true
             });

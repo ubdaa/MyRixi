@@ -1,7 +1,7 @@
 import { apiPostRequest } from '@/services/api';
 
 interface AuthResponse {
-  token: string;
+  token?: string;
   message?: string;
   requiresEmailConfirmation?: boolean;
 }
