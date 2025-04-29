@@ -70,7 +70,7 @@ public class AuthController : ControllerBase
             user.UserProfile.ProfilePicture.Url = profileUrl;
             user.UserProfile.ProfilePicture.Type = "image";
 
-            var coverUrl = "https://minio-ysskscsocw084wok808w04wo.109.199.107.134.sslip.io/public/cover/default.webp";
+            var coverUrl = "https://cdn.myrixi.com/public/cover/default.webp";
             user.UserProfile.CoverPicture.Url = coverUrl;
             user.UserProfile.CoverPicture.Type = "image";
 
