@@ -3,11 +3,13 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MyRixiApi.Dto.Auth;
 using MyRixiApi.Interfaces;
 using MyRixiApi.Models;
+using MyRixiApi.Services;
 using MyRixiApi.Utilities;
 
 namespace MyRixiApi.Controllers;
@@ -21,6 +23,7 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _configuration;
     
     private readonly IStorageService _storageService;
+    private readonly IEmailSender _emailSender;
     private readonly IUserProfileRepository _userProfileRepository;
 
     public AuthController(
@@ -28,12 +31,14 @@ public class AuthController : ControllerBase
         SignInManager<User> signInManager,
         IConfiguration configuration,
         IStorageService storageService,
+        IEmailSender emailSender,
         IUserProfileRepository userProfileRepository)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
         _storageService = storageService;
+        _emailSender = emailSender;
         _userProfileRepository = userProfileRepository;
     }
     
@@ -49,6 +54,7 @@ public class AuthController : ControllerBase
         {
             Id = userId,
             UserName = model.Username,
+            EmailConfirmed = false,
             Email = model.Email,
             UserProfile =  new UserProfile
             {
@@ -77,8 +83,31 @@ public class AuthController : ControllerBase
             // Mettre à jour l'utilisateur avec son profil
             await _userManager.UpdateAsync(user);
             
-            await _signInManager.SignInAsync(user, isPersistent: false);
-            return Ok(new { Token = GenerateJwtToken(user) });
+            // Générer le token de confirmation d'email
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        
+            // Créer le lien de confirmation
+            var confirmationLink = Url.Action(
+                "ConfirmEmail", 
+                "Auth", 
+                new { userId = user.Id, token = token }, 
+                Request.Scheme);
+            
+            if (string.IsNullOrEmpty(confirmationLink))
+                return BadRequest("Erreur lors de la création du lien de confirmation.");
+        
+            // Préparer le contenu de l'email
+            var subject = "Confirmation de votre compte MyRixi";
+            var htmlMessage = EmailTemplates.GetEmailConfirmationTemplate(user.UserName, confirmationLink);
+        
+            // Envoyer l'email de confirmation
+            await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
+        
+            // Retourner un message de succès avec des informations sur la confirmation
+            return Ok(new { 
+                Message = "Inscription réussie! Veuillez vérifier votre email pour confirmer votre compte.",
+                RequiresEmailConfirmation = true
+            });
         }
 
         return BadRequest(result.Errors);
@@ -125,16 +154,56 @@ public class AuthController : ControllerBase
     [HttpGet("confirm-email")]
     public async Task<IActionResult> ConfirmEmail(string userId, string token)
     {
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            return BadRequest("Les informations de confirmation sont invalides.");
+
         var user = await _userManager.FindByIdAsync(userId);
-        if (user == null) return BadRequest("Utilisateur invalide");
-    
+        if (user == null)
+            return NotFound("Utilisateur non trouvé.");
+
+        // Confirmer l'email
         var result = await _userManager.ConfirmEmailAsync(user, token);
         if (result.Succeeded)
         {
-            return Ok(new { Message = "Email confirmé avec succès" });
+            // Rediriger vers une page de confirmation ou retourner un succès
+            return Redirect($"{_configuration["ClientAppUrl"]}/email-confirmation-success");
         }
+
+        return BadRequest("Échec de la confirmation de l'email. Le lien pourrait être expiré ou invalide.");
+    }
     
-        return BadRequest(result.Errors);
+    
+    [HttpPost("resend-confirmation-email")]
+    public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto model)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null)
+            return Ok(new { Message = "Si votre email est enregistré, un nouvel email de confirmation vous a été envoyé." });
+
+        if (user.EmailConfirmed)
+            return BadRequest(new { Message = "Votre email est déjà confirmé." });
+
+        // Générer un nouveau token de confirmation
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+    
+        // Créer le lien de confirmation
+        var confirmationLink = Url.Action(
+            "ConfirmEmail", 
+            "Auth", 
+            new { userId = user.Id, token = token }, 
+            Request.Scheme);
+    
+        // Préparer le contenu de l'email
+        var subject = "Confirmation de votre compte MyRixi";
+        var htmlMessage = EmailTemplates.GetEmailConfirmationTemplate(user.UserName!, confirmationLink!);
+    
+        // Envoyer l'email de confirmation
+        await _emailSender.SendEmailAsync(user.Email, subject, htmlMessage);
+    
+        return Ok(new { Message = "Un nouvel email de confirmation a été envoyé." });
     }
     
     private string GenerateJwtToken(User user)
