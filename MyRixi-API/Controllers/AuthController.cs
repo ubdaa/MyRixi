@@ -133,22 +133,27 @@ public class AuthController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        
+
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null)
-            return Unauthorized();
+            return Unauthorized(new { Message = "Email ou mot de passe incorrect." });
 
-        if (user.UserName == null) return Unauthorized();
-        
-        var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, 
-            isPersistent: false, lockoutOnFailure: false);
+        // Vérifier si l'email est confirmé
+        if (!user.EmailConfirmed)
+        {
+            return Unauthorized(new { 
+                Message = "Votre compte n'est pas encore activé. Veuillez vérifier votre email pour confirmer votre compte.",
+                RequiresEmailConfirmation = true
+            });
+        }   
 
+        var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
         if (result.Succeeded)
         {
-            return Ok(new { Token = GenerateJwtToken(user!) });
+            return Ok(new { Token = GenerateJwtToken(user) });
         }
 
-        return Unauthorized();
+        return Unauthorized(new { Message = "Email ou mot de passe incorrect." });
     }
     
     [HttpGet("confirm-email")]
