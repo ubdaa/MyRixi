@@ -8,6 +8,7 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { register } from "@/services/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -39,8 +40,23 @@ export default function Register() {
 
     try {
       const response = await register(email, password, username);
-      await AsyncStorage.setItem("token", response.token);
-      router.replace("/home");
+
+      if (!response.token && response.message && response.requiresEmailConfirmation) {
+        Alert.alert(
+          "Vérification de l'email",
+          "Un email de vérification a été envoyé à votre adresse. Veuillez le vérifier et confirmer votre compte.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.replace("/login"),
+            },
+          ],
+          { cancelable: false }
+        );
+        return;
+      }
+
+      return;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue lors de l\'inscription';
       setError(errorMessage);

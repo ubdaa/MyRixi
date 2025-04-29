@@ -2,6 +2,8 @@ import { apiPostRequest } from '@/services/api';
 
 interface AuthResponse {
   token: string;
+  message?: string;
+  requiresEmailConfirmation?: boolean;
 }
 
 export const login = async (email: string, password: string) => {

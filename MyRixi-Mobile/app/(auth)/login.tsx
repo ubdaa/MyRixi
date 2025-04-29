@@ -37,6 +37,12 @@ export default function Login() {
 
     try {
       const response = await login(email, password);
+
+      if (!response.token && response.message) {
+        setError(response.message);
+        return;
+      }
+
       await AsyncStorage.setItem("token", response.token);
       router.replace("/home");
     } catch (err) {
