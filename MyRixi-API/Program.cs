@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyRixiApi.Data;
@@ -11,6 +12,7 @@ using MyRixiApi.Mapping;
 using MyRixiApi.Models;
 using MyRixiApi.Repositories;
 using MyRixiApi.Services;
+using MyRixiApi.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +73,12 @@ builder.Services.AddAuthentication(options =>
     });
 
 builder.Services.AddAuthorization();
+
+
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+// Configuration du service d'envoi d'emails
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // Logging
 builder.Services.AddLogging(logging =>

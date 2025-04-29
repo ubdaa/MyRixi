@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 
 namespace MyRixiApi.Utilities;
 
@@ -47,8 +48,17 @@ public class EmailSender : IEmailSender
 
             using (var client = new SmtpClient())
             {
-                await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, _emailSettings.EnableSsl);
-                await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
+                // SecureSocketOptions peut être Auto, None, SslOnConnect, StartTls, StartTlsWhenAvailable
+                var secureOption = _emailSettings.EnableSsl ? SecureSocketOptions.Auto : SecureSocketOptions.None;
+                
+                await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, secureOption);
+                
+                // S'authentifier uniquement si des identifiants sont fournis
+                if (!string.IsNullOrEmpty(_emailSettings.Username))
+                {
+                    await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
+                }
+                
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }
